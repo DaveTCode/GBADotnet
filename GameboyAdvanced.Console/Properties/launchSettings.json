@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ARM Wrestler - Thumb": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom C:\\code\\home\\emulation\\gba\\GameboyAdvanced\\roms\\test\\THUMB_Any.gba --bios C:\\code\\home\\emulation\\gba\\GameboyAdvanced\\roms\\real\\gba_bios.bin"
+    }
+  }
+}

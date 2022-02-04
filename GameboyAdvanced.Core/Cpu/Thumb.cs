@@ -1,4 +1,5 @@
-﻿using static GameboyAdvanced.Core.Cpu.ALU;
+﻿using System.Runtime.CompilerServices;
+using static GameboyAdvanced.Core.Cpu.ALU;
 
 namespace GameboyAdvanced.Core.Cpu;
 
@@ -7,7 +8,7 @@ namespace GameboyAdvanced.Core.Cpu;
 /// </summary>
 internal unsafe static class Thumb
 {
-    internal readonly static delegate*<Arm7Tdmi, ushort, int>[] InstructionMap =
+    internal readonly static delegate*<Core, ushort, void>[] InstructionMap =
     {
         // LSL{S} Rd,Rs,#Offset - 0x00 - 0x07
         &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg,
@@ -85,188 +86,192 @@ internal unsafe static class Thumb
         &LDMIA, &LDMIA, &LDMIA, &LDMIA, &LDMIA, &LDMIA, &LDMIA, &LDMIA,
     };
 
-    public static int LSL_Shift_Reg(Arm7Tdmi cpu, ushort instruction)
+    public static void LSL_Shift_Reg(Core core, ushort instruction)
     {
         var offset = (instruction >> 6) & 0b1_1111;
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        cpu.R[rd] = LSL(cpu.R[rs], (byte)offset, ref cpu.Cpsr);
+        core.R[rd] = LSL(core.R[rs], (byte)offset, ref core.Cpsr);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int LSR_Shift_Reg(Arm7Tdmi cpu, ushort instruction)
+    public static void LSR_Shift_Reg(Core core, ushort instruction)
     {
         var offset = (instruction >> 6) & 0b1_1111;
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        cpu.R[rd] = LSR(cpu.R[rs], (byte)offset, ref cpu.Cpsr);
+        core.R[rd] = LSR(core.R[rs], (byte)offset, ref core.Cpsr);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int ASR_Shift_Reg(Arm7Tdmi cpu, ushort instruction)
+    public static void ASR_Shift_Reg(Core core, ushort instruction)
     {
         var offset = (instruction >> 6) & 0b1_1111;
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        cpu.R[rd] = ASR(cpu.R[rs], (byte)offset, ref cpu.Cpsr);
+        core.R[rd] = ASR(core.R[rs], (byte)offset, ref core.Cpsr);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int ADD_Reg(Arm7Tdmi cpu, ushort instruction)
+    public static void ADD_Reg(Core core, ushort instruction)
     {
         var rn = (instruction >> 6) & 0b111;
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
-        cpu.R[rd] = ADD(cpu.R[rs], cpu.R[rn], ref cpu.Cpsr);
+        core.R[rd] = ADD(core.R[rs], core.R[rn], ref core.Cpsr);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int ADD_Imm(Arm7Tdmi cpu, ushort instruction)
+    public static void ADD_Imm(Core core, ushort instruction)
     {
         var nn = (instruction >> 6) & 0b111;
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
-        cpu.R[rd] = ADD(cpu.R[rs], (uint)nn, ref cpu.Cpsr);
+        core.R[rd] = ADD(core.R[rs], (uint)nn, ref core.Cpsr);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int SUB_Reg(Arm7Tdmi cpu, ushort instruction)
+    public static void SUB_Reg(Core core, ushort instruction)
     {
         var rn = (instruction >> 6) & 0b111;
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
-        cpu.R[rd] = SUB(cpu.R[rs], cpu.R[rn], ref cpu.Cpsr);
+        core.R[rd] = SUB(core.R[rs], core.R[rn], ref core.Cpsr);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int SUB_Imm(Arm7Tdmi cpu, ushort instruction)
+    public static void SUB_Imm(Core core, ushort instruction)
     {
         var nn = (instruction >> 6) & 0b111;
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
-        cpu.R[rd] = SUB(cpu.R[rs], (uint)nn, ref cpu.Cpsr);
+        core.R[rd] = SUB(core.R[rs], (uint)nn, ref core.Cpsr);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int MOV(Arm7Tdmi cpu, ushort instruction)
+    public static void MOV(Core core, ushort instruction)
     {
         var rd = (instruction >> 8) & 0b111;
         var nn = instruction & 0xFF;
 
-        cpu.R[rd] = (uint)nn;
-        SetZeroSignFlags(cpu.Cpsr, cpu.R[rd]);
+        core.R[rd] = (uint)nn;
+        SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int CMP(Arm7Tdmi cpu, ushort instruction)
+    public static void CMP(Core core, ushort instruction)
     {
         var rd = (instruction >> 8) & 0b111;
         var nn = instruction & 0xFF;
 
-        _ = SUB(cpu.R[rd], (uint)nn, ref cpu.Cpsr);
+        _ = SUB(core.R[rd], (uint)nn, ref core.Cpsr);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int ADD_Imm_B(Arm7Tdmi cpu, ushort instruction)
+    public static void ADD_Imm_B(Core core, ushort instruction)
     {
         var rd = (instruction >> 8) & 0b111;
         var nn = instruction & 0xFF;
 
-        cpu.R[rd] = ADD(cpu.R[rd], (uint)nn, ref cpu.Cpsr);
+        core.R[rd] = ADD(core.R[rd], (uint)nn, ref core.Cpsr);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int SUB_Imm_B(Arm7Tdmi cpu, ushort instruction)
+    public static void SUB_Imm_B(Core core, ushort instruction)
     {
         var rd = (instruction >> 8) & 0b111;
         var nn = instruction & 0xFF;
 
-        cpu.R[rd] = SUB(cpu.R[rd], (uint)nn, ref cpu.Cpsr);
+        core.R[rd] = SUB(core.R[rd], (uint)nn, ref core.Cpsr);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int ALU(Arm7Tdmi cpu, ushort instruction)
+    public static void ALU(Core core, ushort instruction)
     {
         var opcode = (instruction >> 6) & 0b1111;
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
 
         switch (opcode)
         {
             case 0x0: // AND
-                cpu.R[rd] = cpu.R[rd] & cpu.R[rs];
-                SetZeroSignFlags(cpu.Cpsr, cpu.R[rd]);
-                return 1; // 1S
+                core.R[rd] = core.R[rd] & core.R[rs];
+                SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
+                break;
             case 0x1: // EOR
-                cpu.R[rd] = cpu.R[rd] ^ cpu.R[rs];
-                SetZeroSignFlags(cpu.Cpsr, cpu.R[rd]);
-                return 1; // 1S
+                core.R[rd] = core.R[rd] ^ core.R[rs];
+                SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
+                break;
             case 0x2: // LSL
-                cpu.R[rd] = LSL(cpu.R[rd], (byte)cpu.R[rs], ref cpu.Cpsr);
-                return 2; // 1S 1I
+                core.R[rd] = LSL(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.WaitStates++; // Extra I cycle
+                break;
             case 0x3: // LSR
-                cpu.R[rd] = LSR(cpu.R[rd], (byte)cpu.R[rs], ref cpu.Cpsr);
-                return 2; // 1S 1I
+                core.R[rd] = LSR(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.WaitStates++; // Extra I cycle
+                break;
             case 0x4: // ASR
-                cpu.R[rd] = ASR(cpu.R[rd], (byte)cpu.R[rs], ref cpu.Cpsr);
-                return 2; // 1S 1I
+                core.R[rd] = ASR(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.WaitStates++; // Extra I cycle
+                break;
             case 0x5: // ADC
-                cpu.R[rd] = ADC(cpu.R[rd], cpu.R[rs], ref cpu.Cpsr);
-                return 1; // 1S
+                core.R[rd] = ADC(core.R[rd], core.R[rs], ref core.Cpsr);
+                break;
             case 0x6: // SBC
-                cpu.R[rd] = SBC(cpu.R[rd], cpu.R[rs], ref cpu.Cpsr);
-                return 1; // 1S
+                core.R[rd] = SBC(core.R[rd], core.R[rs], ref core.Cpsr);
+                break;
             case 0x7: // ROR
-                cpu.R[rd] = ROR(cpu.R[rd], (byte)cpu.R[rs], ref cpu.Cpsr);
-                return 2; // 1S 1I
+                core.R[rd] = ROR(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.WaitStates++; // Extra I cycle
+                break;
             case 0x8: // TST
-                var result = cpu.R[rd] & cpu.R[rs];
-                SetZeroSignFlags(cpu.Cpsr, result);
-                return 1; // 1S
+                var result = core.R[rd] & core.R[rs];
+                SetZeroSignFlags(ref core.Cpsr, result);
+                break;
             case 0x9: // NEG
-                cpu.R[rd] = SUB(0, cpu.R[rs], ref cpu.Cpsr);
-                return 1; // 1S
+                core.R[rd] = SUB(0, core.R[rs], ref core.Cpsr);
+                break;
             case 0xA: // CMP
-                _ = SUB(0, cpu.R[rs], ref cpu.Cpsr);
-                return 1; // 1S
+                _ = SUB(0, core.R[rs], ref core.Cpsr);
+                break;
             case 0xB: // CMN
-                _ = ADD(0, cpu.R[rs], ref cpu.Cpsr);
-                return 1; // 1S
+                _ = ADD(0, core.R[rs], ref core.Cpsr);
+                break;
             case 0xC: // ORR
-                cpu.R[rd] = cpu.R[rd] | cpu.R[rs];
-                SetZeroSignFlags(cpu.Cpsr, cpu.R[rd]);
-                return 1; // 1S
+                core.R[rd] = core.R[rd] | core.R[rs];
+                SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
+                break;
             case 0xD: // MUL
-                cpu.R[rd] = MUL(cpu.R[rd], cpu.R[rs], ref cpu.Cpsr);
-                return 5; // 1S + (1..4)I - TODO - Just setting to max for now
+                throw new NotImplementedException("MUL not implemented yet");
             case 0xE: // BIC
-                cpu.R[rd] = cpu.R[rd] & (~cpu.R[rs]);
-                SetZeroSignFlags(cpu.Cpsr, cpu.R[rd]);
-                return 1; // 1S
+                core.R[rd] = core.R[rd] & (~core.R[rs]);
+                SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
+                break;
             case 0xF: // MVN
-                cpu.R[rd] = ~cpu.R[rs];
-                SetZeroSignFlags(cpu.Cpsr, cpu.R[rd]);
-                return 1; // 1S
+                core.R[rd] = ~core.R[rs];
+                SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
+                break;
             default:
                 throw new NotImplementedException($"Thumb ALU opcode {opcode:X2} not implemented");
         }
     }
 
-    public static int HiReg_Or_BX(Arm7Tdmi cpu, ushort instruction)
+    public static void HiReg_Or_BX(Core core, ushort instruction)
     {
         var opcode = (instruction >> 8) & 0b11;
         var msbd = (instruction >> 7) & 0b1;
@@ -274,13 +279,13 @@ internal unsafe static class Thumb
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        var fullRd = rd | (msbd << 4);
-        var fullRs = rs | (msbs << 4);
+        var fullRd = rd | (msbd << 3);
+        var fullRs = rs | (msbs << 3);
 
         var operand = fullRs switch
         {
-            15 => (cpu.R[15] + 4) & 0xFFFF_FFFE,
-            _ => cpu.R[fullRs]
+            15 => (core.R[15] + 4) & 0xFFFF_FFFE,
+            _ => core.R[fullRs]
         };
 
         switch (opcode)
@@ -288,134 +293,243 @@ internal unsafe static class Thumb
             // TODO - "Restrictions: For ADD/CMP/MOV, MSBs and/or MSBd must be set, ie. it is not allowed that both are cleared." - ok, but what happens if they're not?
             // ADD
             case 0b00:
-                cpu.R[fullRd] = cpu.R[fullRd] + operand;
-                return (fullRd == 15) ? 3 : 1;
+                core.R[fullRd] = core.R[fullRd] + operand;
+                if (fullRd == 15)
+                {
+                    core.ClearPipeline();
+                }
+                core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+                break;
             // CMP
             case 0b01:
-                _ = SUB(cpu.R[fullRd], operand, ref cpu.Cpsr);
-                return 1; // 1S
+                _ = SUB(core.R[fullRd], operand, ref core.Cpsr);
+                core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+                break;
             // MOV/NOP
             case 0b10:
-                cpu.R[fullRd] = operand;
-                return (fullRd == 15) ? 3 : 1;
+                core.R[fullRd] = operand;
+                if (fullRd == 15)
+                {
+                    core.ClearPipeline();
+                }
+                core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+                break;
             // BX/BLX
             case 0b11:
-                cpu.Cpsr.ThumbMode = (cpu.R[fullRs] & 0b1) == 1;
-                cpu.R[15] = cpu.Cpsr.ThumbMode ? cpu.R[fullRs] & 0xFFFF_FFFE : cpu.R[fullRs] & 0xFFFF_FFFC;
+                if ((core.R[fullRs] & 0b1) != 1)
+                {
+                    core.SwitchToArm();
+                }
+                
+                core.R[15] = core.Cpsr.ThumbMode ? core.R[fullRs] & 0xFFFF_FFFE : core.R[fullRs] & 0xFFFF_FFFC;
+                core.A = core.R[15];
 
                 // TODO - http://www.problemkaputt.de/gbatek.htm#thumbinstructionsummary suggests that CLX happens if MSBd is set, other docs don't
-                return 3; // 2S + 1N
+                core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+                break;
             default:
                 throw new Exception("Invalid");
         }
     }
 
-    public static int LDR_PC_Offset(Arm7Tdmi cpu, ushort instruction)
+    #region Load Register
+
+    private static int _ldrReg;
+    private static delegate*<uint, uint> _ldrCastFunc;
+    
+    private static uint LDRW(uint dataBus) => dataBus;
+    private static uint LDRHW(uint dataBus) => (ushort)dataBus;
+    private static uint LDRSHW(uint dataBus)
     {
-        var rd = (instruction >> 8) & 0b111;
+        // "and set bits 16 - 31 of Rd to bit 15"
+        // TODO - Is there a more efficient way to sign extend in C# which doesn't branch?
+        var bit15 = (dataBus >> 15) & 0b1;
+        return bit15 == 1 
+            ? 0xFFFF_0000 | (ushort)(short)dataBus 
+            : (ushort)(short)dataBus;
+    }
+
+    private static uint LDRB(uint dataBus) => (byte)dataBus;
+    private static uint LDRSB(uint dataBus)
+    {
+        // "and set bits 8 - 31 of Rd to bit 7"
+        // TODO - Is there a more efficient way to sign extend in C# which doesn't branch?
+        var bit7 = (dataBus >> 7) & 0b1;
+        return bit7 == 1
+            ? 0xFFFF_FF00 | (ushort)(sbyte)dataBus
+            : (ushort)(sbyte)dataBus;
+    }
+
+    /// <summary>
+    /// LDR takes 3 cycles (1N + 1S + 1I).
+    /// 
+    /// The first cycle (e.g. LDR_PC_Offset) calculates the address and puts it 
+    /// on the address bus.
+    /// 
+    /// The second cycle (this one) is a noop from the point of view of the executing 
+    /// pipeline (but is when the memory unit will retrieve A into D)
+    /// 
+    /// The third cycle is <see cref="LDRCycle3(Core, uint)"/>
+    /// </summary>
+    internal static void LDRCycle2(Core core, uint instruction)
+    {
+        // After an LDR the address bus (A) shows current PC + 2n and it's set up
+        // for opcode fetch but nMREQ is driven high for one internal cycle
+        core.A = core.R[15];
+        core.nOPC = false;
+        core.nRW = false;
+        core.SEQ = false;
+        core.nMREQ = true;
+        core.MAS = BusWidth.HalfWord;
+
+        // "This third cycle can normally be merged with 
+        // the next prefetch cycle to form one memory N - cycle"
+        // -
+        // TODO, what does that mean here, does nMREQ actually go low in most
+        // cases? How to know?
+        core.NextExecuteAction = &LDRCycle3;
+    }
+
+    /// <summary>
+    /// LDR takes 3 cycles (1N + 1S + 1I). <see cref="LDRCycle2(Core, uint)"/> 
+    /// for details of cycle 1 & 2.
+    /// 
+    /// On cycle 3 the data bus value is written back into the destination 
+    /// register and nMREQ is driven low so that the next cycle will cause
+    /// an opcode fetch.
+    /// </summary>
+    internal static void LDRCycle3(Core core, uint instruction)
+    {
+        core.R[_ldrReg] = _ldrCastFunc(core.D); // TODO - Do I need to take into account bus width here or will D already be truncated?
+        core.nMREQ = false;
+
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void LDRCommon(Core core, uint address, BusWidth busWidth, int destinationReg, delegate*<uint, uint> castFunc)
+    {
+        _ldrCastFunc = castFunc;
+        _ldrReg = destinationReg;
+        core.A = address;
+        core.MAS = busWidth;
+        core.nRW = false;
+        core.nOPC = true;
+        core.SEQ = false;
+        core.NextExecuteAction = &LDRCycle2;
+    }
+
+    public static void LDR_PC_Offset(Core core, ushort instruction)
+    {
         var word = instruction & 0xFF;
-        var address = ((cpu.R[15] + 4) & ~3) + word;
-
-        (cpu.R[rd], var cycles) = cpu.Bus.ReadWord((uint)address);
-
-        return 3 + cycles; // 1S 1N 1I + memory bus cycles TODO mayby the 1N is this non-sequential bus access?
+        LDRCommon(core, (uint)((core.R[15] & ~3) + word), BusWidth.Word, (instruction >> 8) & 0b111, &LDRW);
     }
 
-    public static int STR_Reg_Offset(Arm7Tdmi cpu, ushort instruction)
+    public static void LDR_Reg_Offset(Core core, ushort instruction)
+    {
+        var ro = (instruction >> 6) & 0b111;
+        var rb = (instruction >> 3) & 0b111;
+        LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.Word, instruction & 0b111, &LDRW);
+    }
+
+    public static void LDRB_Reg_Offset(Core core, ushort instruction)
+    {
+        var ro = (instruction >> 6) & 0b111;
+        var rb = (instruction >> 3) & 0b111;
+        LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.Byte, instruction & 0b111, &LDRB);
+    }
+
+    public static void LDSB_Reg_Offset(Core core, ushort instruction)
+    {
+        var ro = (instruction >> 6) & 0b111;
+        var rb = (instruction >> 3) & 0b111;
+        LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.Byte, instruction & 0b111, &LDRSB);
+    }
+
+    public static void LDRH_Reg_Offset(Core core, ushort instruction)
+    {
+        var ro = (instruction >> 6) & 0b111;
+        var rb = (instruction >> 3) & 0b111;
+        LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.HalfWord, instruction & 0b111, &LDRHW);
+    }
+
+    public static void LDSH_Reg_Offset(Core core, ushort instruction)
+    {
+        var ro = (instruction >> 6) & 0b111;
+        var rb = (instruction >> 3) & 0b111;
+        LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.HalfWord, instruction & 0b111, &LDRSHW);
+    }
+
+    public static void LDRB_Imm_Offset(Core core, ushort instruction)
+    {
+        var offset = (instruction >> 6) & 0b1_1111;
+        var rb = (instruction >> 3) & 0b111;
+        LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.Byte, instruction & 0b111, &LDRB);
+    }
+
+    public static void LDRH(Core core, ushort instruction)
+    {
+        var offset = ((instruction >> 6) & 0b1_1111) << 1;
+        var rb = (instruction >> 3) & 0b111;
+        LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.HalfWord, instruction & 0b111, &LDRHW);
+    }
+
+    public static void LDR_SP_Rel(Core core, ushort instruction)
+    {
+        var offset = (instruction & 0xFF) << 2;
+        LDRCommon(core, (uint)(core.R[13] + offset), BusWidth.Word, (instruction >> 8) & 0b111, &LDRW);
+    }
+
+    public static void LDR_Imm_Offset(Core core, ushort instruction)
+    {
+        var offset = ((instruction >> 6) & 0b1_1111) << 2;
+        var rb = (instruction >> 3) & 0b111;
+        LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.Word, instruction & 0b111, &LDRW);
+    }
+
+    #endregion
+
+    #region Store Register
+
+    private static void STRCommon(Core core, uint address, uint data, BusWidth busWidth)
+    {
+        core.A = address;
+        core.D = data;
+        core.MAS = busWidth;
+        core.nRW = true;
+        core.nOPC = true;
+        core.SEQ = false;
+        core.NextExecuteAction = &Core.ResetMemoryUnitForThumbOpcodeFetch;
+    }
+
+    public static void STR_Reg_Offset(Core core, ushort instruction)
     {
         var ro = (instruction >> 6) & 0b111;
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
-        var address = cpu.R[rb] + cpu.R[ro];
-        var cycles = cpu.Bus.WriteWord(address, cpu.R[rd]);
 
-        return 2 + cycles; // 2N + memory bus cycles
+        STRCommon(core, core.R[rb] + core.R[ro], core.R[rd], BusWidth.Word);
     }
 
-    public static int LDR_Reg_Offset(Arm7Tdmi cpu, ushort instruction)
+    public static void STRB_Reg_Offset(Core core, ushort instruction)
     {
         var ro = (instruction >> 6) & 0b111;
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
-        var address = cpu.R[rb] + cpu.R[ro];
-        (cpu.R[rd], var cycles) = cpu.Bus.ReadWord(address);
 
-        return 3 + cycles; // 1S + 1N + 1I + memory bus cycles
+        STRCommon(core, core.R[rb] + core.R[ro], (byte)core.R[rd], BusWidth.Byte);
     }
 
-    public static int STRB_Reg_Offset(Arm7Tdmi cpu, ushort instruction)
+    public static void STRH_Reg_Offset(Core core, ushort instruction)
     {
         var ro = (instruction >> 6) & 0b111;
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
-        var address = cpu.R[rb] + cpu.R[ro];
-        var cycles = cpu.Bus.WriteByte(address, (byte)cpu.R[rd]);
 
-        return 2 + cycles; // 2N + memory bus cycles
+        STRCommon(core, core.R[rb] + core.R[ro], (ushort)core.R[rd], BusWidth.HalfWord);
     }
 
-    public static int LDRB_Reg_Offset(Arm7Tdmi cpu, ushort instruction)
-    {
-        var ro = (instruction >> 6) & 0b111;
-        var rb = (instruction >> 3) & 0b111;
-        var rd = instruction & 0b111;
-        var address = cpu.R[rb] + cpu.R[ro];
-        (cpu.R[rd], var cycles) = cpu.Bus.ReadByte(address);
-
-        return 3 + cycles; // 1S + 1N + 1I + memory bus cycles
-    }
-
-    public static int STRH_Reg_Offset(Arm7Tdmi cpu, ushort instruction)
-    {
-        var ro = (instruction >> 6) & 0b111;
-        var rb = (instruction >> 3) & 0b111;
-        var rd = instruction & 0b111;
-        var address = cpu.R[rb] + cpu.R[ro];
-        var cycles = cpu.Bus.WriteHalfWord(address, (ushort)cpu.R[rd]);
-
-        return 2 + cycles; // 2N + memory bus cycles
-    }
-
-    public static int LDSB_Reg_Offset(Arm7Tdmi cpu, ushort instruction)
-    {
-        var ro = (instruction >> 6) & 0b111;
-        var rb = (instruction >> 3) & 0b111;
-        var rd = instruction & 0b111;
-        var address = cpu.R[rb] + cpu.R[ro];
-        var (data, cycles) = cpu.Bus.ReadByte(address);
-
-        cpu.R[rd] = (uint)((sbyte)data);
-
-        return 3 + cycles; // 1S + 1N + 1I + memory bus cycles
-    }
-
-    public static int LDRH_Reg_Offset(Arm7Tdmi cpu, ushort instruction)
-    {
-        var ro = (instruction >> 6) & 0b111;
-        var rb = (instruction >> 3) & 0b111;
-        var rd = instruction & 0b111;
-        var address = cpu.R[rb] + cpu.R[ro];
-        var (data, cycles) = cpu.Bus.ReadHalfWord(address);
-
-        cpu.R[rd] = data;
-
-        return 3 + cycles; // 1S + 1N + 1I + memory bus cycles
-    }
-
-    public static int LDSH_Reg_Offset(Arm7Tdmi cpu, ushort instruction)
-    {
-        var ro = (instruction >> 6) & 0b111;
-        var rb = (instruction >> 3) & 0b111;
-        var rd = instruction & 0b111;
-        var address = cpu.R[rb] + cpu.R[ro];
-        var (data, cycles) = cpu.Bus.ReadHalfWord(address);
-
-        cpu.R[rd] = (uint)((short)data);
-
-        return 3 + cycles; // 1S + 1N + 1I + memory bus cycles
-    }
-
-    public static int STR_Imm_Offset(Arm7Tdmi cpu, ushort instruction)
+    public static void STR_Imm_Offset(Core core, ushort instruction)
     {
         // For word accesses (B = 0), the value specified by #Imm is a full 7-bit address, but must
         // be word-aligned(ie with bits 1:0 set to 0), since the assembler places #Imm >> 2 in
@@ -424,53 +538,19 @@ internal unsafe static class Thumb
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        var address = (uint)(cpu.R[rb] + offset);
-
-        var cycles = cpu.Bus.WriteWord(address, cpu.R[rd]);
-
-        return 2 + cycles; // 2N + memory bus cycles
+        STRCommon(core, (uint)(core.R[rb] + offset), core.R[rd], BusWidth.Word);
     }
 
-    public static int LDR_Imm_Offset(Arm7Tdmi cpu, ushort instruction)
-    {
-        var offset = ((instruction >> 6) & 0b1_1111) << 2;
-        var rb = (instruction >> 3) & 0b111;
-        var rd = instruction & 0b111;
-
-        var address = (uint)(cpu.R[rb] + offset);
-
-        (cpu.R[rd], var cycles) = cpu.Bus.ReadWord(address);
-
-        return 3 + cycles; // 1S + 1N + 1I + memory bus cycles
-    }
-
-    public static int STRB_Imm_Offset(Arm7Tdmi cpu, ushort instruction)
+    public static void STRB_Imm_Offset(Core core, ushort instruction)
     {
         var offset = (instruction >> 6) & 0b1_1111;
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        var address = (uint)(cpu.R[rb] + offset);
-
-        var cycles = cpu.Bus.WriteByte(address, (byte)cpu.R[rd]);
-
-        return 2 + cycles; // 2N + memory bus cycles
+        STRCommon(core, (uint)(core.R[rb] + offset), (byte)core.R[rd], BusWidth.Byte);
     }
 
-    public static int LDRB_Imm_Offset(Arm7Tdmi cpu, ushort instruction)
-    {
-        var offset = (instruction >> 6) & 0b1_1111;
-        var rb = (instruction >> 3) & 0b111;
-        var rd = instruction & 0b111;
-
-        var address = (uint)(cpu.R[rb] + offset);
-
-        (cpu.R[rd], var cycles) = cpu.Bus.ReadByte(address);
-
-        return 3 + cycles; // 1S + 1N + 1I + memory bus cycles
-    }
-
-    public static int STRH(Arm7Tdmi cpu, ushort instruction)
+    public static void STRH(Core core, ushort instruction)
     {
         // #Imm is a full 6-bit address but must be halfword-aligned (ie with bit 0 set to 0) since
         // the assembler places #Imm >> 1 in the Offset5 field
@@ -478,131 +558,138 @@ internal unsafe static class Thumb
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        var address = (uint)(cpu.R[rb] + offset);
-
-        var cycles = cpu.Bus.WriteHalfWord(address, (ushort)cpu.R[rd]);
-
-        return 2 + cycles; // 2N + memory bus cycles
+        STRCommon(core, (uint)(core.R[rb] + offset), (ushort)core.R[rd], BusWidth.HalfWord);
     }
 
-    public static int LDRH(Arm7Tdmi cpu, ushort instruction)
-    {
-        var offset = ((instruction >> 6) & 0b1_1111) << 1;
-        var rb = (instruction >> 3) & 0b111;
-        var rd = instruction & 0b111;
-
-        var address = (uint)(cpu.R[rb] + offset);
-
-        (cpu.R[rd], var cycles) = cpu.Bus.ReadHalfWord(address);
-
-        return 3 + cycles; // 1S + 1N + 1I + memory bus cycles
-    }
-
-    public static int STR_SP_Rel(Arm7Tdmi cpu, ushort instruction)
+    public static void STR_SP_Rel(Core core, ushort instruction)
     {
         var rd = (instruction >> 8) & 0b111;
         var offset = (instruction & 0xFF) << 2;
-        var address = (uint)(cpu.R[13] + offset);
 
-        var cycles = cpu.Bus.WriteWord(address, cpu.R[rd]);
-
-        return 2 + cycles; // 2N
+        STRCommon(core, (uint)(core.R[13] + offset), core.R[rd], BusWidth.Word);
     }
 
-    public static int LDR_SP_Rel(Arm7Tdmi cpu, ushort instruction)
+    #endregion
+
+    public static void Get_Rel_PC(Core core, ushort instruction)
     {
         var rd = (instruction >> 8) & 0b111;
         var offset = (instruction & 0xFF) << 2;
-        var address = (uint)(cpu.R[13] + offset);
+        core.R[rd] = (uint)(((core.R[15] + 4) & ~2) + offset);
 
-        (cpu.R[rd], var cycles) = cpu.Bus.ReadWord(address);
-
-        return 3 + cycles; // 1S + 1N + 1I + memory bus cycles
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int Get_Rel_PC(Arm7Tdmi cpu, ushort instruction)
+    public static void Get_Rel_SP(Core core, ushort instruction)
     {
         var rd = (instruction >> 8) & 0b111;
         var offset = (instruction & 0xFF) << 2;
-        cpu.R[rd] = (uint)(((cpu.R[15] + 4) & ~2) + offset);
+        core.R[rd] = (uint)(core.R[13] + offset);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int Get_Rel_SP(Arm7Tdmi cpu, ushort instruction)
-    {
-        var rd = (instruction >> 8) & 0b111;
-        var offset = (instruction & 0xFF) << 2;
-        cpu.R[rd] = (uint)(cpu.R[13] + offset);
-
-        return 1; // 1S
-    }
-
-    public static int ADD_Offset_SP(Arm7Tdmi cpu, ushort instruction)
+    public static void ADD_Offset_SP(Core core, ushort instruction)
     {
         var offset = (sbyte)(instruction & 0xFF) << 2;
-        cpu.R[13] = (uint)(cpu.R[13] + offset);
+        core.R[13] = (uint)(core.R[13] + offset);
 
-        return 1; // 1S
+        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
     }
 
-    public static int PUSH(Arm7Tdmi cpu, ushort instruction)
+    #region PUSH/POP
+    private static uint[] _storeLoadMultipleState = new uint[9];
+    private static int _storeLoadMultiplePopCount;
+    private static int _storeLoadMultiplePtr;
+
+    internal static void PushCycle(Core core, uint instruction)
     {
-        int cycles = 2; // 2N
-        int pushes = 0;
+        if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount)
+        {
+            core.R[13] = (uint)(core.R[13] - (_storeLoadMultiplePopCount * 4)); // TODO - Is this the right increment to stack pointer
+            
+            Core.ResetMemoryUnitForThumbOpcodeFetch(core, instruction);
+        }
+        else
+        {
+            core.A += 4;
+            core.D = _storeLoadMultipleState[_storeLoadMultiplePtr];
+            _storeLoadMultiplePtr++;
+        }
+    }
+
+    #endregion
+
+    public static void PUSH(Core core, ushort instruction)
+    {
+        _storeLoadMultiplePopCount = 0;
+        _storeLoadMultiplePtr = 0;
+        
+        var registerList = instruction & 0b1111_1111;
+        for (var r = 0; r <= 7; r++)
+        {
+            if (((registerList >> r) & 0b1) == 0b1)
+            {
+                _storeLoadMultipleState[_storeLoadMultiplePopCount] = core.R[r];
+                _storeLoadMultiplePopCount++;
+            }
+        }
 
         // Check push LR
         if (((instruction >> 8) & 0b1) == 1)
         {
-            cpu.R[13] -= 4;
-            cycles += cpu.Bus.WriteWord(cpu.R[13], cpu.R[14]);
-            pushes++;
+            _storeLoadMultipleState[_storeLoadMultiplePopCount] = core.R[14];
+            _storeLoadMultiplePopCount++;
         }
 
-        for (var i = 7; i >= 0; i--)
-        {
-            if (((instruction >> i) & 0b1) == 1)
-            {
-                cpu.R[13] -= 4;
-                cycles += cpu.Bus.WriteWord(cpu.R[13], cpu.R[i]);
-                pushes++;
-            }
-        }
-
-        return cycles + (pushes - 1); // 2N + (n-1)S
+        PushCycle(core, instruction);
     }
 
-    public static int POP(Arm7Tdmi cpu, ushort instruction)
+    internal static void PopCycle(Core core, uint instruction)
     {
-        int cycles = 2; // 1N + 1I
-
-        for (var i = 0; i < 8; i++)
+        if (_storeLoadMultiplePtr > _storeLoadMultiplePopCount)
         {
-            if (((instruction >> i) & 0b1) == 1)
+            core.R[13] = (uint)(core.R[13] + (_storeLoadMultiplePopCount * 4)); // TODO - Is this the right increment to stack pointer
+
+            Core.ResetMemoryUnitForThumbOpcodeFetch(core, instruction);
+        }
+        else
+        {
+            core.A += 4;
+            core.R[_storeLoadMultipleState[_storeLoadMultiplePtr]] = core.D;
+            if (_storeLoadMultipleState[_storeLoadMultiplePtr] == 15) core.ClearPipeline();
+            _storeLoadMultiplePtr++;
+        }
+    }
+
+    public static void POP(Core core, ushort instruction)
+    {
+        var registerList = instruction & 0b1111_1111;
+        for (var r = 0; r <= 7; r++)
+        {
+            if (((registerList >> r) & 0b1) == 0b1)
             {
-                (cpu.R[i], var nCycles) = cpu.Bus.ReadWord(cpu.R[13]);
-                cycles += nCycles;
-                cpu.R[13] += 4;
+                _storeLoadMultipleState[_storeLoadMultiplePopCount] = (uint)r;
+                _storeLoadMultiplePopCount++;
             }
         }
 
+        // Check pop PC
         if (((instruction >> 8) & 0b1) == 1)
         {
-            (cpu.R[15], var nCycles) = cpu.Bus.ReadWord(cpu.R[13]);
-            cpu.R[15] &= 0xFFFF_FFFE; // Bit 0 is ignored on POP (can't switch to ARM mode through POP)
-            cycles += nCycles;
-            cpu.R[13] += 4;
+            _storeLoadMultipleState[_storeLoadMultiplePopCount] = 15;
+            _storeLoadMultiplePopCount++;
         }
 
-        return cycles;
+        core.NextExecuteAction = &PopCycle;
     }
 
-    public static int STMIA(Arm7Tdmi cpu, ushort instruction)
+    public static void STMIA(Core core, ushort instruction)
     {
         throw new NotImplementedException();
     }
 
-    public static int LDMIA(Arm7Tdmi cpu, ushort instruction)
+    public static void LDMIA(Core core, ushort instruction)
     {
         throw new NotImplementedException();
     }

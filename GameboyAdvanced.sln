@@ -8,11 +8,20 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{423E598E-B333-4396-851F-83981A97A9A7}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		Notes.md = Notes.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Core.Benchmarks", "GameboyAdvanced.Core.Benchmarks\GameboyAdvanced.Core.Benchmarks.csproj", "{BE81EEE1-B4F2-446A-AB22-6E2DF5EF63F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameboyAdvanced.Core.Tests", "GameboyAdvanced.Core.Tests\GameboyAdvanced.Core.Tests.csproj", "{B95A33C3-5221-4DAC-9080-B7CA33324290}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Core.Tests", "GameboyAdvanced.Core.Tests\GameboyAdvanced.Core.Tests.csproj", "{B95A33C3-5221-4DAC-9080-B7CA33324290}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Web", "GameboyAdvanced.Web\GameboyAdvanced.Web.csproj", "{837F807C-C36E-49CA-A356-C86C92719423}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Console", "GameboyAdvanced.Console\GameboyAdvanced.Console.csproj", "{82305690-EA91-4150-AADB-152410D7EE44}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Arm.SourceGenerators", "GameboyAdvanced.Arm.SourceGenerators\GameboyAdvanced.Arm.SourceGenerators.csproj", "{408F4745-6CA1-46FE-A11D-63A3A6661942}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +41,18 @@ Global
 		{B95A33C3-5221-4DAC-9080-B7CA33324290}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B95A33C3-5221-4DAC-9080-B7CA33324290}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B95A33C3-5221-4DAC-9080-B7CA33324290}.Release|Any CPU.Build.0 = Release|Any CPU
+		{837F807C-C36E-49CA-A356-C86C92719423}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{837F807C-C36E-49CA-A356-C86C92719423}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{837F807C-C36E-49CA-A356-C86C92719423}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{837F807C-C36E-49CA-A356-C86C92719423}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82305690-EA91-4150-AADB-152410D7EE44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82305690-EA91-4150-AADB-152410D7EE44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82305690-EA91-4150-AADB-152410D7EE44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82305690-EA91-4150-AADB-152410D7EE44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{408F4745-6CA1-46FE-A11D-63A3A6661942}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{408F4745-6CA1-46FE-A11D-63A3A6661942}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{408F4745-6CA1-46FE-A11D-63A3A6661942}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{408F4745-6CA1-46FE-A11D-63A3A6661942}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,29 +1,59 @@
-﻿namespace GameboyAdvanced.Core;
+﻿using GameboyAdvanced.Core.Dma;
+using GameboyAdvanced.Core.Input;
+using GameboyAdvanced.Core.Rom;
+using GameboyAdvanced.Core.Timer;
 
+namespace GameboyAdvanced.Core;
+
+/// <summary>
+/// The memory bus is the interconnect unit between the CPU and the other components.
+/// 
+/// It is responsible for all the memory mapped requests and determining how 
+/// many wait states should be injected.
+/// </summary>
 internal class MemoryBus
 {
-    private readonly Ppu _ppu;
+    private readonly Ppu.Ppu _ppu;
+    private readonly Gamepad _gamepad;
+    private readonly GamePak _gamePak;
+    private readonly DmaController _dma;
+    private readonly TimerController _timerController;
     private readonly byte[] _bios = new byte[0x4000];
     private readonly byte[] _onBoardWRam = new byte[0x4_0000];
     private readonly byte[] _onChipWRam = new byte[0x8000];
 
-    internal MemoryBus(byte[] bios, Ppu ppu)
+    internal MemoryBus(byte[] bios, Gamepad gamepad, GamePak gamePak, Ppu.Ppu ppu, DmaController dma, TimerController timerController)
     {
         if (bios == null || bios.Length > _bios.Length) throw new ArgumentException($"Bios is invalid length {bios?.Length}", nameof(bios));
         Array.Fill<byte>(_bios, 0);
         Array.Copy(bios, 0, _bios, 0, Math.Min(_bios.Length, bios.Length));
 
         _ppu = ppu ?? throw new ArgumentNullException(nameof(ppu));
+        _gamepad = gamepad ?? throw new ArgumentNullException(nameof(gamepad));
+        _gamePak = gamePak ?? throw new ArgumentNullException(nameof(gamePak));
+        _dma = dma ?? throw new ArgumentNullException(nameof(dma));
+        _timerController = timerController ?? throw new ArgumentNullException(nameof(timerController));
     }
 
     internal (byte, int) ReadByte(uint address) => address switch
     {
-        uint a when a <= 0x0000_3FFF => (_bios[a], 1), // TODO - Can only read from bios when IP is located in BIOS region
-        uint a when a is >= 0x0200_0000 and <= 0x0203_FFFF => (_onBoardWRam[a & 0x3_FFFF], 3),
-        uint a when a is >= 0x0300_0000 and <= 0x0300_7FFF => (_onChipWRam[a & 0x7FFF], 1),
-        uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => throw new NotImplementedException("IO registers not implemented"),
-        uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => _ppu.ReadByte(address),
-        uint a when a is >= 0x0800_0000 and <= 0x0FFF_FFFF => throw new NotImplementedException("GamePAK not yet implemented"),
+        uint _ when address <= 0x0000_3FFF => (_bios[address], 0), // TODO - Can only read from bios when IP is located in BIOS region
+        uint _ when address is >= 0x0200_0000 and <= 0x0203_FFFF => (_onBoardWRam[address & 0x3_FFFF], 2),
+        uint _ when address is >= 0x0300_0000 and <= 0x0300_7FFF => (_onChipWRam[address & 0x7FFF], 0),
+        uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE => address switch
+        {
+            uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.ReadRegisterByte(address),
+            uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => throw new NotImplementedException("Sound registers not yet implemented"),
+            uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadByte(address),
+            uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.ReadByte(address),
+            uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => throw new NotImplementedException("Serial comms registers not yet implemented"),
+            uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.ReadByte(address),
+            uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => throw new NotImplementedException("Serial comms registers not yet implemented"),
+            uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => throw new NotImplementedException("Interrupt/Wait State/Power down registers not implemented"),
+            _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
+        },
+        uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF => _ppu.ReadByte(address),
+        uint _ when address is >= 0x0800_0000 and <= 0x0FFF_FFFF => _gamePak.ReadByte(address),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not memory mapped")
     };
 
@@ -32,9 +62,20 @@ internal class MemoryBus
         uint a when a <= 0x0000_3FFF => (Utils.ReadHalfWord(_bios, address, 0x3FFF), 1), // TODO - Can only read from bios when IP is located in BIOS region
         uint a when a is >= 0x0200_0000 and <= 0x0203_FFFF => (Utils.ReadHalfWord(_onBoardWRam, address, 0x3_FFFF), 3),
         uint a when a is >= 0x0300_0000 and <= 0x0300_7FFF => (Utils.ReadHalfWord(_onChipWRam, address, 0x7FFF), 1),
-        uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => throw new NotImplementedException("IO registers not implemented"),
+        uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => address switch
+        {
+            uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.ReadRegisterHalfWord(address),
+            uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => throw new NotImplementedException("Sound registers not yet implemented"),
+            uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadHalfWord(address),
+            uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.ReadHalfWord(address),
+            uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => throw new NotImplementedException("Serial comms registers not yet implemented"),
+            uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.ReadHalfWord(address),
+            uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => throw new NotImplementedException("Serial comms registers not yet implemented"),
+            uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => throw new NotImplementedException("Interrupt/Wait State/Power down registers not implemented"),
+            _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
+        },
         uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => _ppu.ReadHalfWord(address),
-        uint a when a is >= 0x0800_0000 and <= 0x0FFF_FFFF => throw new NotImplementedException("GamePAK not yet implemented"),
+        uint a when a is >= 0x0800_0000 and <= 0x0FFF_FFFF => _gamePak.ReadHalfWord(address),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not memory mapped")
     };
 
@@ -43,9 +84,20 @@ internal class MemoryBus
         uint a when a <= 0x0000_3FFF => (Utils.ReadWord(_bios, address, 0x3FFF), 1), // TODO - Can only read from bios when IP is located in BIOS region
         uint a when a is >= 0x0200_0000 and <= 0x0203_FFFF => (Utils.ReadWord(_onBoardWRam, address, 0x3_FFFF), 6),
         uint a when a is >= 0x0300_0000 and <= 0x0300_7FFF => (Utils.ReadWord(_onChipWRam, address, 0x7FFF), 1),
-        uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => throw new NotImplementedException("IO registers not implemented"),
+        uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => address switch
+        {
+            uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.ReadRegisterWord(address),
+            uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => throw new NotImplementedException("Sound registers not yet implemented"),
+            uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadWord(address),
+            uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.ReadWord(address),
+            uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => throw new NotImplementedException("Serial comms registers not yet implemented"),
+            uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.ReadWord(address),
+            uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => throw new NotImplementedException("Serial comms registers not yet implemented"),
+            uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => throw new NotImplementedException("Interrupt/Wait State/Power down registers not implemented"),
+            _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
+        },
         uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => _ppu.ReadWord(address),
-        uint a when a is >= 0x0800_0000 and <= 0x0FFF_FFFF => throw new NotImplementedException("GamePAK not yet implemented"),
+        uint a when a is >= 0x0800_0000 and <= 0x0FFF_FFFF => _gamePak.ReadWord(address),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not memory mapped")
     };
 
@@ -62,11 +114,22 @@ internal class MemoryBus
                 _onChipWRam[address & 0x7FFF] = value;
                 return 1;
             case uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE:
-                throw new NotImplementedException("IO registers not implemented");
+                return address switch
+                {
+                    uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.WriteRegisterByte(address, value),
+                    uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => throw new NotImplementedException("Sound registers not yet implemented"),
+                    uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.WriteByte(address, value),
+                    uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.WriteByte(address, value),
+                    uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => throw new NotImplementedException("Serial comms registers not yet implemented"),
+                    uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.WriteByte(address, value),
+                    uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => throw new NotImplementedException("Serial comms registers not yet implemented"),
+                    uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => throw new NotImplementedException("Interrupt/Wait State/Power down registers not implemented"),
+                    _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped"),
+                };
             case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 return _ppu.WriteByte(address, value);
             case uint _ when address is >= 0x0800_0000 and <= 0x0FFF_FFFF:
-                throw new NotImplementedException("GamePAK not yet implemented");
+                return _gamePak.WriteByte(address, value);
             default:
                 throw new ArgumentOutOfRangeException(nameof(address));
         }
@@ -85,11 +148,22 @@ internal class MemoryBus
                 Utils.WriteHalfWord(_onChipWRam, 0x7FFF, address & 0x7FFF, value);
                 return 1;
             case uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE:
-                throw new NotImplementedException("IO registers not implemented");
+                return address switch
+                {
+                    uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.WriteRegisterHalfWord(address, value),
+                    uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => throw new NotImplementedException("Sound registers not yet implemented"),
+                    uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.WriteHalfWord(address, value),
+                    uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.WriteHalfWord(address, value),
+                    uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => throw new NotImplementedException("Serial comms registers not yet implemented"),
+                    uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.WriteHalfWord(address, value),
+                    uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => throw new NotImplementedException("Serial comms registers not yet implemented"),
+                    uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => throw new NotImplementedException("Interrupt/Wait State/Power down registers not implemented"),
+                    _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped"),
+                };
             case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 return _ppu.WriteHalfWord(address, value);
             case uint _ when address is >= 0x0800_0000 and <= 0x0FFF_FFFF:
-                throw new NotImplementedException("GamePAK not yet implemented");
+                return _gamePak.WriteHalfWord(address, value);
             default:
                 throw new ArgumentOutOfRangeException(nameof(address));
         }
@@ -97,6 +171,7 @@ internal class MemoryBus
 
     internal int WriteWord(uint address, uint value)
     {
+        Console.WriteLine($"{address:X8}={value:X8}");
         switch (address)
         {
             case uint _ when address <= 0x0000_3FFF:
@@ -108,11 +183,22 @@ internal class MemoryBus
                 Utils.WriteWord(_onChipWRam, 0x7FFF, address & 0x7FFF, value);
                 return 1;
             case uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE:
-                throw new NotImplementedException("IO registers not implemented");
+                return address switch
+                {
+                    uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.WriteRegisterWord(address, value),
+                    uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => throw new NotImplementedException("Sound registers not yet implemented"),
+                    uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.WriteWord(address, value),
+                    uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.WriteWord(address, value),
+                    uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => throw new NotImplementedException("Serial comms registers not yet implemented"),
+                    uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.WriteWord(address, value),
+                    uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => throw new NotImplementedException("Serial comms registers not yet implemented"),
+                    uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => throw new NotImplementedException("Interrupt/Wait State/Power down registers not implemented"),
+                    _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped"),
+                };
             case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 return _ppu.WriteWord(address, value);
             case uint _ when address is >= 0x0800_0000 and <= 0x0FFF_FFFF:
-                throw new NotImplementedException("GamePAK not yet implemented");
+                return _gamePak.WriteWord(address, value);
             default:
                 throw new ArgumentOutOfRangeException(nameof(address));
         }

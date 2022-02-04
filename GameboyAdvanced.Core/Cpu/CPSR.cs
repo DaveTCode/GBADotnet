@@ -21,9 +21,6 @@ internal struct CPSR
     internal bool ZeroFlag;
     internal bool CarryFlag;
     internal bool OverflowFlag;
-    internal bool StickyOverflow;
-    internal bool JazelleMode;
-    internal bool BigEndian;
     internal bool AbortDisable;
     internal bool IrqDisable;
     internal bool FiqDisable;
@@ -36,9 +33,6 @@ internal struct CPSR
         ZeroFlag = false;
         CarryFlag = false;
         OverflowFlag = false;
-        StickyOverflow = false;
-        JazelleMode = false;
-        BigEndian = false;
         AbortDisable = false;
         IrqDisable = false;
         FiqDisable = false;
@@ -50,11 +44,44 @@ internal struct CPSR
              | (uint)(ZeroFlag ? 0x4000_0000 : 0)
              | (uint)(CarryFlag ? 0x2000_0000 : 0)
              | (uint)(OverflowFlag ? 0x1000_0000 : 0)
-             | (uint)(StickyOverflow ? 0x0800_0000 : 0)
-             | (uint)(JazelleMode ? 0x0100_0000 : 0)
-             | (uint)(BigEndian ? 0x200 : 0)
              | (uint)(AbortDisable ? 0x100 : 0)
              | (uint)(IrqDisable ? 0x80 : 0)
              | (uint)(FiqDisable ? 0x40 : 0)
              | (uint)(ThumbMode ? 0x20 : 0);
+
+    internal void Set(uint v)
+    {
+        SignFlag = (v & 0x8000_0000) == 0x8000_0000;
+        ZeroFlag = (v & 0x4000_0000) == 0x4000_0000;
+        CarryFlag = (v & 0x2000_0000) == 0x2000_0000;
+        OverflowFlag = (v & 0x1000_0000) == 0x1000_0000;
+        AbortDisable = (v & 0x100) == 0x100;
+        IrqDisable = (v & 0x80) == 0x80;
+        FiqDisable = (v & 0x40) == 0x40;
+        ThumbMode = (v & 0x20) == 0x20;
+    }
+
+    internal void CopyFrom(CPSR cpsr)
+    {
+        SignFlag = cpsr.SignFlag;
+        ZeroFlag = cpsr.ZeroFlag;
+        CarryFlag = cpsr.CarryFlag;
+        OverflowFlag = cpsr.OverflowFlag;
+        AbortDisable = cpsr.AbortDisable;
+        IrqDisable = cpsr.IrqDisable;
+        FiqDisable = cpsr.FiqDisable;
+        ThumbMode = cpsr.ThumbMode;
+        Mode = cpsr.Mode;
+    }
+
+    public override string ToString() =>
+        (SignFlag ? "S" : "-") +
+        (ZeroFlag ? "Z" : "-") +
+        (CarryFlag ? "C" : "-") +
+        (OverflowFlag ? "V" : "-") +
+        (AbortDisable ? "-" : "A") +
+        (IrqDisable ? "-" : "I") +
+        (FiqDisable ? "-" : "F") +
+        (ThumbMode ? " Thm " : " Arm ") +
+        Mode;
 }

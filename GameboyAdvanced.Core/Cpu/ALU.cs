@@ -5,7 +5,7 @@ namespace GameboyAdvanced.Core.Cpu;
 internal static class ALU
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void SetZeroSignFlags(CPSR cpsr, uint result)
+    internal static void SetZeroSignFlags(ref CPSR cpsr, uint result)
     {
         cpsr.SignFlag = ((result >> 31) & 1) == 1;
         cpsr.ZeroFlag = result == 0;
@@ -19,15 +19,24 @@ internal static class ALU
             // "LSL#0 performs no shift (the carry flag remains unchanged)"
             0 => (op1, cpsr.CarryFlag),
             _ when offset < 32 => (op1 << offset, ((op1 >> (32 - offset)) & 1) == 1),
-            32 => ((uint)0, (op1 & 1) == 1),
-            _ => ((uint)0, false),
+            32 => (0u, (op1 & 1) == 1),
+            _ => (0u, false),
         };
 
         cpsr.CarryFlag = carry;
-        SetZeroSignFlags(cpsr, result);
+        SetZeroSignFlags(ref cpsr, result);
 
         return result;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static uint LSLNoFlags(uint op1, byte offset) => offset switch
+    {
+        // "LSL#0 performs no shift (the carry flag remains unchanged)"
+        0 => op1,
+        _ when offset < 32 => op1 << offset,
+        _ => 0u,
+    };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint LSR(uint op1, byte offset, ref CPSR cpsr)
@@ -35,17 +44,26 @@ internal static class ALU
         var (result, carry) = offset switch
         {
             // "LSR#0 is translated as LSR#32"
-            0 => ((uint)0, ((op1 >> 31) & 1) == 1),
+            0 => (0u, ((op1 >> 31) & 1) == 1),
             _ when offset < 32 => (op1 >> offset, ((op1 >> (offset - 1)) & 1) == 1),
-            32 => ((uint)0, ((op1 >> 31) & 1) == 1),
-            _ => ((uint)0, false),
+            32 => (0u, ((op1 >> 31) & 1) == 1),
+            _ => (0u, false),
         };
 
         cpsr.CarryFlag = carry;
-        SetZeroSignFlags(cpsr, result);
+        SetZeroSignFlags(ref cpsr, result);
 
         return result;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static uint LSRNoFlags(uint op1, byte offset) => offset switch
+    {
+        // "LSR#0 is translated as LSR#32"
+        0 => 0u,
+        _ when offset < 32 => op1 >> offset,
+        _ => 0u,
+    };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint ASR(uint op1, byte offset, ref CPSR cpsr)
@@ -60,7 +78,22 @@ internal static class ALU
         };
 
         cpsr.CarryFlag = carry;
-        SetZeroSignFlags(cpsr, result);
+        SetZeroSignFlags(ref cpsr, result);
+
+        return result;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static uint ASRNoFlags(uint op1, byte offset)
+    {
+        // "ASR#0 is translated as ASR#32"
+        offset = (offset == 0) ? (byte)32 : offset;
+
+        var result = offset switch
+        {
+            _ when offset < 32 => (uint)((int)op1 >> offset),
+            _ => ((op1 >> 31) & 1) == 1 ? uint.MaxValue : 0,
+        };
 
         return result;
     }
@@ -72,7 +105,7 @@ internal static class ALU
 
         var (result, carry) = offset switch
         {
-            0 => throw new NotImplementedException("ROR#0 not implemented as unclear whether it's RRX in thumb mode"),
+            0 => (0u, false),
             _ when offset < 32 => 
             (
                 ((op1) >> (offset)) | ((op1) << (32 - offset)),
@@ -83,9 +116,23 @@ internal static class ALU
         };
 
         cpsr.CarryFlag = carry;
-        SetZeroSignFlags(cpsr, result);
+        SetZeroSignFlags(ref cpsr, result);
 
         return result;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static uint RORNoFlags(uint op1, byte offset)
+    {
+        if (offset > 32) offset = (byte)(offset % 32);
+
+        return offset switch
+        {
+            0 => op1,
+            _ when offset < 32 => ((op1) >> (offset)) | ((op1) << (32 - offset)),
+            32 => op1,
+            _ => throw new Exception("Invalid value for ROR offset"),
+        };
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -93,7 +140,7 @@ internal static class ALU
     {
         var result = (long)op1 + op2;
 
-        SetZeroSignFlags(cpsr, (uint)result);
+        SetZeroSignFlags(ref cpsr, (uint)result);
         cpsr.CarryFlag = result >> 32 == 1;
         cpsr.OverflowFlag = ((op1 ^ (uint)result) & (op2 ^ (uint)result) & 0x8000_0000) != 0;
 
@@ -105,7 +152,7 @@ internal static class ALU
     {
         var result = (long)op1 + op2 + (cpsr.CarryFlag ? 1 : 0);
 
-        SetZeroSignFlags(cpsr, (uint)result);
+        SetZeroSignFlags(ref cpsr, (uint)result);
         cpsr.CarryFlag = result >> 32 == 1;
         cpsr.OverflowFlag = ((op1 ^ (uint)result) & (op2 ^ (uint)result) & 0x8000_0000) != 0;
 
@@ -117,7 +164,7 @@ internal static class ALU
     {
         var result = op1 - op2;
 
-        SetZeroSignFlags(cpsr, result);
+        SetZeroSignFlags(ref cpsr, result);
         cpsr.CarryFlag = op1 >= op2;
         cpsr.OverflowFlag = (op1 & 0x8000_0000) != (op2 & 0x8000_0000) && (op1 & 0x8000_0000) != (result & 0x8000_0000);
 
@@ -129,7 +176,7 @@ internal static class ALU
     {
         var result = op1 - op2 - (cpsr.CarryFlag ? 0 : 1);
 
-        SetZeroSignFlags(cpsr, (uint)result);
+        SetZeroSignFlags(ref cpsr, (uint)result);
         cpsr.CarryFlag = op1 >= op2;
         cpsr.OverflowFlag = (op1 & 0x8000_0000) != (op2 & 0x8000_0000) && (op1 & 0x8000_0000) != (result & 0x8000_0000);
 
@@ -140,7 +187,7 @@ internal static class ALU
     internal static uint MUL(uint op1, uint op2, ref CPSR cpsr)
     {
         var result = op1 * op2;
-        SetZeroSignFlags(cpsr, result);
+        SetZeroSignFlags(ref cpsr, result);
         cpsr.CarryFlag = false; // ARMv4 used in GBA so destroy carry flag
 
         return result;
