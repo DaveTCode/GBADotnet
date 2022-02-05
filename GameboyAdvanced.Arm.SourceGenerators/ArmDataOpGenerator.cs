@@ -133,6 +133,8 @@ internal static unsafe partial class Arm
         {{
             core.ClearPipeline();
         }}
+
+        core.MoveExecutePipelineToNextInstruction();
     }}
 ";
 
@@ -197,6 +199,8 @@ static partial void {funcName + "_" + type.ToString().ToLowerInvariant()}(Core c
         {{
             core.ClearPipeline();
         }}
+
+        core.MoveExecutePipelineToNextInstruction();
     }}
 ";
 
