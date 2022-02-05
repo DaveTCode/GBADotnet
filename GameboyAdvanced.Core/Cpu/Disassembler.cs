@@ -87,9 +87,34 @@ internal static class Disassembler
         return string.Format(instructionStr, condString);
     }
 
-    private static string DisassembleArmBlockDataTransfer(Core core, uint instruction)
+    private static string DisassembleArmBlockDataTransfer(Core _core, uint instruction)
     {
-        return "STMDB"; // TODO - Properly
+        var pre = ((instruction >> 24) & 0b1) == 0b1;
+        var up = ((instruction >> 23) & 0b1) == 0b1;
+        var s = ((instruction >> 22) & 0b1) == 0b1; // TODO - Not used atm
+        var writeback = ((instruction >> 21) & 0b1) == 0b1 ? "!" : "";
+        var load = ((instruction >> 20) & 0b1) == 0b1;
+        var baseReg = ((instruction >> 16) & 0b1111);
+
+        var baseStr = load ? "LDM" : "STM";
+        baseStr += (up, pre) switch
+        {
+            (true, true) => "IB",
+            (true, false) => "IA",
+            (false, true) => "DB",
+            (false, false) => "DA"
+        };
+
+        var regString = "";
+        for (var ii = 0; ii < 15; ii++)
+        {
+            if (((instruction >> ii) & 0b1) == 0b1)
+            {
+                regString += $"r{ii}"; // TODO - Better assembly here will use ranges
+            }
+        }
+
+        return $"{baseStr}{{0}} {RString(baseReg)}{writeback}, {{{{{regString}}}}}";
     }
 
     private static string DisassembleArmSingleDataTransfer(Core core, uint instruction)
@@ -159,7 +184,8 @@ internal static class Disassembler
     private static string RString(uint rd) => rd switch
     {
         15 => "PC",
-        13 => "LR",
+        14 => "LR",
+        13 => "SP",
         _ => $"R{rd}"
     };
 
@@ -248,6 +274,6 @@ internal static class Disassembler
     private static string DisassembleArmBranchEx(Core core, uint instruction)
     {
         var rn = instruction & 0b1111;
-        return $"BX{{0}} R{rn}={core.R[rn]:X8}";
+        return $"BX{{0}} {RString(rn)}={core.R[rn]:X8}";
     }
 }
