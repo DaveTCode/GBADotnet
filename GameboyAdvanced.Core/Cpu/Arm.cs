@@ -887,13 +887,13 @@ internal static unsafe partial class Arm
     {
         var rd = (instruction >> 12) & 0b1111;
         core.R[rd] = core.Cpsr.Get();
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
     internal static void mrs_rs(Core core, uint instruction)
     {
         var rd = (instruction >> 12) & 0b1111;
         core.R[rd] = core.CurrentSpsr().Get();
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
     internal static void msr_rc(Core core, uint instruction)
     {
@@ -902,14 +902,14 @@ internal static unsafe partial class Arm
         // the condition code flags of the CPSR can be changed. In other(privileged)
         // modes the entire CPSR can be changed"
         core.Cpsr.Set(core.R[rm]);
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
     internal static void msr_rs(Core core, uint instruction)
     {
         // TODO - What does this do in user mode when there is no SPSR register?
         var rm = instruction & 0b1111;
         core.CurrentSpsr().Set(core.R[rm]);
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
     internal static void msr_ic(Core core, uint instruction) => throw new NotImplementedException("msr_ic not implemented");
     internal static void msr_is(Core core, uint instruction) => throw new NotImplementedException("msr_is not implemented");
@@ -1098,7 +1098,7 @@ internal static unsafe partial class Arm
 
     internal static void ldm_registerReadCycle(Core core, uint instruction)
     {
-        if (_storeLoadMultiplePtr > _storeLoadMultiplePopCount)
+        if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount - 1)
         {
             if (_storeLoadMultipleDoWriteback)
             {
@@ -1146,7 +1146,7 @@ internal static unsafe partial class Arm
         core.A = core.R[15];
         core.ClearPipeline(); // Note that this will trigger two more cycles (both just fetches, with nothing to execute)
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     private static uint BlReturnAddress;
@@ -1160,7 +1160,7 @@ internal static unsafe partial class Arm
     internal static void bl_2(Core core, uint instruction)
     {
         core.R[14] = BlReturnAddress;
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     internal static void bx(Core core, uint instruction)
@@ -1181,7 +1181,7 @@ internal static unsafe partial class Arm
             core.SwitchToArm();
         }
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     internal static void stc_ofm(Core core, uint instruction) => throw new NotImplementedException("stc_ofm not implemented");
