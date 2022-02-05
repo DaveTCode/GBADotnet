@@ -1,4 +1,5 @@
 ﻿using GameboyAdvanced.Core.Cpu;
+using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
 using GameboyAdvanced.Core.Rom;
@@ -24,8 +25,8 @@ public class ThumbTests
     [InlineData(0x8000_0000, 2, 0, false)]
     public void TestLSL(uint rs, int offset, uint expected, bool expectedCarry)
     {
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController);
-        var cpu = new Core(bus, 0);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, new TestDebugger());
+        var cpu = new Core(bus, 0, new TestDebugger());
         cpu.R[1] = rs;
 
         Thumb.LSL_Shift_Reg(cpu, (ushort)(((offset & 0b1_1111) << 6) | 0b00_1000));
@@ -41,8 +42,8 @@ public class ThumbTests
     [InlineData(0x8000_0000, 1, 0x4000_0000, false)]
     public void TestLSR(uint rs, int offset, uint expected, bool expectedCarry)
     {
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController);
-        var cpu = new Core(bus, 0);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, new TestDebugger());
+        var cpu = new Core(bus, 0, new TestDebugger());
         cpu.R[1] = rs;
 
         Thumb.LSR_Shift_Reg(cpu, (ushort)(((offset & 0b1_1111) << 6) | 0b1000_0000_1000));
@@ -58,8 +59,8 @@ public class ThumbTests
     [InlineData(0x8000_0000, 1, 0xC000_0000, false)] // Retain bit 31
     public void TestASR(uint rs, int offset, uint expected, bool expectedCarry)
     {
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController);
-        var cpu = new Core(bus, 0);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, new TestDebugger());
+        var cpu = new Core(bus, 0, new TestDebugger());
         cpu.R[1] = rs;
 
         Thumb.ASR_Shift_Reg(cpu, (ushort)(((offset & 0b1_1111) << 6) | 0b1_0000_0000_1000));

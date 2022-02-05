@@ -11,6 +11,19 @@ exactly how it should work yet so haven't actually implemented anything
 I've not been very consistent about implementing that behaviour as I've gone which may cause me trouble later. (e.g. what happens during thumb -> arm BX when PC is not aligned to word boundary?)
 
 
+## Cycle timings
+
+- I think I've mostly implemented the cpu core so that it behaves correctly w.r.t the number of N/S/I cycles taken per instruction
+- One exception where sometimes I cycles are played out as wait states (see ArmDataOpGenerator) which will need fixing
+- Unfortunately the wait states retured by the gamepak need resolving 
+	- Currently assuming 7 wait states for all word reads to 0x0800_0000 region so a normal instruciton takes 1 cycle + 7 wait states. mgba thinks it should be 6 (48 -> 54) which would imply that the wait states should add to 5
+	- `WAITCNT` isn't currently implemented but should default to 0x0 which I think means wait state 0 first access is 4 and second is 2, which is 6 but not the 5 I would expect.
+	- If we assume that _both_ memory reads are sequential then we get 2 * 2 = 4 which is _still_ not 5
+- I'm going to need to plumb through SEQ to the memory unit to achieve correct wait states I think
+- Writing a word to a 16 bit address bus (or reading) will cause two writes across the bus, one will be an extended N (or S) cycle and the other will be an extended S cycle
+	- The question is whether or not we need to emulate that the two halves of that read/write are happening on different cycles
+	- If so then I think the best way to achieve it will be to set the memory unit up as a clocked unit and have it act as yet another state machine
+
 ## WIP
 
 * Register accurate up to when arm wrestler (thumb) switches to thumb mode at `0x08031544`

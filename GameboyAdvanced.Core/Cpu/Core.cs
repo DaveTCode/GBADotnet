@@ -1,4 +1,6 @@
 ﻿using GameboyAdvanced.Core.Cpu;
+using GameboyAdvanced.Core.Debug;
+using System.Runtime.CompilerServices;
 
 namespace GameboyAdvanced.Core;
 
@@ -42,8 +44,9 @@ internal struct Pipeline
 /// mode and steps in whole mCLK increments (so rising/falling edge differences
 /// are not guaranteed to be well implemented)
 /// </summary>
-internal unsafe class Core
+public unsafe class Core
 {
+    private readonly BaseDebugger _debugger;
     private ulong _cycles;
     internal readonly MemoryBus Bus;
     internal CPSR Cpsr;
@@ -73,7 +76,7 @@ internal unsafe class Core
     /// the memory fetch unit at the start of a cycle.
     /// </summary>
     internal uint D;
-    
+
     /// <summary>
     /// Represents MAS[1:0] and is set the cycle before it is used to the
     /// amount of data that will be requested during a memory fetch
@@ -131,9 +134,16 @@ internal unsafe class Core
     /// </summary>
     internal delegate*<Core, uint, void> NextExecuteAction;
 
-    internal Core(MemoryBus bus, uint startVector)
+    /// <summary>
+    /// Used by the debugger to determine if the instruction that's currently 
+    /// executing is the "first" so we can break before it happens.
+    /// </summary>
+    internal bool IsFirstInstructionCycle { private set; get; }
+
+    internal Core(MemoryBus bus, uint startVector, BaseDebugger debugger)
     {
         Bus = bus;
+        _debugger = debugger;
         Reset(startVector);
     }
 
@@ -174,7 +184,7 @@ internal unsafe class Core
                             (var ret, waitStates) = Bus.ReadHalfWord(A);
                             D = (D & 0xFFFF_0000) | ret;
                         }
-                        
+
                         break;
                     }
                 case BusWidth.Word:
@@ -247,7 +257,7 @@ internal unsafe class Core
         Cpsr.IrqDisable = true;
         Cpsr.Mode = CPSRMode.Supervisor;
 
-        NextExecuteAction = &ExecuteFirstInstructionCycle;
+        MoveExecutePipelineToNextInstruction();
     }
 
 
@@ -261,6 +271,10 @@ internal unsafe class Core
     /// </summary>
     internal static void ExecuteFirstInstructionCycle(Core core, uint _)
     {
+#if DEBUG
+        core.IsFirstInstructionCycle = false;
+#endif
+
         if (core.Pipeline.DecodedOpcode.HasValue && core.Pipeline.DecodedOpcodeAddress.HasValue)
         {
             core.Pipeline.CurrentInstruction = core.Pipeline.DecodedOpcode.Value;
@@ -272,24 +286,20 @@ internal unsafe class Core
             return;
         }
 
+#if DEBUG
+        core._debugger.Log(core.ToString());
+#endif
+
         var instruction = core.Pipeline.CurrentInstruction.Value;
 
         if (core.Cpsr.ThumbMode)
         {
             var thumbInstruction = (ushort)instruction;
-#if DEBUG
-            Console.WriteLine($"{core}\n{core.Pipeline.CurrentInstructionAddress:X8}: {thumbInstruction:X4} \t {Disassembler.DisassembleThumbInstruction(core, thumbInstruction)}");
-#endif
-
             var instructionIndex = thumbInstruction >> 8;
             Thumb.InstructionMap[instructionIndex](core, thumbInstruction);
         }
         else
         {
-#if DEBUG
-            Console.WriteLine($"{core}\n{core.Pipeline.CurrentInstructionAddress:X8}: {instruction:X8} \t {Disassembler.DisassembleArmInstruction(core, instruction)}");
-#endif
-
             var cond = instruction >> 28;
 
             var condAcc = cond switch
@@ -379,7 +389,7 @@ internal unsafe class Core
         core.SEQ = false;
         core.MAS = busWidth;
         core.nMREQ = false;
-        core.NextExecuteAction = &ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     internal void SwitchToThumb()
@@ -398,6 +408,27 @@ internal unsafe class Core
         ClearPipeline();
 
         // TODO - Do we need to do anything else here? Feels a bit bare!
+    }
+
+    /// <summary>
+    /// When an instruction has finished executing it calls this function to 
+    /// ensure that the next execute step is a "first cycle".
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void MoveExecutePipelineToNextInstruction()
+    {
+        NextExecuteAction = &ExecuteFirstInstructionCycle;
+#if DEBUG
+        if (_debugger.CheckBreakOnNextInstruction())
+        {
+            _debugger.ForceBreakpointNextCycle();
+        }
+
+        if (Pipeline.FetchedOpcodeAddress.HasValue && _debugger.BreakOnExecute(Pipeline.FetchedOpcodeAddress.Value))
+        {
+            _debugger.ForceBreakpointNextCycle();
+        }
+#endif
     }
 
     internal CPSR CurrentSpsr() => Cpsr.Mode switch
@@ -419,11 +450,28 @@ internal unsafe class Core
     /// <summary>
     /// This roughly matches the string representation that mGBA uses when
     /// single stepping through the debugger
-    public override string ToString() => $@"
+    public override string ToString()
+    {
+        string disassembly;
+        if (Pipeline.DecodedOpcode.HasValue && Pipeline.DecodedOpcodeAddress.HasValue)
+        {
+            disassembly = Cpsr.ThumbMode
+                ? $"{Pipeline.DecodedOpcodeAddress:X8}: {(ushort)Pipeline.DecodedOpcode:X4} \t {Disassembler.DisassembleThumbInstruction(this, (ushort)Pipeline.DecodedOpcode)}"
+                : $"{Pipeline.DecodedOpcodeAddress:X8}: {Pipeline.DecodedOpcode:X8} \t {Disassembler.DisassembleArmInstruction(this, Pipeline.DecodedOpcode.Value)}";
+
+        }
+        else
+        {
+            disassembly = "Pipeline not refilled";
+        }
+
+        return $@"
  r0:{R[0]:X8}   r1:{R[1]:X8}   r2:{R[2]:X8}   r3:{R[3]:X8}
  r4:{R[4]:X8}   r5:{R[5]:X8}   r6:{R[6]:X8}   r7:{R[7]:X8}
  r8:{R[8]:X8}   r9:{R[9]:X8}  r10:{R[10]:X8}  r11:{R[11]:X8} 
-r12:{R[12]:X8}  r13:{R[13]:X8}  r14:{R[14]:X8}  r15:{(R[15] - (uint)MAS):X8}
+r12:{R[12]:X8}  r13:{R[13]:X8}  r14:{R[14]:X8}  r15:{R[15]:X8}
 cpsr: {Cpsr}
-Cycle: {_cycles}";
+Cycle: {_cycles}
+{disassembly}";
+    }
 }

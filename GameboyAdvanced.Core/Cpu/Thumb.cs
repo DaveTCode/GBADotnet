@@ -94,7 +94,7 @@ internal unsafe static class Thumb
 
         core.R[rd] = LSL(core.R[rs], (byte)offset, ref core.Cpsr);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void LSR_Shift_Reg(Core core, ushort instruction)
@@ -105,7 +105,7 @@ internal unsafe static class Thumb
 
         core.R[rd] = LSR(core.R[rs], (byte)offset, ref core.Cpsr);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void ASR_Shift_Reg(Core core, ushort instruction)
@@ -116,7 +116,7 @@ internal unsafe static class Thumb
 
         core.R[rd] = ASR(core.R[rs], (byte)offset, ref core.Cpsr);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void ADD_Reg(Core core, ushort instruction)
@@ -126,7 +126,7 @@ internal unsafe static class Thumb
         var rd = instruction & 0b111;
         core.R[rd] = ADD(core.R[rs], core.R[rn], ref core.Cpsr);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void ADD_Imm(Core core, ushort instruction)
@@ -136,7 +136,7 @@ internal unsafe static class Thumb
         var rd = instruction & 0b111;
         core.R[rd] = ADD(core.R[rs], (uint)nn, ref core.Cpsr);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void SUB_Reg(Core core, ushort instruction)
@@ -146,7 +146,7 @@ internal unsafe static class Thumb
         var rd = instruction & 0b111;
         core.R[rd] = SUB(core.R[rs], core.R[rn], ref core.Cpsr);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void SUB_Imm(Core core, ushort instruction)
@@ -156,7 +156,7 @@ internal unsafe static class Thumb
         var rd = instruction & 0b111;
         core.R[rd] = SUB(core.R[rs], (uint)nn, ref core.Cpsr);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void MOV(Core core, ushort instruction)
@@ -167,7 +167,7 @@ internal unsafe static class Thumb
         core.R[rd] = (uint)nn;
         SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void CMP(Core core, ushort instruction)
@@ -177,7 +177,7 @@ internal unsafe static class Thumb
 
         _ = SUB(core.R[rd], (uint)nn, ref core.Cpsr);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void ADD_Imm_B(Core core, ushort instruction)
@@ -187,7 +187,7 @@ internal unsafe static class Thumb
 
         core.R[rd] = ADD(core.R[rd], (uint)nn, ref core.Cpsr);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void SUB_Imm_B(Core core, ushort instruction)
@@ -197,7 +197,7 @@ internal unsafe static class Thumb
 
         core.R[rd] = SUB(core.R[rd], (uint)nn, ref core.Cpsr);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void ALU(Core core, ushort instruction)
@@ -205,7 +205,7 @@ internal unsafe static class Thumb
         var opcode = (instruction >> 6) & 0b1111;
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
 
         switch (opcode)
         {
@@ -298,12 +298,12 @@ internal unsafe static class Thumb
                 {
                     core.ClearPipeline();
                 }
-                core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             // CMP
             case 0b01:
                 _ = SUB(core.R[fullRd], operand, ref core.Cpsr);
-                core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             // MOV/NOP
             case 0b10:
@@ -312,7 +312,7 @@ internal unsafe static class Thumb
                 {
                     core.ClearPipeline();
                 }
-                core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             // BX/BLX
             case 0b11:
@@ -325,7 +325,7 @@ internal unsafe static class Thumb
                 core.A = core.R[15];
 
                 // TODO - http://www.problemkaputt.de/gbatek.htm#thumbinstructionsummary suggests that CLX happens if MSBd is set, other docs don't
-                core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             default:
                 throw new Exception("Invalid");
@@ -403,7 +403,7 @@ internal unsafe static class Thumb
         core.R[_ldrReg] = _ldrCastFunc(core.D); // TODO - Do I need to take into account bus width here or will D already be truncated?
         core.nMREQ = false;
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -577,7 +577,7 @@ internal unsafe static class Thumb
         var offset = (instruction & 0xFF) << 2;
         core.R[rd] = (uint)(((core.R[15] + 4) & ~2) + offset);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void Get_Rel_SP(Core core, ushort instruction)
@@ -586,7 +586,7 @@ internal unsafe static class Thumb
         var offset = (instruction & 0xFF) << 2;
         core.R[rd] = (uint)(core.R[13] + offset);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     public static void ADD_Offset_SP(Core core, ushort instruction)
@@ -594,7 +594,7 @@ internal unsafe static class Thumb
         var offset = (sbyte)(instruction & 0xFF) << 2;
         core.R[13] = (uint)(core.R[13] + offset);
 
-        core.NextExecuteAction = &Core.ExecuteFirstInstructionCycle;
+        core.MoveExecutePipelineToNextInstruction();
     }
 
     #region PUSH/POP

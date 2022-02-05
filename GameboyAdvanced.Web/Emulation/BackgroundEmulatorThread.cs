@@ -1,4 +1,5 @@
 ﻿using GameboyAdvanced.Core;
+using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Rom;
 using GameboyAdvanced.Web.Signalr;
 using Microsoft.AspNetCore.SignalR;
@@ -48,7 +49,7 @@ public class BackgroundEmulatorThread
                 _logger.LogError("Can't acquire rom semaphore");
             }
 
-            if (_gamePak != null) return new Device(_bios, _gamePak);
+            if (_gamePak != null) return new Device(_bios, _gamePak, new TestDebugger());
 
             _ = _romSemaphore.Release();
             await Task.Delay(5000, cancellationToken);
@@ -63,13 +64,12 @@ public class BackgroundEmulatorThread
         var device = await WaitForRomLoadAsync(cancellationToken);
         if (device == null) return;
 
-        var overflowCycles = 0;
         var sw = new Stopwatch();
 
         while(!cancellationToken.IsCancellationRequested)
         {
             sw.Restart();
-            overflowCycles = device.RunFrame(overflowCycles);
+            device.RunFrame();
             await _emulatorHubContext.Clients.All.SendFrame(device.GetFrame()); // TODO - awaiting these might slow frames down, could we fire and forget?
             sw.Stop();
 

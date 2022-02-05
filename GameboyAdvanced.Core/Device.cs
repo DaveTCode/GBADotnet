@@ -1,4 +1,5 @@
-﻿using GameboyAdvanced.Core.Dma;
+﻿using GameboyAdvanced.Core.Debug;
+using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
 using GameboyAdvanced.Core.Rom;
 using GameboyAdvanced.Core.Timer;
@@ -15,10 +16,9 @@ public unsafe class Device
     public const int HEIGHT = 160;
     private const int CPU_CYCLES_PER_FRAME = 280896;
 
-    /// <summary>
-    /// Track the total number of cycles executed, purely for debugging
-    /// </summary>
-    private long _cycles;
+    #if DEBUG
+    public readonly BaseDebugger Debugger;
+    #endif
 
     internal readonly MemoryBus Bus;
     private readonly Core _cpu;
@@ -48,39 +48,58 @@ public unsafe class Device
     /// `new GamePak(byte[])`.
     /// </param>
     /// 
+    /// <param name="debugger">
+    /// A debug hook which can be set to <see cref="TestDebugger"/> if no debugging is required.
+    /// 
+    /// Only used when compiled with DEBUG set.
+    /// </param>
+    /// 
     /// <param name="startVector">
     /// The initial value of R[15], i.e. the first instruction that will be fetched.
     /// 
     /// Typically either 0x0000_0000 (RESET vector) in BIOS or 0x0800_0000 
     /// (default start of ROM).
     /// </param>
-    public Device(byte[] bios, GamePak rom, uint startVector = 0x0000_0000)
+    public Device(byte[] bios, GamePak rom, BaseDebugger debugger, uint startVector = 0x0000_0000)
     {
         _rom = rom;
         _gamepad = new Gamepad();
         _timerController = new TimerController();
         _ppu = new Ppu.Ppu();
         _dma = new DmaController();
-        Bus = new MemoryBus(bios, _gamepad, _rom, _ppu, _dma, _timerController);
-        _cpu = new Core(Bus, startVector);
+        Bus = new MemoryBus(bios, _gamepad, _rom, _ppu, _dma, _timerController, debugger);
+        _cpu = new Core(Bus, startVector, debugger);
+        Debugger = debugger;
     }
 
-    public void RunCycle()
+    public void RunCycle(bool skipBreakpoints=false)
     {
+        #if DEBUG
+        if (!skipBreakpoints && Debugger.CheckBreakpoints(_cpu))
+        {
+            throw new BreakpointException();
+        }
+        #endif
         _cpu.Clock();
         _ppu.Step(1);
     }
 
-    public int RunFrame(int overflowCycles)
+    public void Reset(uint startVector = 0x0000_0000)
     {
-        var cycles = overflowCycles;
-        while (cycles < CPU_CYCLES_PER_FRAME)
+        _cpu.Reset(startVector);
+        Bus.Reset();
+        _ppu.Reset();
+        _dma.Reset();
+        _timerController.Reset();
+        _gamepad.Reset();
+    }
+
+    public void RunFrame()
+    {
+        for (var ii = 0; ii < CPU_CYCLES_PER_FRAME; ii++)
         {
             RunCycle();
-            cycles += 1;
         }
-        
-        return CPU_CYCLES_PER_FRAME - cycles;
     }
 
     public byte[] GetFrame() => _ppu.GetFrame();
@@ -88,4 +107,12 @@ public unsafe class Device
     public void PressKey(Key key) => _gamepad.PressKey(key);
 
     public void ReleaseKey(Key key) => _gamepad.ReleaseKey(key);
+
+    public uint InspectWord(uint address) => Bus.ReadWord(address).Item1;
+
+    public ushort InspectHalfWord(uint address) => Bus.ReadHalfWord(address).Item1;
+
+    public byte InspectByte(uint address) => Bus.ReadByte(address).Item1;
+
+    public override string ToString() => _cpu.ToString();
 }
