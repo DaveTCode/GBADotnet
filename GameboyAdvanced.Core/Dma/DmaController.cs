@@ -7,6 +7,14 @@ internal class DmaController
         new DmaChannel(0), new DmaChannel(1), new DmaChannel(2), new DmaChannel(3)
     };
 
+    internal void Reset()
+    {
+        for (var ii = 0; ii < _channels.Length; ii++)
+        {
+            _channels[ii] = new DmaChannel(ii);
+        }
+    }
+
     internal void Step()
     {
         // TODO - Actually implement DMA

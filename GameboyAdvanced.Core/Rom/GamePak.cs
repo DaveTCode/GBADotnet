@@ -65,7 +65,7 @@ public class GamePak
         }
         else
         {
-            return (Utils.ReadHalfWord(_data, address & 0x1FF_FFFF, 0x1FF_FFFF), 4); // TODO - Not really 4 waits, depends on N/S access and doesn't take into account the configured wait states
+            return (Utils.ReadHalfWord(_data, address, 0x1FF_FFFF), 4); // TODO - Not really 4 waits, depends on N/S access and doesn't take into account the configured wait states
         }
     }
 
@@ -77,7 +77,7 @@ public class GamePak
         }
         else
         {
-            return (Utils.ReadWord(_data, address & 0x1FF_FFFF, 0x1FF_FFFF), 7); // TODO - Not really 7 waits, depends on N/S access and doesn't take into account the configured wait states
+            return (Utils.ReadWord(_data, address, 0x1FF_FFFF), 7); // TODO - Not really 7 waits, depends on N/S access and doesn't take into account the configured wait states
         }
     }
 

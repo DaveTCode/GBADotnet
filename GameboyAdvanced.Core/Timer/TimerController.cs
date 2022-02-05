@@ -8,6 +8,15 @@ internal class TimerController
 {
     private readonly TimerRegister[] _timers = new TimerRegister[4] { new TimerRegister(), new TimerRegister(), new TimerRegister(), new TimerRegister() };
 
+    internal void Reset()
+    {
+        for (var ii = 0; ii < _timers.Length; ii++)
+        {
+            _timers[ii] = new TimerRegister();
+        }
+    }
+
+
     internal void Step(int cycles)
     {
         // TODO - Implement timers

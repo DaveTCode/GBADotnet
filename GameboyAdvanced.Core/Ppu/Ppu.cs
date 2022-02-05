@@ -17,6 +17,22 @@ internal class Ppu
     private ushort _verticalCounter;
     private readonly BgControlReg[] _bgCnt = new BgControlReg[4] { new BgControlReg(), new BgControlReg(), new BgControlReg(), new BgControlReg() };
 
+    internal void Reset()
+    {
+        Array.Clear(_paletteRam);
+        Array.Clear(_vram);
+        Array.Clear(_oam);
+        Array.Clear(_frameBuffer);
+        _dispcnt = new DisplayCtrl();
+        _greenSwap = 0;
+        _dispstat = new GeneralLcdStatus();
+        _verticalCounter = 0;
+        for (var ii = 0; ii < 4; ii++)
+        {
+            _bgCnt[ii] = new BgControlReg();
+        }
+    }
+
     /// <summary>
     /// Returns the current state of the frame buffer and therefore should only
     /// be called when the buffer is fully complete (i.e. during vblank)

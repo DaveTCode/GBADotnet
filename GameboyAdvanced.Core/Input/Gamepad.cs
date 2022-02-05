@@ -60,6 +60,20 @@ internal class Gamepad
         (_irqEnabled ? (1 << 14) : 0) |
         (_irqConditionAnd ? (1 << 15) : 0));
 
+    internal void Reset()
+    {
+        _irqEnabled = false;
+        _irqConditionAnd = false;
+        foreach (var k in _keyPressed.Keys)
+        {
+            _keyPressed[k] = false;
+        }
+        foreach (var k in _keyIrq.Keys)
+        {
+            _keyIrq[k] = false;
+        }
+    }
+
     internal (byte, int) ReadByte(uint address) => throw new NotImplementedException("Read byte not implemented for gamepad registers");
     internal (uint, int) ReadWord(uint address) => throw new NotImplementedException("Read word not implemented for gamepad registers");
 
