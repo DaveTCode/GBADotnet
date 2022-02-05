@@ -6,7 +6,7 @@ public static class Utils
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ushort ReadHalfWord(byte[] data, uint address, uint mask) =>
-        (ushort)(data[address] | (data[(address + 1) & mask] << 8));
+        (ushort)(data[address & mask] | (data[(address + 1) & mask] << 8));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint ReadWord(byte[] data, uint address, uint mask) =>
@@ -22,7 +22,7 @@ public static class Utils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteWord(byte[] data, uint mask, uint address, uint value)
     {
-        data[address] = (byte)value;
+        data[address & mask] = (byte)value;
         data[(address + 1) & mask] = (byte)(value >> 8);
         data[(address + 2) & mask] = (byte)(value >> 16);
         data[(address + 3) & mask] = (byte)(value >> 24);
@@ -31,7 +31,7 @@ public static class Utils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void FastWriteWord(byte[] data, uint mask, uint address, uint value)
     {
-        data[address] = (byte)value;
+        data[address & mask] = (byte)value;
         data[(address + 1) & mask] = (byte)(value >> 8);
         data[(address + 2) & mask] = (byte)(value >> 16);
         data[(address + 3) & mask] = (byte)(value >> 24);
