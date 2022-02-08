@@ -139,8 +139,9 @@ internal unsafe static class Thumb
     public static void BL_Hi(Core core, ushort instruction)
     {
         var offset = (instruction & 0b111_1111_1111) << 1;
-        core.R[15] = (uint)(core.R[14] + offset);
-        core.R[14] = core.R[15] - 4;
+        var newPc = (uint)(core.R[14] + offset);
+        core.R[14] = (core.R[15] - 2) | 1;
+        core.R[15] = newPc;
         core.A = core.R[15];
         core.ClearPipeline();
 

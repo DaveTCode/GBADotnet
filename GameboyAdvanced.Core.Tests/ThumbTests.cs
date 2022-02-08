@@ -29,7 +29,7 @@ public class ThumbTests
         var cpu = new Core(bus, 0, new TestDebugger());
         cpu.R[1] = rs;
 
-        Thumb.LSL_Shift_Reg(cpu, (ushort)(((offset & 0b1_1111) << 6) | 0b00_1000));
+        Thumb.LSL_Imm(cpu, (ushort)(((offset & 0b1_1111) << 6) | 0b00_1000));
 
         Assert.Equal(expected, cpu.R[0]);
         Assert.Equal(expectedCarry, cpu.Cpsr.CarryFlag);
@@ -46,7 +46,7 @@ public class ThumbTests
         var cpu = new Core(bus, 0, new TestDebugger());
         cpu.R[1] = rs;
 
-        Thumb.LSR_Shift_Reg(cpu, (ushort)(((offset & 0b1_1111) << 6) | 0b1000_0000_1000));
+        Thumb.LSR_Imm(cpu, (ushort)(((offset & 0b1_1111) << 6) | 0b1000_0000_1000));
 
         Assert.Equal(expected, cpu.R[0]);
         Assert.Equal(expectedCarry, cpu.Cpsr.CarryFlag);
@@ -63,7 +63,7 @@ public class ThumbTests
         var cpu = new Core(bus, 0, new TestDebugger());
         cpu.R[1] = rs;
 
-        Thumb.ASR_Shift_Reg(cpu, (ushort)(((offset & 0b1_1111) << 6) | 0b1_0000_0000_1000));
+        Thumb.ASR_Imm(cpu, (ushort)(((offset & 0b1_1111) << 6) | 0b1_0000_0000_1000));
 
         Assert.Equal(expected, cpu.R[0]);
         Assert.Equal(expectedCarry, cpu.Cpsr.CarryFlag);
