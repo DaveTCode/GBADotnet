@@ -74,7 +74,9 @@ internal struct CPSR
         Mode = cpsr.Mode;
     }
 
-    public override string ToString() =>
+    public override string ToString() => 
+        Get().ToString("X8") + 
+        " " +
         (SignFlag ? "S" : "-") +
         (ZeroFlag ? "Z" : "-") +
         (CarryFlag ? "C" : "-") +
