@@ -24,6 +24,16 @@ I've not been very consistent about implementing that behaviour as I've gone whi
 	- The question is whether or not we need to emulate that the two halves of that read/write are happening on different cycles
 	- If so then I think the best way to achieve it will be to set the memory unit up as a clocked unit and have it act as yet another state machine
 
+# Memory bus musings
+
+I don't really like lots of the code relating to the memory bus. The CPU part is quite nice, we set up A/D/MAS/nRW etc and then the next cycle the memory unit knows what to do.
+The trouble is with the way that read/writes are farmed out to downstream subsystems and particularly how that relates to the bus width.
+
+e.g. PPU bus is 16 bit, if a byte is written then that byte appears on both halves of the data bus and a half word is actually written. That feels like something which could
+be implemented at a more fundamental level. Is it true for all 16 bit buses? If so then can we be clever with how A/D/MAS interact to avoid calling multiple different functions?
+
+The other big issue is around wait states and cycles. If a word is written to a 16 bit bus then what happens? Presumably that takes 1 N(or S) and 1 S cycle to complete. 
+
 ## WIP
 
 * Register accurate up to when arm wrestler (thumb) switches to thumb mode at `0x08031544`
