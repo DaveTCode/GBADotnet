@@ -1,7 +1,7 @@
 ﻿using GameboyAdvanced.Core.Debug;
 using Serilog;
 
-namespace GameboyAdvanced.Console;
+namespace GameboyAdvanced.Headless;
 
 /// <summary>
 /// When the GameboyAdvanced.Core class library is built in debug mode a 
