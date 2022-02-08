@@ -220,7 +220,7 @@ public unsafe class Core
             Pipeline.DecodedOpcodeAddress = Pipeline.FetchedOpcodeAddress.Value;
         }
 
-        if (!nOPC)
+        if (!nOPC && !nMREQ)
         {
             Pipeline.FetchedOpcode = D;
             Pipeline.FetchedOpcodeAddress = A;
