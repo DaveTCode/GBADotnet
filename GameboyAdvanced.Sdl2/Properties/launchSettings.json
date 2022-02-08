@@ -1,0 +1,20 @@
+{
+  "profiles": {
+    "ARM Wrestler": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "CPU Test": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\cpu_test\\CPUTest.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - First": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\first.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Hello": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\hello.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    }
+  }
+}
