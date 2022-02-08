@@ -422,7 +422,7 @@ internal unsafe static class Thumb
     public static void LDR_PC_Offset(Core core, ushort instruction)
     {
         var word = instruction & 0xFF;
-        LDRCommon(core, (uint)((core.R[15] & ~3) + word), BusWidth.Word, (instruction >> 8) & 0b111, &LDRW);
+        LDRCommon(core, (uint)((core.R[15] & ~3) + (word << 2)), BusWidth.Word, (instruction >> 8) & 0b111, &LDRW);
     }
 
     public static void LDR_Reg_Offset(Core core, ushort instruction)
@@ -684,13 +684,74 @@ internal unsafe static class Thumb
         core.NextExecuteAction = &PopCycle;
     }
 
+    internal static void stmia_registerWriteCycle(Core core, uint instruction)
+    {
+        if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount)
+        {
+            var rb = (instruction >> 8) & 0b111;
+            core.R[rb] = (uint)(core.R[rb] + (_storeLoadMultiplePopCount * 4));
+
+            Core.ResetMemoryUnitForThumbOpcodeFetch(core, instruction);
+        }
+        else
+        {
+            core.A += 4;
+            core.D = _storeLoadMultipleState[_storeLoadMultiplePtr];
+            _storeLoadMultiplePtr++;
+        }
+    }
+
+    internal static void ldmia_registerReadCycle(Core core, uint instruction)
+    {
+        if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount - 1)
+        {
+            var rb = (instruction >> 8) & 0b111;
+            core.R[rb] = (uint)(core.R[rb] - (_storeLoadMultiplePopCount * 4));
+
+            Core.ResetMemoryUnitForThumbOpcodeFetch(core, instruction);
+        }
+        else
+        {
+            core.A -= 4;
+            core.R[_storeLoadMultipleState[_storeLoadMultiplePtr]] = core.D;
+            _storeLoadMultiplePtr++;
+        }
+    }
     public static void STMIA(Core core, ushort instruction)
     {
-        throw new NotImplementedException();
+        LDMIA_STMIA_Common(core, instruction);
+        core.nRW = true;
+        core.NextExecuteAction = &stmia_registerWriteCycle;
+        core.A -= 4;
+        stmia_registerWriteCycle(core, instruction);
     }
 
     public static void LDMIA(Core core, ushort instruction)
     {
-        throw new NotImplementedException();
+        LDMIA_STMIA_Common(core, instruction);
+        core.nRW = false;
+        core.NextExecuteAction = &ldmia_registerReadCycle;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void LDMIA_STMIA_Common(Core core, ushort instruction)
+    {
+        _storeLoadMultiplePopCount = 0;
+        _storeLoadMultiplePtr = 0;
+        var registerList = instruction & 0b1111_1111;
+        var rb = (instruction >> 8) & 0b111;
+        for (var r = 0; r <= 7; r++)
+        {
+            if (((registerList >> r) & 0b1) == 0b1)
+            {
+                _storeLoadMultipleState[_storeLoadMultiplePopCount] = (uint)r;
+                _storeLoadMultiplePopCount++;
+            }
+        }
+
+        core.nOPC = true;
+        core.SEQ = _storeLoadMultiplePopCount > 1;
+        core.MAS = BusWidth.Word;
+        core.A = core.R[rb];
     }
 }
