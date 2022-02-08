@@ -19,9 +19,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Core.Tests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Web", "GameboyAdvanced.Web\GameboyAdvanced.Web.csproj", "{837F807C-C36E-49CA-A356-C86C92719423}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Console", "GameboyAdvanced.Console\GameboyAdvanced.Console.csproj", "{82305690-EA91-4150-AADB-152410D7EE44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Sdl2", "GameboyAdvanced.Sdl2\GameboyAdvanced.Sdl2.csproj", "{82305690-EA91-4150-AADB-152410D7EE44}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Arm.SourceGenerators", "GameboyAdvanced.Arm.SourceGenerators\GameboyAdvanced.Arm.SourceGenerators.csproj", "{408F4745-6CA1-46FE-A11D-63A3A6661942}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.BlazorClient", "GameboyAdvanced.Blazor\GameboyAdvanced.BlazorClient.csproj", "{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameboyAdvanced.Headless", "GameboyAdvanced.Headless\GameboyAdvanced.Headless.csproj", "{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +57,14 @@ Global
 		{408F4745-6CA1-46FE-A11D-63A3A6661942}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{408F4745-6CA1-46FE-A11D-63A3A6661942}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{408F4745-6CA1-46FE-A11D-63A3A6661942}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
