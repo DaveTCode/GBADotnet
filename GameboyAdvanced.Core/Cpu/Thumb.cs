@@ -11,11 +11,11 @@ internal unsafe static class Thumb
     internal readonly static delegate*<Core, ushort, void>[] InstructionMap =
     {
         // LSL{S} Rd,Rs,#Offset - 0x00 - 0x07
-        &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg, &LSL_Shift_Reg,
+        &LSL_Imm, &LSL_Imm, &LSL_Imm, &LSL_Imm, &LSL_Imm, &LSL_Imm, &LSL_Imm, &LSL_Imm,
         // LSR{S} Rd,Rs,#Offset - 0x08 - 0x0F
-        &LSR_Shift_Reg, &LSR_Shift_Reg, &LSR_Shift_Reg, &LSR_Shift_Reg, &LSR_Shift_Reg, &LSR_Shift_Reg, &LSR_Shift_Reg, &LSR_Shift_Reg,
+        &LSR_Imm, &LSR_Imm, &LSR_Imm, &LSR_Imm, &LSR_Imm, &LSR_Imm, &LSR_Imm, &LSR_Imm,
         // LSR{S} Rd,Rs,#Offset - 0x10 - 0x17
-        &ASR_Shift_Reg, &ASR_Shift_Reg, &ASR_Shift_Reg, &ASR_Shift_Reg, &ASR_Shift_Reg, &ASR_Shift_Reg, &ASR_Shift_Reg, &ASR_Shift_Reg,
+        &ASR_Imm, &ASR_Imm, &ASR_Imm, &ASR_Imm, &ASR_Imm, &ASR_Imm, &ASR_Imm, &ASR_Imm,
         // ADD{S} Rd,Rs,Rn      - 0x18 - 0x19
         &ADD_Reg, &ADD_Reg, 
         // SUB{S} Rd,Rs,Rn      - 0x1A - 0x1B
@@ -38,34 +38,27 @@ internal unsafe static class Thumb
         &HiReg_Or_BX, &HiReg_Or_BX, &HiReg_Or_BX, &HiReg_Or_BX,
         // LDR Rd,[PC,#nn]      - 0x48 - 0x4F
         &LDR_PC_Offset, &LDR_PC_Offset, &LDR_PC_Offset, &LDR_PC_Offset, &LDR_PC_Offset, &LDR_PC_Offset, &LDR_PC_Offset, &LDR_PC_Offset,
-        // STR  Rd,[Rb,Ro]      - 0x50 - 0x53
-        &STR_Reg_Offset, &STR_Reg_Offset, &STR_Reg_Offset, &STR_Reg_Offset,
-        // STRB Rd,[Rb,Ro]      - 0x54 - 0x57
-        &STRB_Reg_Offset, &STRB_Reg_Offset, &STRB_Reg_Offset, &STRB_Reg_Offset,
-        // LDR  Rd,[Rb,Ro]      - 0x58 - 0x5B
-        &LDR_Reg_Offset, &LDR_Reg_Offset, &LDR_Reg_Offset, &LDR_Reg_Offset,
-        // LDRB Rd,[Rb,Ro]      - 0x5C - 0x5F
-        &LDRB_Reg_Offset, &LDRB_Reg_Offset, &LDRB_Reg_Offset, &LDRB_Reg_Offset,
-        // STRH Rd,[Rb,Ro]
-        &STRH_Reg_Offset, &STRH_Reg_Offset, &STRH_Reg_Offset, &STRH_Reg_Offset,
-        // LDSB Rd,[Rb,Ro]
-        &LDSB_Reg_Offset, &LDSB_Reg_Offset, &LDSB_Reg_Offset, &LDSB_Reg_Offset,
-        // LDRH Rd,[Rb,Ro]
-        &LDRH_Reg_Offset, &LDRH_Reg_Offset, &LDRH_Reg_Offset, &LDRH_Reg_Offset,
-        // LDSH Rd,[Rb,Ro]
-        &LDSH_Reg_Offset, &LDSH_Reg_Offset, &LDSH_Reg_Offset, &LDSH_Reg_Offset,
+        // LDR/STR  Rd,[Rb,Ro]      - 0x50 - 0x5F
+        &STR_Reg_Offset, &STR_Reg_Offset,
+        &STRH_Reg_Offset, &STRH_Reg_Offset,
+        &STRB_Reg_Offset, &STRB_Reg_Offset,
+        &LDSB_Reg_Offset, &LDSB_Reg_Offset,
+        &LDR_Reg_Offset, &LDR_Reg_Offset,
+        &LDRH_Reg_Offset, &LDRH_Reg_Offset,
+        &LDRB_Reg_Offset, &LDRB_Reg_Offset,
+        &LDSH_Reg_Offset, &LDSH_Reg_Offset,
         // STR  Rd,[Rb,#nn]
-        &STR_Imm_Offset, &STR_Imm_Offset, &STR_Imm_Offset, &STR_Imm_Offset, &STR_Imm_Offset, &STR_Imm_Offset, &STR_Imm_Offset, &STR_Imm_Offset,
+        &STR_Imm, &STR_Imm, &STR_Imm, &STR_Imm, &STR_Imm, &STR_Imm, &STR_Imm, &STR_Imm,
         // LDR  Rd,[Rb,#nn]
-        &LDR_Imm_Offset, &LDR_Imm_Offset, &LDR_Imm_Offset, &LDR_Imm_Offset, &LDR_Imm_Offset, &LDR_Imm_Offset, &LDR_Imm_Offset, &LDR_Imm_Offset,
+        &LDR_Imm, &LDR_Imm, &LDR_Imm, &LDR_Imm, &LDR_Imm, &LDR_Imm, &LDR_Imm, &LDR_Imm,
         // STRB Rd,[Rb,#nn]
-        &STRB_Imm_Offset, &STRB_Imm_Offset, &STRB_Imm_Offset, &STRB_Imm_Offset, &STRB_Imm_Offset, &STRB_Imm_Offset, &STRB_Imm_Offset, &STRB_Imm_Offset,
+        &STRB_Imm, &STRB_Imm, &STRB_Imm, &STRB_Imm, &STRB_Imm, &STRB_Imm, &STRB_Imm, &STRB_Imm,
         // LDRB Rd,[Rb,#nn]
-        &LDRB_Imm_Offset, &LDRB_Imm_Offset, &LDRB_Imm_Offset, &LDRB_Imm_Offset, &LDRB_Imm_Offset, &LDRB_Imm_Offset, &LDRB_Imm_Offset, &LDRB_Imm_Offset,
+        &LDRB_Imm, &LDRB_Imm, &LDRB_Imm, &LDRB_Imm, &LDRB_Imm, &LDRB_Imm, &LDRB_Imm, &LDRB_Imm,
         // STRH Rd,[Rb,#nn]
-        &STRH, &STRH, &STRH, &STRH, &STRH, &STRH, &STRH, &STRH,
+        &STRH_Imm, &STRH_Imm, &STRH_Imm, &STRH_Imm, &STRH_Imm, &STRH_Imm, &STRH_Imm, &STRH_Imm,
         // LDRH Rd,[Rb,#nn]
-        &LDRH, &LDRH, &LDRH, &LDRH, &LDRH, &LDRH, &LDRH, &LDRH,
+        &LDRH_Imm, &LDRH_Imm, &LDRH_Imm, &LDRH_Imm, &LDRH_Imm, &LDRH_Imm, &LDRH_Imm, &LDRH_Imm,
         // STR  Rd,[SP,#nn]
         &STR_SP_Rel, &STR_SP_Rel, &STR_SP_Rel, &STR_SP_Rel, &STR_SP_Rel, &STR_SP_Rel, &STR_SP_Rel, &STR_SP_Rel,
         // LDR  Rd,[SP,#nn]
@@ -75,18 +68,91 @@ internal unsafe static class Thumb
         // ADD  Rd,SP,#nn
         &Get_Rel_SP, &Get_Rel_SP, &Get_Rel_SP, &Get_Rel_SP, &Get_Rel_SP, &Get_Rel_SP, &Get_Rel_SP, &Get_Rel_SP,
         // ADD  SP,#nn, ADD  SP,#-nn
-        &ADD_Offset_SP,
+        &ADD_Offset_SP, &Undefined, &Undefined, &Undefined,
         // PUSH {Rlist}{LR}
-        &PUSH, &PUSH, &PUSH, &PUSH, &PUSH, &PUSH, &PUSH, &PUSH,
+        &PUSH, &PUSH, &Undefined, &Undefined, &Undefined, &Undefined, &Undefined, &Undefined,
         // POP  {Rlist}{LR}
-        &POP, &POP, &POP, &POP, &POP, &POP, &POP, &POP,
+        &POP, &POP, &Undefined, &Undefined,
         // STMIA Rb!,{Rlist}
         &STMIA, &STMIA, &STMIA, &STMIA, &STMIA, &STMIA, &STMIA, &STMIA,
         // LDMIA Rb!,{Rlist}
         &LDMIA, &LDMIA, &LDMIA, &LDMIA, &LDMIA, &LDMIA, &LDMIA, &LDMIA,
+        // Branch conditionals
+        &BEQ, &BNE, &BCS, &BCC, &BMI, &BPL, &BVS, &BVC,
+        &BHI, &BLS, &BGE, &BLT, &BGT, &BLE, &Undefined, &SWI,
+        &B,&B,&B,&B,&B,&B,&B,&B,
+        &Undefined, &Undefined, &Undefined, &Undefined,&Undefined, &Undefined, &Undefined, &Undefined,
+        &BL_Low, &BL_Low, &BL_Low, &BL_Low, &BL_Low, &BL_Low, &BL_Low, &BL_Low,
+        &BL_Hi, &BL_Hi, &BL_Hi, &BL_Hi, &BL_Hi, &BL_Hi, &BL_Hi, &BL_Hi
     };
 
-    public static void LSL_Shift_Reg(Core core, ushort instruction)
+    #region Branches
+    private static void BranchCommon(Core core, int offset)
+    {
+        core.R[15] = (uint)(core.R[15] + offset);
+        core.A = core.R[15];
+        core.ClearPipeline(); // Note that this will trigger two more cycles (both just fetches, with nothing to execute)
+
+        core.MoveExecutePipelineToNextInstruction();
+    }
+
+    private static void BranchConditional(Core core, ushort instruction, bool flag, bool val)
+    {
+        if (flag == val)
+        {
+            var offset = ((short)((instruction & 0b1111_1111) << 8)) >> 7;
+            BranchCommon(core, offset);
+        }
+        else
+        {
+            core.MoveExecutePipelineToNextInstruction();
+        }
+    }
+
+    public static void B(Core core, ushort instruction)
+    {
+        var offset = ((short)((instruction & 0b111_1111_1111) << 5)) >> 4;
+        BranchCommon(core, offset);
+    }
+
+    public static void BEQ(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.ZeroFlag, true);
+    public static void BNE(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.ZeroFlag, false);
+    public static void BCS(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.CarryFlag, true);
+    public static void BCC(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.CarryFlag, false);
+    public static void BMI(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.SignFlag, true);
+    public static void BPL(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.SignFlag, false);
+    public static void BVS(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.OverflowFlag, true);
+    public static void BVC(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.OverflowFlag, false);
+    public static void BHI(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.CarryFlag && !core.Cpsr.ZeroFlag, true);
+    public static void BLS(Core core, ushort instruction) => BranchConditional(core, instruction, !core.Cpsr.CarryFlag || core.Cpsr.ZeroFlag, true);
+    public static void BGE(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.SignFlag == core.Cpsr.OverflowFlag, true);
+    public static void BLT(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.SignFlag != core.Cpsr.OverflowFlag, true);
+    public static void BGT(Core core, ushort instruction) => BranchConditional(core, instruction, !core.Cpsr.ZeroFlag && (core.Cpsr.SignFlag == core.Cpsr.OverflowFlag), true);
+    public static void BLE(Core core, ushort instruction) => BranchConditional(core, instruction, core.Cpsr.ZeroFlag || (core.Cpsr.SignFlag != core.Cpsr.OverflowFlag), true);
+    
+    public static void BL_Low(Core core, ushort instruction)
+    {
+        var offset = ((int)((instruction & 0b111_1111_1111) << 21)) >> 9;
+        core.R[14] = (uint)(core.R[15] + offset);
+    }
+
+    public static void BL_Hi(Core core, ushort instruction)
+    {
+        var offset = (instruction & 0b111_1111_1111) << 1;
+        core.R[15] = (uint)(core.R[14] + offset);
+        core.R[14] = core.R[15] - 4;
+        core.A = core.R[15];
+        core.ClearPipeline();
+
+        core.MoveExecutePipelineToNextInstruction();
+    }
+    #endregion
+
+    public static void SWI(Core _core, ushort _instruction) => throw new NotImplementedException("SWI Thumb not implemented");
+
+    public static void Undefined(Core _core, ushort _instruction) => throw new NotImplementedException();
+
+    public static void LSL_Imm(Core core, ushort instruction)
     {
         var offset = (instruction >> 6) & 0b1_1111;
         var rs = (instruction >> 3) & 0b111;
@@ -97,7 +163,7 @@ internal unsafe static class Thumb
         core.MoveExecutePipelineToNextInstruction();
     }
 
-    public static void LSR_Shift_Reg(Core core, ushort instruction)
+    public static void LSR_Imm(Core core, ushort instruction)
     {
         var offset = (instruction >> 6) & 0b1_1111;
         var rs = (instruction >> 3) & 0b111;
@@ -108,7 +174,7 @@ internal unsafe static class Thumb
         core.MoveExecutePipelineToNextInstruction();
     }
 
-    public static void ASR_Shift_Reg(Core core, ushort instruction)
+    public static void ASR_Imm(Core core, ushort instruction)
     {
         var offset = (instruction >> 6) & 0b1_1111;
         var rs = (instruction >> 3) & 0b111;
@@ -320,7 +386,7 @@ internal unsafe static class Thumb
                 {
                     core.SwitchToArm();
                 }
-                
+
                 core.R[15] = core.Cpsr.ThumbMode ? core.R[fullRs] & 0xFFFF_FFFE : core.R[fullRs] & 0xFFFF_FFFC;
                 core.A = core.R[15];
 
@@ -336,7 +402,7 @@ internal unsafe static class Thumb
 
     private static int _ldrReg;
     private static delegate*<uint, uint> _ldrCastFunc;
-    
+
     private static uint LDRW(uint dataBus) => dataBus;
     private static uint LDRHW(uint dataBus) => (ushort)dataBus;
     private static uint LDRSHW(uint dataBus)
@@ -344,8 +410,8 @@ internal unsafe static class Thumb
         // "and set bits 16 - 31 of Rd to bit 15"
         // TODO - Is there a more efficient way to sign extend in C# which doesn't branch?
         var bit15 = (dataBus >> 15) & 0b1;
-        return bit15 == 1 
-            ? 0xFFFF_0000 | (ushort)(short)dataBus 
+        return bit15 == 1
+            ? 0xFFFF_0000 | (ushort)(short)dataBus
             : (ushort)(short)dataBus;
     }
 
@@ -460,14 +526,14 @@ internal unsafe static class Thumb
         LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.HalfWord, instruction & 0b111, &LDRSHW);
     }
 
-    public static void LDRB_Imm_Offset(Core core, ushort instruction)
+    public static void LDRB_Imm(Core core, ushort instruction)
     {
         var offset = (instruction >> 6) & 0b1_1111;
         var rb = (instruction >> 3) & 0b111;
         LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.Byte, instruction & 0b111, &LDRB);
     }
 
-    public static void LDRH(Core core, ushort instruction)
+    public static void LDRH_Imm(Core core, ushort instruction)
     {
         var offset = ((instruction >> 6) & 0b1_1111) << 1;
         var rb = (instruction >> 3) & 0b111;
@@ -480,7 +546,7 @@ internal unsafe static class Thumb
         LDRCommon(core, (uint)(core.R[13] + offset), BusWidth.Word, (instruction >> 8) & 0b111, &LDRW);
     }
 
-    public static void LDR_Imm_Offset(Core core, ushort instruction)
+    public static void LDR_Imm(Core core, ushort instruction)
     {
         var offset = ((instruction >> 6) & 0b1_1111) << 2;
         var rb = (instruction >> 3) & 0b111;
@@ -529,7 +595,7 @@ internal unsafe static class Thumb
         STRCommon(core, core.R[rb] + core.R[ro], (ushort)core.R[rd], BusWidth.HalfWord);
     }
 
-    public static void STR_Imm_Offset(Core core, ushort instruction)
+    public static void STR_Imm(Core core, ushort instruction)
     {
         // For word accesses (B = 0), the value specified by #Imm is a full 7-bit address, but must
         // be word-aligned(ie with bits 1:0 set to 0), since the assembler places #Imm >> 2 in
@@ -541,7 +607,7 @@ internal unsafe static class Thumb
         STRCommon(core, (uint)(core.R[rb] + offset), core.R[rd], BusWidth.Word);
     }
 
-    public static void STRB_Imm_Offset(Core core, ushort instruction)
+    public static void STRB_Imm(Core core, ushort instruction)
     {
         var offset = (instruction >> 6) & 0b1_1111;
         var rb = (instruction >> 3) & 0b111;
@@ -550,7 +616,7 @@ internal unsafe static class Thumb
         STRCommon(core, (uint)(core.R[rb] + offset), (byte)core.R[rd], BusWidth.Byte);
     }
 
-    public static void STRH(Core core, ushort instruction)
+    public static void STRH_Imm(Core core, ushort instruction)
     {
         // #Imm is a full 6-bit address but must be halfword-aligned (ie with bit 0 set to 0) since
         // the assembler places #Imm >> 1 in the Offset5 field
@@ -607,7 +673,7 @@ internal unsafe static class Thumb
         if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount)
         {
             core.R[13] = (uint)(core.R[13] - (_storeLoadMultiplePopCount * 4)); // TODO - Is this the right increment to stack pointer
-            
+
             Core.ResetMemoryUnitForThumbOpcodeFetch(core, instruction);
         }
         else
@@ -624,7 +690,7 @@ internal unsafe static class Thumb
     {
         _storeLoadMultiplePopCount = 0;
         _storeLoadMultiplePtr = 0;
-        
+
         var registerList = instruction & 0b1111_1111;
         for (var r = 0; r <= 7; r++)
         {
