@@ -1,4 +1,5 @@
-﻿using GameboyAdvanced.Core.Debug;
+﻿using GameboyAdvanced.Core.Cpu.Interrupts;
+using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
 using GameboyAdvanced.Core.Rom;
@@ -16,17 +17,16 @@ public unsafe class Device
     public const int HEIGHT = 160;
     private const int CPU_CYCLES_PER_FRAME = 280896;
 
-    #if DEBUG
     public readonly BaseDebugger Debugger;
-    #endif
 
     internal readonly MemoryBus Bus;
     private readonly Core _cpu;
     private readonly DmaController _dma;
-    private readonly GamePak _rom;
+    private readonly GamePak _gamepak;
     private readonly Gamepad _gamepad;
     private readonly Ppu.Ppu _ppu;
     private readonly TimerController _timerController;
+    private readonly InterruptWaitStateAndPowerControlRegisters _interruptController;
 
     private delegate*<Device, void> _nextPpuAction = null;
     private delegate*<Device, void> _nextApuAction = null;
@@ -62,12 +62,13 @@ public unsafe class Device
     /// </param>
     public Device(byte[] bios, GamePak rom, BaseDebugger debugger, uint startVector = 0x0000_0000)
     {
-        _rom = rom;
+        _gamepak = rom;
+        _interruptController = new InterruptWaitStateAndPowerControlRegisters();
         _gamepad = new Gamepad();
         _timerController = new TimerController();
         _ppu = new Ppu.Ppu();
         _dma = new DmaController();
-        Bus = new MemoryBus(bios, _gamepad, _rom, _ppu, _dma, _timerController, debugger);
+        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dma, _timerController, _interruptController, debugger);
         _cpu = new Core(Bus, startVector, debugger);
         Debugger = debugger;
     }
@@ -113,6 +114,8 @@ public unsafe class Device
     public ushort InspectHalfWord(uint address) => Bus.ReadHalfWord(address).Item1;
 
     public byte InspectByte(uint address) => Bus.ReadByte(address).Item1;
+
+    public string LoadedRomName() => _gamepak.GameTitle;
 
     public override string ToString() => _cpu.ToString();
 }
