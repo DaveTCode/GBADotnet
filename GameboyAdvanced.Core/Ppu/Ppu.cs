@@ -6,10 +6,11 @@
 /// </summary>
 internal class Ppu
 {
+    // TODO - Might be more efficient to store as ushorts given access is over 16 bit bus?
     private readonly byte[] _paletteRam = new byte[0x400]; // 1KB
     private readonly byte[] _vram = new byte[0x18000]; // 96KB
     private readonly byte[] _oam = new byte[0x400]; // 1KB
-    private readonly byte[] _frameBuffer = new byte[Device.WIDTH * Device.HEIGHT];
+    private readonly byte[] _frameBuffer = new byte[Device.WIDTH * Device.HEIGHT * 4]; // RGBA order
 
     private DisplayCtrl _dispcnt = new();
     private ushort _greenSwap;
@@ -37,7 +38,40 @@ internal class Ppu
     /// Returns the current state of the frame buffer and therefore should only
     /// be called when the buffer is fully complete (i.e. during vblank)
     /// </summary>
-    internal byte[] GetFrame() => _frameBuffer;
+    internal byte[] GetFrame()
+    {
+        if (_dispcnt.BgMode == BgMode.Video3)
+        {
+            // TODO - This just hacks up a return of the vram buffer from mode 3 -> RGB instead of processing per pixel
+            for (var row = 0; row < 160; row++)
+            {
+                for (var col = 0; col < 240; col++)
+                {
+                    var vramPtr = 2 * ((row * 240) + col);
+                    var fbPtr = 2 * vramPtr;
+                    var hw = _vram[vramPtr] | (_vram[vramPtr + 1] << 8);
+                    Utils.ColorToRgb(hw, _frameBuffer.AsSpan(fbPtr));
+                }
+            }
+        }
+        else if (_dispcnt.BgMode == BgMode.Video4)
+        {
+            // TODO - This just hacks up a return of the vram buffer from mode 4 -> palette -> RGB instead of processing per pixel
+            for (var row = 0; row < 160; row++)
+            {
+                for (var col = 0; col < 240; col++)
+                {
+                    var vramPtr = ((row * 240) + col);
+                    var fbPtr = 4 * vramPtr;
+                    var paletteIndex = _vram[vramPtr] * 2; // 2 bytes per color in palette
+                    var color = _paletteRam[paletteIndex] | (_paletteRam[paletteIndex + 1] << 8);
+                    Utils.ColorToRgb(color, _frameBuffer.AsSpan(fbPtr));
+                }
+            }
+        }
+
+        return _frameBuffer;
+    }
 
     /// <summary>
     /// Step the PPU by the specified number of cycles
@@ -206,22 +240,15 @@ internal class Ppu
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
 
+    /// <summary>
+    /// The PPU has a 16 bit bus and any byte wide writes to it result in half 
+    /// word writes of the byte value to both bytes in the half word.
+    /// </summary>
     internal int WriteByte(uint address, byte value)
     {
-        switch (address)
-        {
-            case uint _ when address is >= 0x0500_0000 and <= 0x0500_03FF:
-                _paletteRam[address & 0b0011_1111_1111] = value;
-                return 0;
-            case uint _ when address is >= 0x0600_0000 and <= 0x0601_7FFF:
-                _vram[address - 0x0600_0000] = value;
-                return 0;
-            case uint _ when address is >= 0x0700_0000 and <= 0x0700_03FF:
-                _oam[address & 0b0011_1111_1111] = value;
-                return 0;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused"); // TODO - Handle unused addresses properly
-        }
+        var hwAddress = address & ~1u;
+        var hwValue = (ushort)((value << 8) | value);
+        return WriteHalfWord(hwAddress, hwValue);
     }
 
     internal int WriteHalfWord(uint address, ushort value)
