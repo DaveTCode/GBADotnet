@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using System.Diagnostics;
 
 namespace GameboyAdvanced.Arm.SourceGenerators
 {
@@ -9,6 +8,8 @@ namespace GameboyAdvanced.Arm.SourceGenerators
         public void Execute(GeneratorExecutionContext context)
         {
             var fullSource = @"// Auto-generated code
+using GameboyAdvanced.Core.Cpu.LdmStmCommon;
+
 namespace GameboyAdvanced.Core.Cpu;
 
 internal static unsafe partial class Arm
@@ -43,50 +44,45 @@ internal static unsafe partial class Arm
                                     (false, false) => "",
                                 };
 
-                                var writebackStr = writeback ? "_storeLoadMultipleDoWriteback = true;" : "_storeLoadMultipleDoWriteback = false;";
+                                var writebackStr = writeback ? "LdmStmUtils._storeLoadMultipleDoWriteback = true;" : "LdmStmUtils._storeLoadMultipleDoWriteback = false;";
                                 var nrwStr = load ? "core.nRW = false;" : "core.nRW = true;";
 
                                 var initialAddressValue = (up, pre) switch
                                 {
                                     (true, true) => "core.R[rn] + 4", // Pre-increment
-                                    (false, true) => "(uint)(core.R[rn] - (4 * _storeLoadMultiplePopCount))", // Pre-decrement
+                                    (false, true) => "(uint)(core.R[rn] - (4 * LdmStmUtils._storeLoadMultiplePopCount))", // Pre-decrement
                                     (true, false) => "core.R[rn]", // Post-increment
-                                    (false, false) => "(uint)(core.R[rn] - (4 * (_storeLoadMultiplePopCount - 1)))", // Post-decrement
+                                    (false, false) => "(uint)(core.R[rn] - (4 * (LdmStmUtils._storeLoadMultiplePopCount - 1)))", // Post-decrement
                                 };
                                 initialAddressValue += (load) ? ";" : " - 4;";
 
                                 var finalWritebackValue = (up, writeback) switch
                                 {
                                     (_, false) => "",
-                                    (true, true) => "_storeLoadMutipleFinalWritebackValue = (uint)(core.R[rn] + (4 * _storeLoadMultiplePopCount));",
-                                    (false, true) => "_storeLoadMutipleFinalWritebackValue = (uint)(core.R[rn] - (4 * _storeLoadMultiplePopCount));",
+                                    (true, true) => "LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rn] + (4 * LdmStmUtils._storeLoadMultiplePopCount));",
+                                    (false, true) => "LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rn] - (4 * LdmStmUtils._storeLoadMultiplePopCount));",
                                 };
-                                var nextAction = load ? "ldm_registerReadCycle" : "stm_registerWriteCycle";
+                                var nextAction = load ? "LdmStmUtils.ldm_registerReadCycle" : "LdmStmUtils.stm_registerWriteCycle";
                                 var immediateNextActionStatement = load ? "" : $"{nextAction}(core, instruction);";
-
-                                var loadStateArrayStr = load ? 
-                                    "_storeLoadMultipleState[_storeLoadMultiplePopCount] = (uint)r;" : 
-                                    "_storeLoadMultipleState[_storeLoadMultiplePopCount] = core.R[r];";
 
                                 var func = $@"
 static partial void {funcName}(Core core, uint instruction)
 {{
     var rn = (instruction >> 16) & 0b1111;
     var registerList = instruction & 0xFFFF;
-    _storeLoadMultiplePopCount = 0;
-    _storeLoadMultiplePtr = 0;
+    LdmStmUtils.Reset();
 
     for (var r = 0; r <= 15; r++)
     {{
         if (((registerList >> r) & 0b1) == 0b1)
         {{
-            {loadStateArrayStr}
-            _storeLoadMultiplePopCount++;
+            LdmStmUtils._storeLoadMultipleState[LdmStmUtils._storeLoadMultiplePopCount] = core.R[r];
+            LdmStmUtils._storeLoadMultiplePopCount++;
         }}
     }}
 
     core.nOPC = true;
-    core.SEQ = _storeLoadMultiplePopCount > 1;
+    core.SEQ = LdmStmUtils._storeLoadMultiplePopCount > 1;
     core.MAS = BusWidth.Word;
     {nrwStr}
     core.NextExecuteAction = &{nextAction};

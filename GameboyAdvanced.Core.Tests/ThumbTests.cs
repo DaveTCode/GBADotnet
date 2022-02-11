@@ -1,4 +1,5 @@
 ﻿using GameboyAdvanced.Core.Cpu;
+using GameboyAdvanced.Core.Cpu.Interrupts;
 using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
@@ -25,7 +26,7 @@ public class ThumbTests
     [InlineData(0x8000_0000, 2, 0, false)]
     public void TestLSL(uint rs, int offset, uint expected, bool expectedCarry)
     {
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, new TestDebugger());
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, new InterruptWaitStateAndPowerControlRegisters(), new TestDebugger());
         var cpu = new Core(bus, 0, new TestDebugger());
         cpu.R[1] = rs;
 
@@ -42,7 +43,7 @@ public class ThumbTests
     [InlineData(0x8000_0000, 1, 0x4000_0000, false)]
     public void TestLSR(uint rs, int offset, uint expected, bool expectedCarry)
     {
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, new TestDebugger());
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, new InterruptWaitStateAndPowerControlRegisters(), new TestDebugger());
         var cpu = new Core(bus, 0, new TestDebugger());
         cpu.R[1] = rs;
 
@@ -59,7 +60,7 @@ public class ThumbTests
     [InlineData(0x8000_0000, 1, 0xC000_0000, false)] // Retain bit 31
     public void TestASR(uint rs, int offset, uint expected, bool expectedCarry)
     {
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, new TestDebugger());
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, new InterruptWaitStateAndPowerControlRegisters(), new TestDebugger());
         var cpu = new Core(bus, 0, new TestDebugger());
         cpu.R[1] = rs;
 

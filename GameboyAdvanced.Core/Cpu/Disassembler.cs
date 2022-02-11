@@ -17,7 +17,7 @@ internal static class Disassembler
             var i when ((i & 0b1111_1111) == 0b1011_0000) => "Add offset to SP",
             var i when ((i & 0b1111_0000) == 0b1010_0000) => "Load address",
             var i when ((i & 0b1111_0000) == 0b1001_0000) => "SP-relative load store",
-            var i when ((i & 0b1111_0000) == 0b1001_0000) => "LDRH/STRH",
+            var i when ((i & 0b1111_0000) == 0b1000_0000) => "LDRH/STRH",
             var i when ((i & 0b1110_0000) == 0b0110_0000) => "LDR #imm/STR #imm",
             var i when ((i & 0b1111_0010) == 0b0101_0010) => "LDR/STR sign extended",
             var i when ((i & 0b1111_0010) == 0b0101_0000) => "LDR/STR reg offset",

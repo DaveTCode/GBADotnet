@@ -4,7 +4,7 @@ using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Rom;
 using Serilog;
 using Serilog.Core;
-using System;
+using Serilog.Events;
 using System.Text.RegularExpressions;
 
 namespace GameboyAdvanced.Headless;
@@ -39,10 +39,10 @@ internal class Program
 
     internal static void Main(string[] args)
     {
+        var consoleLevelLoggingSwitch = new LoggingLevelSwitch(LogEventLevel.Debug);
         var logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            //.WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}")
-            .WriteTo.File("log.txt", outputTemplate: "{Message:lj}{NewLine}", buffered: true, rollOnFileSizeLimit: true, retainedFileCountLimit: 1)
+            .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}").MinimumLevel.ControlledBy(consoleLevelLoggingSwitch)
+            .WriteTo.File("log.txt", outputTemplate: "{Message:lj}{NewLine}", rollOnFileSizeLimit: true, retainedFileCountLimit: 1)
             .CreateLogger();
 
         _ = Parser.Default.ParseArguments<Options>(args)
@@ -94,6 +94,12 @@ internal class Program
                         case "r": // Reset execution
                             device.Reset(o.RunBios ? 0x0000_0000u : 0x0800_0000u);
                             break;
+                        case "logsoff": // Turn off logging
+                            consoleLevelLoggingSwitch.MinimumLevel = LogEventLevel.Warning;
+                            break;
+                        case "logson": // Turn off logging
+                            consoleLevelLoggingSwitch.MinimumLevel = LogEventLevel.Debug;
+                            break;
                         case var s when s.StartsWith("mw"): // Inspect word
                             {
                                 var match = MemoryReadRegex.Match(debugLine);
@@ -112,12 +118,21 @@ internal class Program
                                 Console.WriteLine(device.InspectByte(Convert.ToUInt32(match.Groups["address"].Value, 16)).ToString("X2"));
                                 break;
                             }
-                        case "c": // Run to next breakpoint
+                        case var s when s.StartsWith("c"): // Run to next breakpoint
                             while (true)
                             {
                                 try
                                 {
                                     device.RunCycle();
+
+                                    if (Console.KeyAvailable)
+                                    {
+                                        var key = Console.ReadKey(true);
+                                        if (key.Key == ConsoleKey.Spacebar)
+                                        {
+                                            break;
+                                        }
+                                    }
                                 }
                                 catch (BreakpointException) { break; }
                             }

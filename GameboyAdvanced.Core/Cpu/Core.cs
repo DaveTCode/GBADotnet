@@ -47,7 +47,7 @@ internal struct Pipeline
 public unsafe class Core
 {
     private readonly BaseDebugger _debugger;
-    private ulong _cycles;
+    internal ulong Cycles;
     internal readonly MemoryBus Bus;
     internal CPSR Cpsr;
     internal readonly CPSR[] Spsr = new CPSR[5];
@@ -344,7 +344,7 @@ public unsafe class Core
     /// </remarks>
     internal void Clock()
     {
-        _cycles++;
+        Cycles++;
         if (WaitStates > 0)
         {
             WaitStates--;
@@ -371,23 +371,19 @@ public unsafe class Core
         Pipeline.DecodedOpcode = Pipeline.DecodedOpcodeAddress = null;
     }
 
-    internal static void ResetMemoryUnitForArmOpcodeFetch(Core core, uint _) => ResetMemoryUnitForOpcodeFetch(core, BusWidth.Word);
-
-    internal static void ResetMemoryUnitForThumbOpcodeFetch(Core core, uint _) => ResetMemoryUnitForOpcodeFetch(core, BusWidth.HalfWord);
-
     /// <summary>
     /// Resets the memory unit to the state required for an opcode fetch.
     /// 
     /// Can be used in two modes, either as a <see cref="NextExecuteAction"/>
     /// during an I cycle or called manually to reset the memory unit.
     /// </summary>
-    private static void ResetMemoryUnitForOpcodeFetch(Core core, BusWidth busWidth)
+    internal static void ResetMemoryUnitForOpcodeFetch(Core core, uint _)
     {
         core.A = core.R[15];
         core.nOPC = false;
         core.nRW = false;
         core.SEQ = false;
-        core.MAS = busWidth;
+        core.MAS = core.Cpsr.ThumbMode ? BusWidth.HalfWord : BusWidth.Word; // TODO - Could make this faster by making ThumbMode a BusWidth instead of a bool (or some bool -> int shenanigans)
         core.nMREQ = false;
         core.MoveExecutePipelineToNextInstruction();
     }
@@ -471,7 +467,7 @@ public unsafe class Core
  r8:{R[8]:X8}   r9:{R[9]:X8}  r10:{R[10]:X8}  r11:{R[11]:X8} 
 r12:{R[12]:X8}  r13:{R[13]:X8}  r14:{R[14]:X8}  r15:{R[15]:X8}
 cpsr: {Cpsr}
-Cycle: {_cycles}
+Cycle: {Cycles}
 {disassembly}";
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace GameboyAdvanced.Core.Cpu;
+﻿namespace GameboyAdvanced.Core.Cpu;
 
 internal static unsafe partial class Arm
 {
@@ -301,7 +299,7 @@ internal static unsafe partial class Arm
 
         if (rd == 15) core.ClearPipeline();
 
-        Core.ResetMemoryUnitForArmOpcodeFetch(core, instruction);
+        Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
     }
 
     internal static void SingleDataTransfer(Core core, uint instruction)
@@ -387,7 +385,7 @@ internal static unsafe partial class Arm
             core.nOPC = true;
             core.nRW = true;
             core.SEQ = false;
-            core.NextExecuteAction = &Core.ResetMemoryUnitForArmOpcodeFetch;
+            core.NextExecuteAction = &Core.ResetMemoryUnitForOpcodeFetch;
         }
     }
 
@@ -869,7 +867,7 @@ internal static unsafe partial class Arm
         core.SEQ = false;
         core.MAS = BusWidth.HalfWord;
 
-        core.NextExecuteAction = &Core.ResetMemoryUnitForArmOpcodeFetch;
+        core.NextExecuteAction = &Core.ResetMemoryUnitForOpcodeFetch;
     }
 
     internal static void ldrh_ofip(Core core, uint instruction) => throw new NotImplementedException("ldrh_ofip not implemented");
@@ -1045,19 +1043,6 @@ internal static unsafe partial class Arm
     #endregion
 
     #region Store Multiple Registers
-    /// <summary>
-    /// Whilst a STM/LDM operation is going on we need to track which register
-    /// is going to be stored/loaded on the next cycle.
-    /// 
-    /// In other words, this is nasty global state about how far through a 
-    /// stm/ldm instruction we've got.
-    /// </summary>
-    private static uint[] _storeLoadMultipleState = new uint[16];
-    private static int _storeLoadMultiplePopCount;
-    private static int _storeLoadMultiplePtr;
-    private static uint _storeLoadMutipleFinalWritebackValue;
-    private static bool _storeLoadMultipleDoWriteback;
-
     static partial void stmda(Core core, uint instruction);
     static partial void stmda_w(Core core, uint instruction);
     static partial void stmda_u(Core core, uint instruction);
@@ -1074,49 +1059,6 @@ internal static unsafe partial class Arm
     static partial void stmib_w(Core core, uint instruction);
     static partial void stmib_u(Core core, uint instruction);
     static partial void stmib_uw(Core core, uint instruction);
-
-    internal static void stm_registerWriteCycle(Core core, uint instruction)
-    {
-        if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount)
-        {
-            if (_storeLoadMultipleDoWriteback)
-            {
-                var rn = (instruction >> 16) & 0b1111;
-                core.R[rn] = _storeLoadMutipleFinalWritebackValue;
-                if (rn == 15) core.ClearPipeline(); // TODO - This is a really bad idea, why would you use PC as writeback, probably needs a special log
-            }
-
-            Core.ResetMemoryUnitForArmOpcodeFetch(core, instruction);
-        }
-        else
-        {
-            core.A += 4;
-            core.D = _storeLoadMultipleState[_storeLoadMultiplePtr];
-            _storeLoadMultiplePtr++;
-        }
-    }
-
-    internal static void ldm_registerReadCycle(Core core, uint instruction)
-    {
-        if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount - 1)
-        {
-            if (_storeLoadMultipleDoWriteback)
-            {
-                var rn = (instruction >> 16) & 0b1111;
-                core.R[rn] = _storeLoadMutipleFinalWritebackValue;
-                if (rn == 15) core.ClearPipeline();
-            }
-
-            Core.ResetMemoryUnitForArmOpcodeFetch(core, instruction);
-        }
-        else
-        {
-            core.A += 4;
-            core.R[_storeLoadMultipleState[_storeLoadMultiplePtr]] = core.D;
-            if (_storeLoadMultipleState[_storeLoadMultiplePtr] == 15) core.ClearPipeline();
-            _storeLoadMultiplePtr++;
-        }
-    }
     #endregion
 
     #region Load Multiple Registers

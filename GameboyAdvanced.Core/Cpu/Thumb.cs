@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using GameboyAdvanced.Core.Cpu.LdmStmCommon;
+using System.Runtime.CompilerServices;
 using static GameboyAdvanced.Core.Cpu.ALU;
 
 namespace GameboyAdvanced.Core.Cpu;
@@ -314,10 +315,10 @@ internal unsafe static class Thumb
                 core.R[rd] = SUB(0, core.R[rs], ref core.Cpsr);
                 break;
             case 0xA: // CMP
-                _ = SUB(0, core.R[rs], ref core.Cpsr);
+                _ = SUB(core.R[rd], core.R[rs], ref core.Cpsr);
                 break;
             case 0xB: // CMN
-                _ = ADD(0, core.R[rs], ref core.Cpsr);
+                _ = ADD(core.R[rd], core.R[rs], ref core.Cpsr);
                 break;
             case 0xC: // ORR
                 core.R[rd] = core.R[rd] | core.R[rs];
@@ -390,6 +391,7 @@ internal unsafe static class Thumb
 
                 core.R[15] = core.Cpsr.ThumbMode ? core.R[fullRs] & 0xFFFF_FFFE : core.R[fullRs] & 0xFFFF_FFFC;
                 core.A = core.R[15];
+                core.ClearPipeline();
 
                 // TODO - http://www.problemkaputt.de/gbatek.htm#thumbinstructionsummary suggests that CLX happens if MSBd is set, other docs don't
                 core.MoveExecutePipelineToNextInstruction();
@@ -566,7 +568,7 @@ internal unsafe static class Thumb
         core.nRW = true;
         core.nOPC = true;
         core.SEQ = false;
-        core.NextExecuteAction = &Core.ResetMemoryUnitForThumbOpcodeFetch;
+        core.NextExecuteAction = &Core.ResetMemoryUnitForOpcodeFetch;
     }
 
     public static void STR_Reg_Offset(Core core, ushort instruction)
@@ -664,161 +666,79 @@ internal unsafe static class Thumb
         core.MoveExecutePipelineToNextInstruction();
     }
 
-    #region PUSH/POP
-    private static uint[] _storeLoadMultipleState = new uint[9];
-    private static int _storeLoadMultiplePopCount;
-    private static int _storeLoadMultiplePtr;
-
-    internal static void PushCycle(Core core, uint instruction)
+    #region Load/Store/Push/Pop multiple
+    private static void LoadStoreMultipleCommon(Core core, ushort instruction, uint initialAddress, bool nRW, int writebackReg, delegate*<Core, uint, void> nextAction)
     {
-        if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount)
-        {
-            core.R[13] = (uint)(core.R[13] - (_storeLoadMultiplePopCount * 4)); // TODO - Is this the right increment to stack pointer
-
-            Core.ResetMemoryUnitForThumbOpcodeFetch(core, instruction);
-        }
-        else
-        {
-            core.A += 4;
-            core.D = _storeLoadMultipleState[_storeLoadMultiplePtr];
-            _storeLoadMultiplePtr++;
-        }
-    }
-
-    #endregion
-
-    public static void PUSH(Core core, ushort instruction)
-    {
-        _storeLoadMultiplePopCount = 0;
-        _storeLoadMultiplePtr = 0;
-
+        LdmStmUtils.Reset();
+        LdmStmUtils._storeLoadMultipleDoWriteback = true;
         var registerList = instruction & 0b1111_1111;
+
         for (var r = 0; r <= 7; r++)
         {
             if (((registerList >> r) & 0b1) == 0b1)
             {
-                _storeLoadMultipleState[_storeLoadMultiplePopCount] = core.R[r];
-                _storeLoadMultiplePopCount++;
-            }
-        }
-
-        // Check push LR
-        if (((instruction >> 8) & 0b1) == 1)
-        {
-            _storeLoadMultipleState[_storeLoadMultiplePopCount] = core.R[14];
-            _storeLoadMultiplePopCount++;
-        }
-
-        PushCycle(core, instruction);
-    }
-
-    internal static void PopCycle(Core core, uint instruction)
-    {
-        if (_storeLoadMultiplePtr > _storeLoadMultiplePopCount)
-        {
-            core.R[13] = (uint)(core.R[13] + (_storeLoadMultiplePopCount * 4)); // TODO - Is this the right increment to stack pointer
-
-            Core.ResetMemoryUnitForThumbOpcodeFetch(core, instruction);
-        }
-        else
-        {
-            core.A += 4;
-            core.R[_storeLoadMultipleState[_storeLoadMultiplePtr]] = core.D;
-            if (_storeLoadMultipleState[_storeLoadMultiplePtr] == 15) core.ClearPipeline();
-            _storeLoadMultiplePtr++;
-        }
-    }
-
-    public static void POP(Core core, ushort instruction)
-    {
-        var registerList = instruction & 0b1111_1111;
-        for (var r = 0; r <= 7; r++)
-        {
-            if (((registerList >> r) & 0b1) == 0b1)
-            {
-                _storeLoadMultipleState[_storeLoadMultiplePopCount] = (uint)r;
-                _storeLoadMultiplePopCount++;
-            }
-        }
-
-        // Check pop PC
-        if (((instruction >> 8) & 0b1) == 1)
-        {
-            _storeLoadMultipleState[_storeLoadMultiplePopCount] = 15;
-            _storeLoadMultiplePopCount++;
-        }
-
-        core.NextExecuteAction = &PopCycle;
-    }
-
-    internal static void stmia_registerWriteCycle(Core core, uint instruction)
-    {
-        if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount)
-        {
-            var rb = (instruction >> 8) & 0b111;
-            core.R[rb] = (uint)(core.R[rb] + (_storeLoadMultiplePopCount * 4));
-
-            Core.ResetMemoryUnitForThumbOpcodeFetch(core, instruction);
-        }
-        else
-        {
-            core.A += 4;
-            core.D = _storeLoadMultipleState[_storeLoadMultiplePtr];
-            _storeLoadMultiplePtr++;
-        }
-    }
-
-    internal static void ldmia_registerReadCycle(Core core, uint instruction)
-    {
-        if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount - 1)
-        {
-            var rb = (instruction >> 8) & 0b111;
-            core.R[rb] = (uint)(core.R[rb] - (_storeLoadMultiplePopCount * 4));
-
-            Core.ResetMemoryUnitForThumbOpcodeFetch(core, instruction);
-        }
-        else
-        {
-            core.A -= 4;
-            core.R[_storeLoadMultipleState[_storeLoadMultiplePtr]] = core.D;
-            _storeLoadMultiplePtr++;
-        }
-    }
-    public static void STMIA(Core core, ushort instruction)
-    {
-        LDMIA_STMIA_Common(core, instruction);
-        core.nRW = true;
-        core.NextExecuteAction = &stmia_registerWriteCycle;
-        core.A -= 4;
-        stmia_registerWriteCycle(core, instruction);
-    }
-
-    public static void LDMIA(Core core, ushort instruction)
-    {
-        LDMIA_STMIA_Common(core, instruction);
-        core.nRW = false;
-        core.NextExecuteAction = &ldmia_registerReadCycle;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void LDMIA_STMIA_Common(Core core, ushort instruction)
-    {
-        _storeLoadMultiplePopCount = 0;
-        _storeLoadMultiplePtr = 0;
-        var registerList = instruction & 0b1111_1111;
-        var rb = (instruction >> 8) & 0b111;
-        for (var r = 0; r <= 7; r++)
-        {
-            if (((registerList >> r) & 0b1) == 0b1)
-            {
-                _storeLoadMultipleState[_storeLoadMultiplePopCount] = (uint)r;
-                _storeLoadMultiplePopCount++;
+                LdmStmUtils._storeLoadMultipleState[LdmStmUtils._storeLoadMultiplePopCount] = (uint)r;
+                LdmStmUtils._storeLoadMultiplePopCount++;
             }
         }
 
         core.nOPC = true;
-        core.SEQ = _storeLoadMultiplePopCount > 1;
+        core.SEQ = LdmStmUtils._storeLoadMultiplePopCount > 1;
         core.MAS = BusWidth.Word;
-        core.A = core.R[rb];
+        core.A = initialAddress;
+        core.nRW = nRW;
+        core.NextExecuteAction = nextAction;
+        LdmStmUtils._writebackRegister = writebackReg;
     }
+
+    public static void PUSH(Core core, ushort instruction)
+    {
+        LoadStoreMultipleCommon(core, instruction, core.R[13], true, 13, &LdmStmUtils.stm_registerWriteCycle);
+        core.A = (uint)(core.R[13] - (4 * (LdmStmUtils._storeLoadMultiplePopCount + 1)));
+        LdmStmUtils._storeLoadMutipleFinalWritebackValue = core.A;
+        core.A -= 4; // A is incremented by 4 each time before setting D
+
+        // Check push LR
+        if (((instruction >> 8) & 0b1) == 1)
+        {
+            LdmStmUtils._storeLoadMultipleState[LdmStmUtils._storeLoadMultiplePopCount] = 14;
+            LdmStmUtils._storeLoadMultiplePopCount++;
+        }
+
+        LdmStmUtils.stm_registerWriteCycle(core, instruction);
+    }
+
+    /// <summary>
+    /// POP is equivalent to LDMIA R13! for ARM but can only include the 
+    /// bottom 8 registers and optionally R15.
+    /// </summary>
+    public static void POP(Core core, ushort instruction)
+    {
+        LoadStoreMultipleCommon(core, instruction, core.R[13], false, 13, &LdmStmUtils.ldm_registerReadCycle);
+        LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[13] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
+
+        // Check pop PC
+        if (((instruction >> 8) & 0b1) == 1)
+        {
+            LdmStmUtils._storeLoadMultipleState[LdmStmUtils._storeLoadMultiplePopCount] = 15;
+            LdmStmUtils._storeLoadMultiplePopCount++;
+        }
+    }
+
+    public static void STMIA(Core core, ushort instruction)
+    {
+        var rb = (instruction >> 8) & 0b111;
+        LoadStoreMultipleCommon(core, instruction, core.R[rb] - 4, true, rb, &LdmStmUtils.stm_registerWriteCycle);
+        LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rb] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
+        LdmStmUtils.stm_registerWriteCycle(core, instruction);
+    }
+
+    public static void LDMIA(Core core, ushort instruction)
+    {
+        var rb = (instruction >> 8) & 0b111;
+        LoadStoreMultipleCommon(core, instruction, core.R[rb], false, rb, &LdmStmUtils.ldm_registerReadCycle);
+        LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rb] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
+    }
+
+    #endregion
 }

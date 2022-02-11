@@ -1,8 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameboyAdvanced.Arm.SourceGenerators
 {
@@ -39,7 +36,7 @@ internal static unsafe partial class Arm
             foreach (bool l in new[] { true, false })
             {
                 var nRWStr = l ? "core.nRW = false;" : "core.nRW = true;";
-                var nextActionStr = l ? "core.NextExecuteAction = &ldr_writeback;" : "core.NextExecuteAction = &Core.ResetMemoryUnitForArmOpcodeFetch;";
+                var nextActionStr = l ? "core.NextExecuteAction = &ldr_writeback;" : "core.NextExecuteAction = &Core.ResetMemoryUnitForOpcodeFetch;";
 
                 foreach (var width in new[] { "b", "w" })
                 {

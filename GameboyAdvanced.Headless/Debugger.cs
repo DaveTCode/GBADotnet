@@ -24,6 +24,6 @@ public class Debugger : BaseDebugger
 
     public override void Log(string contents)
     {
-        _logger.Information(contents);
+        _logger.Debug(contents);
     }
 }

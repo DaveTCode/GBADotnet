@@ -1,7 +1,6 @@
 ﻿using GameboyAdvanced.Core;
 using SDL2;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 
 namespace GameboyAdvanced.Sdl2;
 

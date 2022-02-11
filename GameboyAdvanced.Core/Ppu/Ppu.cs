@@ -82,34 +82,34 @@ internal class Ppu
         // TODO - Implement PPU
     }
 
-    internal int WriteRegisterByte(uint address, byte value) => throw new NotImplementedException("Writing byte wide values to PPU register not implemented");
+    internal void WriteRegisterByte(uint address, byte value) => throw new NotImplementedException("Writing byte wide values to PPU register not implemented");
 
-    internal int WriteRegisterHalfWord(uint address, ushort value)
+    internal void WriteRegisterHalfWord(uint address, ushort value)
     {
         // TODO - Some of these writes won't be valid depending on the PPU state
         switch (address)
         {
             case 0x0400_0000:
                 _dispcnt.Update(value);
-                return 1;
+                break;
             case 0x0400_0002:
                 _greenSwap = value;
-                return 1;
+                break;
             case 0x0400_0004:
                 _dispstat.Update(value);
-                return 1;
+                break;
             case 0x0400_0008:
                 _bgCnt[0].Update(value);
-                return 1;
+                break;
             case 0x0400_000A:
                 _bgCnt[1].Update(value);
-                return 1;
+                break;
             case 0x0400_000C:
                 _bgCnt[2].Update(value);
-                return 1;
+                break;
             case 0x0400_000E:
                 _bgCnt[3].Update(value);
-                return 1;
+                break;
             case 0x0400_0010:
                 throw new NotImplementedException("BG0HOFS not yet implemented");
             case 0x0400_0012:
@@ -167,38 +167,21 @@ internal class Ppu
         }
     }
 
-    internal int WriteRegisterWord(uint address, uint value)
-    {
-        switch (address)
-        {
-            case 0x0400_0028:
-                throw new NotImplementedException("BG2X write not implemented");
-            case 0x0400_002C:
-                throw new NotImplementedException("BG2Y write not implemented");
-            case 0x0400_0038:
-                throw new NotImplementedException("BG3X write not implemented");
-            case 0x0400_003C:
-                throw new NotImplementedException("BG3Y write not implemented");
-            default:
-                throw new NotImplementedException($"Unregistered word write to PPU registers {address:X8}={value:X4}");
-        }
-    }
-
-    internal (byte, int) ReadRegisterByte(uint address) => address switch
+    internal byte ReadRegisterByte(uint address) => address switch
     {
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Can't read single bytes from PPU registers at {address:X8}") // TODO - Handle unused addresses properly
     };
 
-    internal (ushort, int) ReadRegisterHalfWord(uint address) => address switch
+    internal ushort ReadRegisterHalfWord(uint address) => address switch
     {
-        0x0400_0000 => (_dispcnt.Read(), 1),
-        0x0400_0002 => (_greenSwap, 1),
-        0x0400_0004 => (_dispstat.Read(), 1),
-        0x0400_0006 => (_verticalCounter, 1),
-        0x0400_0008 => (_bgCnt[0].Read(), 1),
-        0x0400_000A => (_bgCnt[1].Read(), 1),
-        0x0400_000C => (_bgCnt[2].Read(), 1),
-        0x0400_000E => (_bgCnt[3].Read(), 1),
+        0x0400_0000 => _dispcnt.Read(),
+        0x0400_0002 => _greenSwap,
+        0x0400_0004 => _dispstat.Read(),
+        0x0400_0006 => _verticalCounter,
+        0x0400_0008 => _bgCnt[0].Read(),
+        0x0400_000A => _bgCnt[1].Read(),
+        0x0400_000C => _bgCnt[2].Read(),
+        0x0400_000E => _bgCnt[3].Read(),
         0x0400_0048 => throw new NotImplementedException("WININ register not implemented"),
         0x0400_004A => throw new NotImplementedException("WINOUT register not implemented"),
         0x0400_0050 => throw new NotImplementedException("BLDCNT register not implemented"),
@@ -206,37 +189,23 @@ internal class Ppu
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Unmapped PPU register read at {address:X8}") // TODO - Handle unused addresses properly
     };
 
-    internal (uint, int) ReadRegisterWord(uint address) => address switch
-    {
-        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Can't read words from PPU registers at {address:X8}") // TODO - Handle unused addresses properly
-    };
-
     #region Memory Read Write
 
-    internal (byte, int) ReadByte(uint address) => address switch
+    internal byte ReadByte(uint address) => address switch
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
-        >= 0x0500_0000 and <= 0x0500_03FF => (_paletteRam[address & 0b0011_1111_1111], 0),
-        >= 0x0600_0000 and <= 0x0601_7FFF => (_vram[address - 0x0600_0000], 0),
-        >= 0x0700_0000 and <= 0x0700_03FF => (_oam[address & 0b0011_1111_1111], 0),
+        >= 0x0500_0000 and <= 0x0500_03FF => _paletteRam[address & 0b0011_1111_1111],
+        >= 0x0600_0000 and <= 0x0601_7FFF => _vram[address - 0x0600_0000],
+        >= 0x0700_0000 and <= 0x0700_03FF => _oam[address & 0b0011_1111_1111],
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
 
-    internal (ushort, int) ReadHalfWord(uint address) => address switch
+    internal ushort ReadHalfWord(uint address) => address switch
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
-        >= 0x0500_0000 and <= 0x0500_03FF => (Utils.ReadHalfWord(_paletteRam, address, 0b0011_1111_1111), 0),
-        >= 0x0600_0000 and <= 0x0601_7FFF => (Utils.ReadHalfWord(_vram, address - 0x0600_0000, 0xF_FFFF), 0),
-        >= 0x0700_0000 and <= 0x0700_03FF => (Utils.ReadHalfWord(_oam, address, 0b0011_1111_1111), 0),
-        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
-    };
-
-    internal (uint, int) ReadWord(uint address) => address switch
-    {
-        // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
-        >= 0x0500_0000 and <= 0x0500_03FF => (Utils.ReadWord(_paletteRam, address, 0b0011_1111_1111), 0),
-        >= 0x0600_0000 and <= 0x0601_7FFF => (Utils.ReadWord(_vram, address - 0x0600_0000, 0xF_FFFF), 0),
-        >= 0x0700_0000 and <= 0x0700_03FF => (Utils.ReadWord(_oam, address, 0b0011_1111_1111), 0),
+        >= 0x0500_0000 and <= 0x0500_03FF => Utils.ReadHalfWord(_paletteRam, address, 0b0011_1111_1111),
+        >= 0x0600_0000 and <= 0x0601_7FFF => Utils.ReadHalfWord(_vram, address - 0x0600_0000, 0xF_FFFF),
+        >= 0x0700_0000 and <= 0x0700_03FF => Utils.ReadHalfWord(_oam, address, 0b0011_1111_1111),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
 
@@ -244,44 +213,26 @@ internal class Ppu
     /// The PPU has a 16 bit bus and any byte wide writes to it result in half 
     /// word writes of the byte value to both bytes in the half word.
     /// </summary>
-    internal int WriteByte(uint address, byte value)
+    internal void WriteByte(uint address, byte value)
     {
         var hwAddress = address & ~1u;
         var hwValue = (ushort)((value << 8) | value);
-        return WriteHalfWord(hwAddress, hwValue);
+        WriteHalfWord(hwAddress, hwValue);
     }
 
-    internal int WriteHalfWord(uint address, ushort value)
+    internal void WriteHalfWord(uint address, ushort value)
     {
         switch (address)
         {
             case uint _ when address is >= 0x0500_0000 and <= 0x0500_03FF:
                 Utils.WriteHalfWord(_paletteRam, 0x3FF, address & 0x3FF, value);
-                return 0;
+                break;
             case uint _ when address is >= 0x0600_0000 and <= 0x0601_7FFF:
                 Utils.WriteHalfWord(_vram, 0x3FF, address - 0x0600_0000, value);
-                return 0;
+                break;
             case uint _ when address is >= 0x0700_0000 and <= 0x0700_03FF:
                 Utils.WriteHalfWord(_oam, 0x3FF, address & 0x3FF, value);
-                return 0;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused"); // TODO - Handle unused addresses properly
-        }
-    }
-
-    internal int WriteWord(uint address, uint value)
-    {
-        switch (address)
-        {
-            case uint _ when address is >= 0x0500_0000 and <= 0x0500_03FF:
-                Utils.WriteWord(_paletteRam, 0x3FF, address & 0x3FF, value);
-                return 0;
-            case uint _ when address is >= 0x0600_0000 and <= 0x0601_7FFF:
-                Utils.WriteWord(_vram, 0x3FF, address - 0x0600_0000, value);
-                return 0;
-            case uint _ when address is >= 0x0700_0000 and <= 0x0700_03FF:
-                Utils.WriteWord(_oam, 0x3FF, address & 0x3FF, value);
-                return 0;
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused"); // TODO - Handle unused addresses properly
         }

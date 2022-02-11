@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GameboyAdvanced.Core.Cpu.Interrupts;
+﻿namespace GameboyAdvanced.Core.Cpu.Interrupts;
 
 /// <summary>
 /// This class encapsulates the various IO registers which are located between
