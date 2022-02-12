@@ -183,6 +183,15 @@ internal class Program
                                 }
                                 break;
                             }
+                        case "fb": // Dump framebuffer to a file
+                            {
+                                var lines = device.GetFrame()
+                                    .Select((b, ix) => new { b, ix })
+                                    .GroupBy(x => x.ix / Device.WIDTH)
+                                    .Select(g => string.Join(",", g.Select(x => x.b.ToString("X2"))));
+                                File.WriteAllText("frame_buffer.csv", string.Join("\n", lines));
+                                break;
+                            }
                     }
                     try
                     {

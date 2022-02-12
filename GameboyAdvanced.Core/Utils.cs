@@ -40,10 +40,10 @@ public static class Utils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ColorToRgb(int color, Span<byte> buffer)
     {
-        buffer[0] = 0;
         // TODO - << 3 is bit of a sketchy way to convert palettes to RGB, is there something more accurate out there?
-        buffer[1] = (byte)((color & 0b11111) << 3); // R
-        buffer[2] = (byte)(((color >> 5) & 0b11111) << 3); // G
-        buffer[3] = (byte)(((color >> 10) & 0b11111) << 3); // B
+        buffer[0] = (byte)((color & 0b11111) << 3); // R
+        buffer[1] = (byte)(((color >> 5) & 0b11111) << 3); // G
+        buffer[2] = (byte)(((color >> 10) & 0b11111) << 3); // B
+        buffer[3] = 0;
     }
 }

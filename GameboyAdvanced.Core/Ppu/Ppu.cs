@@ -228,7 +228,7 @@ internal class Ppu
                 Utils.WriteHalfWord(_paletteRam, 0x3FF, address & 0x3FF, value);
                 break;
             case uint _ when address is >= 0x0600_0000 and <= 0x0601_7FFF:
-                Utils.WriteHalfWord(_vram, 0x3FF, address - 0x0600_0000, value);
+                Utils.WriteHalfWord(_vram, 0x1_FFFF, address - 0x0600_0000, value);
                 break;
             case uint _ when address is >= 0x0700_0000 and <= 0x0700_03FF:
                 Utils.WriteHalfWord(_oam, 0x3FF, address & 0x3FF, value);
