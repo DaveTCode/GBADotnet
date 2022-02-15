@@ -272,124 +272,6 @@ internal static unsafe partial class Arm
 #pragma warning disable IDE1006 // Naming Styles
 
     /// <summary>
-    /// During an LDR operation cycle 2 is always writing the value on the 
-    /// data bus back onto the appropriate destination register.
-    /// </summary>
-    internal static void ldr_writeback(Core core, uint instruction)
-    {
-        var rd = (instruction >> 12) & 0b1111;
-
-        // TODO - "A byte load (LDRB) expects the data on data bus inputs 7 through 0 if the supplied
-        // address is on a word boundary, on data bus inputs 15 through 8 if it is a word address
-        // plus one byte, and so on. The selected byte is placed in the bottom 8 bits of the
-        // destination register, and the remaining bits of the register are filled with zeros.
-        //
-        // This doesn't seem to actually work, the data we want is really on D in little endian orientation already.
-        // Is the data bus (D) stored in big endian format regardless of processor mode and then the memory unit flips it?
-        // var rotateResultBits = (int)((core.A & 0b11) * 8);
-        // var rotatedData = (core.D >> rotateResultBits) | (core.D << (32 - rotateResultBits));
-
-        core.R[rd] = core.MAS switch
-        {
-            BusWidth.Word => core.D,
-            BusWidth.HalfWord => core.D & 0xFFFF, // TODO - Is it true that LDRH behaves the same w.r.t. word mis-aligned reads?
-            BusWidth.Byte => core.D & 0xFF,
-            _ => throw new Exception($"Invalid bus width {core.MAS}"),
-        };
-
-        if (rd == 15) core.ClearPipeline();
-
-        Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
-    }
-
-    internal static void SingleDataTransfer(Core core, uint instruction)
-    {
-        var i = ((instruction >> 25) & 0b1) == 1;
-        var p = ((instruction >> 24) & 0b1) == 1;
-        var u = ((instruction >> 23) & 0b1) == 1;
-        var b = ((instruction >> 22) & 0b1) == 1;
-        var w = ((instruction >> 21) & 0b1) == 1;
-        var l = ((instruction >> 20) & 0b1) == 1;
-        var rn = (instruction >> 16) & 0b1111;
-        var rd = (instruction >> 12) & 0b1111;
-        var offsetField = instruction & 0b1111_1111_1111;
-        uint offset;
-
-        if (i)
-        {
-            offset = offsetField;
-        }
-        else
-        {
-            var rm = offsetField & 0b1111;
-            var shiftType = (offsetField >> 4) & 0b11;
-            var shiftAmount = (byte)((offsetField >> 7) & 0b1_1111);
-
-            offset = shiftType switch
-            {
-                0b00 => ALU.LSLNoFlags(core.R[rm], shiftAmount),
-                0b01 => ALU.LSRNoFlags(core.R[rm], shiftAmount),
-                0b10 => ALU.ASRNoFlags(core.R[rm], shiftAmount),
-                0b11 => ALU.RORNoFlags(core.R[rm], shiftAmount),
-                _ => throw new Exception(),
-            };
-        }
-
-        core.A = (p, u) switch
-        {
-            (true, true) => core.R[rn] + offset,
-            (true, false) => core.R[rn] - offset,
-            (false, _) => core.R[rn]
-        };
-
-        if (w)
-        {
-            core.R[rn] = core.A;
-        }
-
-        if (b)
-        {
-            core.MAS = BusWidth.Byte;
-        }
-        else
-        {
-            core.MAS = BusWidth.Word;
-        }
-
-        if (l)
-        {
-            core.nOPC = true;
-            core.nRW = false;
-            core.SEQ = false;
-            core.NextExecuteAction = &ldr_writeback;
-        }
-        else
-        {
-            if (b)
-            {
-                // "A byte store (STRB) repeats the bottom 8 bits of the source register four times across
-                // data bus outputs 31 through 0.The external memory system should activate the
-                // appropriate byte subsystem to store the data"
-                // From the ARM7TDMI manual
-                core.D = (core.R[rd] & 0xFF) | ((core.R[rd] & 0xFF) << 8) | ((core.R[rd] & 0xFF) << 16) | ((core.R[rd] & 0xFF) << 24);
-            }
-            else
-            {
-                // "A word store (STR) should generate a word aligned address. The word presented to
-                // the data bus is not affected if the address is not word aligned. That is, bit 31 of the
-                // register being stored always appears on data bus output 31."
-                // From the ARM7TDMI manual
-                core.D = core.R[rd];
-            }
-
-            core.nOPC = true;
-            core.nRW = true;
-            core.SEQ = false;
-            core.NextExecuteAction = &Core.ResetMemoryUnitForOpcodeFetch;
-        }
-    }
-
-    /// <summary>
     /// Unused but leaving here in case I want to compare costs of running this 
     /// vs the auto generated code
     /// </summary>
@@ -800,83 +682,55 @@ internal static unsafe partial class Arm
 
     #region Half Word & Signed Single Data Transfers
 
-    internal static void strh_ptrm(Core core, uint instruction) => throw new NotImplementedException("strh_ptrm not implemented");
-    internal static void ldrh_ptrm(Core core, uint instruction) => throw new NotImplementedException("ldrh_ptrm not implemented");
-    internal static void ldrsb_ptrm(Core core, uint instruction) => throw new NotImplementedException("ldrsb_ptrm not implemented");
-    internal static void ldrsh_ptrm(Core core, uint instruction) => throw new NotImplementedException("ldrsh_ptrm not implemented");
-    internal static void strh_ptim(Core core, uint instruction) => throw new NotImplementedException("strh_ptim not implemented");
-    internal static void ldrh_ptim(Core core, uint instruction) => throw new NotImplementedException("ldrh_ptim not implemented");
-    internal static void ldrsb_ptim(Core core, uint instruction) => throw new NotImplementedException("ldrsb_ptim not implemented");
-    internal static void ldrsh_ptim(Core core, uint instruction) => throw new NotImplementedException("ldrsh_ptim not implemented");
-    internal static void strh_ptrp(Core core, uint instruction) => throw new NotImplementedException("strh_ptrp not implemented");
-    internal static void ldrh_ptrp(Core core, uint instruction) => throw new NotImplementedException("ldrh_ptrp not implemented");
-    internal static void ldrsb_ptrp(Core core, uint instruction) => throw new NotImplementedException("ldrsb_ptrp not implemented");
-    internal static void ldrsh_ptrp(Core core, uint instruction) => throw new NotImplementedException("ldrsh_ptrp not implemented");
-    internal static void strh_ptip(Core core, uint instruction) => throw new NotImplementedException("strh_ptip not implemented");
-    internal static void ldrh_ptip(Core core, uint instruction) => throw new NotImplementedException("ldrh_ptip not implemented");
-    internal static void ldrsb_ptip(Core core, uint instruction) => throw new NotImplementedException("ldrsb_ptip not implemented");
-    internal static void ldrsh_ptip(Core core, uint instruction) => throw new NotImplementedException("ldrsh_ptip not implemented");
+    static partial void strh_ptrm(Core core, uint instruction);
+    static partial void ldrh_ptrm(Core core, uint instruction);
+    static partial void ldrsb_ptrm(Core core, uint instruction);
+    static partial void ldrsh_ptrm(Core core, uint instruction);
+    static partial void strh_ptim(Core core, uint instruction);
+    static partial void ldrh_ptim(Core core, uint instruction);
+    static partial void ldrsb_ptim(Core core, uint instruction);
+    static partial void ldrsh_ptim(Core core, uint instruction);
+    static partial void strh_ptrp(Core core, uint instruction);
+    static partial void ldrh_ptrp(Core core, uint instruction);
+    static partial void ldrsb_ptrp(Core core, uint instruction);
+    static partial void ldrsh_ptrp(Core core, uint instruction);
+    static partial void strh_ptip(Core core, uint instruction);
+    static partial void ldrh_ptip(Core core, uint instruction);
+    static partial void ldrsb_ptip(Core core, uint instruction);
+    static partial void ldrsh_ptip(Core core, uint instruction);
 
-    internal static void strh_ofrm(Core core, uint instruction) => throw new NotImplementedException("strh_ofrm not implemented");
-    internal static void ldrh_ofrm(Core core, uint instruction) => throw new NotImplementedException("ldrh_ofrm not implemented");
-    internal static void ldrsb_ofrm(Core core, uint instruction) => throw new NotImplementedException("ldrsb_ofrm not implemented");
-    internal static void ldrsh_ofrm(Core core, uint instruction) => throw new NotImplementedException("ldrsh_ofrm not implemented");
-    internal static void strh_prrm(Core core, uint instruction) => throw new NotImplementedException("strh_prrm not implemented");
-    internal static void ldrh_prrm(Core core, uint instruction) => throw new NotImplementedException("ldrh_prrm not implemented");
-    internal static void ldrsb_prrm(Core core, uint instruction) => throw new NotImplementedException("ldrsb_prrm not implemented");
-    internal static void ldrsh_prrm(Core core, uint instruction) => throw new NotImplementedException("ldrsh_prrm not implemented");
-    internal static void strh_ofim(Core core, uint instruction) => throw new NotImplementedException("strh_ofim not implemented");
-    internal static void ldrh_ofim(Core core, uint instruction) => throw new NotImplementedException("ldrh_ofim not implemented");
-    internal static void ldrsb_ofim(Core core, uint instruction) => throw new NotImplementedException("ldrsb_ofim not implemented");
-    internal static void ldrsh_ofim(Core core, uint instruction) => throw new NotImplementedException("ldrsh_ofim not implemented");
-    internal static void strh_prim(Core core, uint instruction) => throw new NotImplementedException("strh_prim not implemented");
-    internal static void ldrh_prim(Core core, uint instruction) => throw new NotImplementedException("ldrh_prim not implemented");
-    internal static void ldrsb_prim(Core core, uint instruction) => throw new NotImplementedException("ldrsb_prim not implemented");
-    internal static void ldrsh_prim(Core core, uint instruction) => throw new NotImplementedException("ldrsh_prim not implemented");
-    internal static void strh_ofrp(Core core, uint instruction) => throw new NotImplementedException("strh_ofrp not implemented");
-    internal static void ldrh_ofrp(Core core, uint instruction) => throw new NotImplementedException("ldrh_ofrp not implemented");
-    internal static void ldrsb_ofrp(Core core, uint instruction) => throw new NotImplementedException("ldrsb_ofrp not implemented");
-    internal static void ldrsh_ofrp(Core core, uint instruction) => throw new NotImplementedException("ldrsh_ofrp not implemented");
-    internal static void strh_prrp(Core core, uint instruction) => throw new NotImplementedException("strh_prrp not implemented");
-    internal static void ldrh_prrp(Core core, uint instruction) => throw new NotImplementedException("ldrh_prrp not implemented");
-    internal static void ldrsb_prrp(Core core, uint instruction) => throw new NotImplementedException("ldrsb_prrp not implemented");
-    internal static void ldrsh_prrp(Core core, uint instruction) => throw new NotImplementedException("ldrsh_prrp not implemented");
-    internal static void strh_ofip(Core core, uint instruction)
-    {
-        var offset = (instruction & 0b1111) | ((instruction >> 8) & 0b1111);
-        var type = (instruction >> 5) & 0b11;
-        var rd = (instruction >> 12) & 0b1111;
-        var rn = (instruction >> 16) & 0b1111;
-
-        var value = type switch
-        {
-            0b00 => throw new NotImplementedException("Think this should be a SWP not STRH"),
-            0b01 => (ushort)core.R[rd],
-            0b10 => (ushort)((sbyte)core.R[rd]),
-            0b11 => (ushort)((short)core.R[rd]),
-            _ => throw new Exception("Invalid state")
-        };
-
-        var address = core.R[rn] + offset;
-
-        // Configure the memory unit for a write cycle 
-        core.A = address;
-        core.D = value;
-        core.nOPC = true;
-        core.nRW = true;
-        core.SEQ = false;
-        core.MAS = BusWidth.HalfWord;
-
-        core.NextExecuteAction = &Core.ResetMemoryUnitForOpcodeFetch;
-    }
-
-    internal static void ldrh_ofip(Core core, uint instruction) => throw new NotImplementedException("ldrh_ofip not implemented");
-    internal static void ldrsb_ofip(Core core, uint instruction) => throw new NotImplementedException("ldrsb_ofip not implemented");
-    internal static void ldrsh_ofip(Core core, uint instruction) => throw new NotImplementedException("ldrsh_ofip not implemented");
-    internal static void strh_prip(Core core, uint instruction) => throw new NotImplementedException("strh_prip not implemented");
-    internal static void ldrh_prip(Core core, uint instruction) => throw new NotImplementedException("ldrh_prip not implemented");
-    internal static void ldrsb_prip(Core core, uint instruction) => throw new NotImplementedException("ldrsb_prip not implemented");
-    internal static void ldrsh_prip(Core core, uint instruction) => throw new NotImplementedException("ldrsh_prip not implemented");
+    static partial void strh_ofrm(Core core, uint instruction);
+    static partial void ldrh_ofrm(Core core, uint instruction);
+    static partial void ldrsb_ofrm(Core core, uint instruction);
+    static partial void ldrsh_ofrm(Core core, uint instruction);
+    static partial void strh_prrm(Core core, uint instruction);
+    static partial void ldrh_prrm(Core core, uint instruction);
+    static partial void ldrsb_prrm(Core core, uint instruction);
+    static partial void ldrsh_prrm(Core core, uint instruction);
+    static partial void strh_ofim(Core core, uint instruction);
+    static partial void ldrh_ofim(Core core, uint instruction);
+    static partial void ldrsb_ofim(Core core, uint instruction);
+    static partial void ldrsh_ofim(Core core, uint instruction);
+    static partial void strh_prim(Core core, uint instruction);
+    static partial void ldrh_prim(Core core, uint instruction);
+    static partial void ldrsb_prim(Core core, uint instruction);
+    static partial void ldrsh_prim(Core core, uint instruction);
+    static partial void strh_ofrp(Core core, uint instruction);
+    static partial void ldrh_ofrp(Core core, uint instruction);
+    static partial void ldrsb_ofrp(Core core, uint instruction);
+    static partial void ldrsh_ofrp(Core core, uint instruction);
+    static partial void strh_prrp(Core core, uint instruction);
+    static partial void ldrh_prrp(Core core, uint instruction);
+    static partial void ldrsb_prrp(Core core, uint instruction);
+    static partial void ldrsh_prrp(Core core, uint instruction);
+    static partial void strh_ofip(Core core, uint instruction);
+    static partial void ldrh_ofip(Core core, uint instruction);
+    static partial void ldrsb_ofip(Core core, uint instruction);
+    static partial void ldrsh_ofip(Core core, uint instruction);
+    static partial void strh_prip(Core core, uint instruction);
+    static partial void ldrh_prip(Core core, uint instruction);
+    static partial void ldrsb_prip(Core core, uint instruction);
+    static partial void ldrsh_prip(Core core, uint instruction);
 
     #endregion
 
@@ -1085,7 +939,6 @@ internal static unsafe partial class Arm
     {
         var offset = ((int)((instruction & 0xFF_FFFF) << 8)) >> 6;
         core.R[15] = (uint)(core.R[15] + offset);
-        core.A = core.R[15];
         core.ClearPipeline(); // Note that this will trigger two more cycles (both just fetches, with nothing to execute)
 
         core.MoveExecutePipelineToNextInstruction();
@@ -1109,7 +962,6 @@ internal static unsafe partial class Arm
     {
         var rn = instruction & 0b1111;
         core.R[15] = (uint)(core.R[rn] & (~1));
-        core.A = core.R[15];
         core.ClearPipeline();
 
         // "When the instruction is executed, the value of Rn[0] determines whether
