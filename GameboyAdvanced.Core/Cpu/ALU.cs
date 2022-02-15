@@ -68,8 +68,7 @@ internal static class ALU
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint ASR(uint op1, byte offset, ref CPSR cpsr)
     {
-        // "ASR#0 is translated as ASR#32"
-        offset = (offset == 0) ? (byte)32 : offset;
+        if (offset == 0) return op1;
 
         var (result, carry) = offset switch
         {
