@@ -24,7 +24,7 @@ I've not been very consistent about implementing that behaviour as I've gone whi
 	- The question is whether or not we need to emulate that the two halves of that read/write are happening on different cycles
 	- If so then I think the best way to achieve it will be to set the memory unit up as a clocked unit and have it act as yet another state machine
 
-# Memory bus musings
+## Memory bus musings
 
 I don't really like lots of the code relating to the memory bus. The CPU part is quite nice, we set up A/D/MAS/nRW etc and then the next cycle the memory unit knows what to do.
 The trouble is with the way that read/writes are farmed out to downstream subsystems and particularly how that relates to the bus width.
@@ -34,9 +34,15 @@ be implemented at a more fundamental level. Is it true for all 16 bit buses? If 
 
 The other big issue is around wait states and cycles. If a word is written to a 16 bit bus then what happens? Presumably that takes 1 N(or S) and 1 S cycle to complete. 
 
+## Thoughts on source generators
+
+I'm (mis)using C# source generators as a filthy macro preprocessor system in order to auto generate the logic for the various incantations of str/ldr/stm/ldm & alu ops.
+They _do_ work and it's not that bad debugging code that's been generated this way but quite often a VS restart is required for the generated source files to appear in
+the solution explorer.
+
 ## WIP
 
 * Register accurate up to when arm wrestler (thumb) switches to thumb mode at `0x08031544`
 * Cycle counting seems all off
 	* At least LDR as I've set it up seems to take 2 cycles (one to set up A and one to write it back, cycle 3 is missing) but all cycle counting seems off what mgba is reporting
-* Looks like I've forgotte to not set flags when S=0 on ALU ops in Arm mode
+* Looks like I've forgotten to not set flags when S=0 on ALU ops in Arm mode
