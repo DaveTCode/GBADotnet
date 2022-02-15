@@ -27,6 +27,7 @@ namespace GameboyAdvanced.Arm.SourceGenerators
         public void Execute(GeneratorExecutionContext context)
         {
             var fullSource = @"// Auto-generated code
+using GameboyAdvanced.Core.Cpu.Shared;
 namespace GameboyAdvanced.Core.Cpu;
 
 internal static unsafe partial class Arm
@@ -35,26 +36,8 @@ internal static unsafe partial class Arm
 
             foreach (bool l in new[] { true, false })
             {
-                var nRWStr = l ? "core.nRW = false;" : "core.nRW = true;";
-                var nextActionStr = l ? "core.NextExecuteAction = &ldr_writeback;" : "core.NextExecuteAction = &Core.ResetMemoryUnitForOpcodeFetch;";
-
-                foreach (var width in new[] { "b", "w" })
+                foreach (var byteWide in new[] { true, false })
                 {
-                    var widthSetStr = width switch
-                    {
-                        "b" => "core.MAS = BusWidth.Byte;",
-                        "w" => "core.MAS = BusWidth.Word;",
-                        _ => throw new Exception(),
-                    };
-
-                    var dataSetStr = (l, width) switch
-                    {
-                        (true, _) => "",
-                        (false, "b") => "core.D = (core.R[rd] & 0xFF) | ((core.R[rd] & 0xFF) << 8) | ((core.R[rd] & 0xFF) << 16) | ((core.R[rd] & 0xFF) << 24);",
-                        (false, "w") => "core.D = core.R[rd];",
-                        _ => throw new Exception(),
-                    };
-
                     foreach (var pre in new[] { true, false })
                     {
                         foreach (var inc in new[] { true, false })
@@ -63,24 +46,33 @@ internal static unsafe partial class Arm
                             {
                                 if (!writeback && !pre) continue; // This would just generate duplicate functions
 
-                                var addressSetStr = (pre, inc) switch
+                                var width = byteWide ? "BusWidth.Byte" : "BusWidth.Word";
+
+                                var dataStr = (l, byteWide) switch
                                 {
-                                    (true, true) => "core.A = core.R[rn] + offset;",
-                                    (true, false) => "core.A = core.R[rn] - offset;",
-                                    (false, _) => "core.A = core.R[rn];",
+                                    (true, _) => "",
+                                    (false, true) => "(core.R[rd] & 0xFF) | ((core.R[rd] & 0xFF) << 8) | ((core.R[rd] & 0xFF) << 16) | ((core.R[rd] & 0xFF) << 24)",
+                                    (false, false) => "core.R[rd]",
                                 };
 
-                                var writebackStr = (writeback, inc) switch
+                                var addressStr = (pre, inc) switch
+                                {
+                                    (true, true) => "core.R[rn] + offset",
+                                    (true, false) => "core.R[rn] - offset",
+                                    (false, _) => "core.R[rn]",
+                                };
+
+                                var writebackVal = (writeback, inc) switch
                                 {
                                     (false, _) => "",
-                                    (true, true) => "core.R[rn] = core.R[rn] + offset;",
-                                    (true, false) => "core.R[rn] = core.R[rn] - offset;",
+                                    (true, true) => "core.R[rn] + offset",
+                                    (true, false) => "core.R[rn] - offset",
                                 };
 
                                 foreach (ShiftType shiftType in Enum.GetValues(typeof(ShiftType)))
                                 {
                                     var funcName = l ? "ldr" : "str";
-                                    funcName += (width == "b") ? "b_" : "_";
+                                    funcName += byteWide ? "b_" : "_";
                                     funcName += (writeback, pre) switch
                                     {
                                         (true, true) => "pr",
@@ -116,6 +108,15 @@ var shiftAmount = (byte)((instruction >> 7) & 0b1_1111);",
                                         ShiftType.Imm => "var offset = instruction & 0b1111_1111_1111;",
                                         _ => throw new Exception(),
                                     });
+                                    var castFunc = byteWide ? "&LdrStrUtils.LDRB" : "&LdrStrUtils.LDRW";
+
+                                    var common = (l, writeback) switch
+                                    {
+                                        (true, true) => $"LdrStrUtils.LDRCommonWriteback(core, {addressStr}, {width}, (int)rd, {castFunc}, (int)rn, {writebackVal});",
+                                        (true, false) => $"LdrStrUtils.LDRCommon(core, {addressStr}, {width}, (int)rd, {castFunc});",
+                                        (false, true) => $"LdrStrUtils.STRCommonWriteback(core, {addressStr}, {dataStr}, {width}, (int)rn, {writebackVal});",
+                                        (false, false) => $"LdrStrUtils.STRCommon(core, {addressStr}, {dataStr}, {width});"
+                                    };
 
                                     var func = $@"
 static partial void {funcName}(Core core, uint instruction)
@@ -125,20 +126,8 @@ static partial void {funcName}(Core core, uint instruction)
     
     {offsetAdjustStr}
 
-    {addressSetStr}
-
-    {writebackStr}
-
-    {widthSetStr}
-
-    {dataSetStr}
-
-    core.nOPC = true;
-    core.SEQ = false;
-    {nRWStr}
-    {nextActionStr}
+    {common}
 }}
-
 ";
 
                                     fullSource += func;

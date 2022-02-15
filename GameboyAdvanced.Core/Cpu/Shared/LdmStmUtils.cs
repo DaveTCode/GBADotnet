@@ -1,4 +1,4 @@
-﻿namespace GameboyAdvanced.Core.Cpu.LdmStmCommon;
+﻿namespace GameboyAdvanced.Core.Cpu.Shared;
 
 /// <summary>
 /// LDM/STM and the PUSH/POP variants on the Thumb instruction set have a
@@ -21,11 +21,13 @@ internal static class LdmStmUtils
     internal static bool _storeLoadMultipleDoWriteback;
     internal static uint _cachedLdmValue;
     internal static int _writebackRegister;
+    internal static bool _useBank0Regs;
 
     internal static void Reset()
     {
         _storeLoadMultiplePopCount = 0;
         _storeLoadMultiplePtr = 0;
+        _useBank0Regs = false;
     }
 
     /// <summary>
@@ -46,8 +48,19 @@ internal static class LdmStmUtils
         {
             if (_storeLoadMultipleDoWriteback)
             {
-                core.R[_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
-                if (_writebackRegister == 15) core.ClearPipeline(); // TODO - This is a really bad idea, why would you use PC as writeback, probably needs a special log
+                if (_useBank0Regs)
+                {
+                    core.R_Banked[0][_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
+                }
+                else
+                {
+                    core.R[_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
+                }
+                
+                if (_writebackRegister == 15) 
+                {
+                    core.ClearPipeline(); // TODO - This is a really bad idea, why would you use PC as writeback, probably needs a special log
+                }
             }
 
             Core.ResetMemoryUnitForOpcodeFetch(core, _);
@@ -55,7 +68,10 @@ internal static class LdmStmUtils
         else
         {
             core.A += 4;
-            core.D = core.R[_storeLoadMultipleState[_storeLoadMultiplePtr]];
+            core.D = _useBank0Regs
+                ? core.R_Banked[0][_storeLoadMultipleState[_storeLoadMultiplePtr]]
+                : core.R[_storeLoadMultipleState[_storeLoadMultiplePtr]];
+
             _storeLoadMultiplePtr++;
         }
     }
@@ -88,8 +104,19 @@ internal static class LdmStmUtils
     {
         if (_storeLoadMultiplePtr > 0)
         {
-            core.R[_storeLoadMultipleState[_storeLoadMultiplePtr - 1]] = _cachedLdmValue;
-            if (_storeLoadMultipleState[_storeLoadMultiplePtr - 1] == 15) core.ClearPipeline();
+            if (_useBank0Regs)
+            {
+                core.R_Banked[0][_storeLoadMultipleState[_storeLoadMultiplePtr - 1]] = _cachedLdmValue;
+            }
+            else
+            {
+                core.R[_storeLoadMultipleState[_storeLoadMultiplePtr - 1]] = _cachedLdmValue;
+            }
+            
+            if (_storeLoadMultipleState[_storeLoadMultiplePtr - 1] == 15)
+            {
+                core.ClearPipeline();
+            }
         }
 
         _cachedLdmValue = core.D;
@@ -97,7 +124,7 @@ internal static class LdmStmUtils
 
         if (_storeLoadMultiplePtr == _storeLoadMultiplePopCount - 1)
         {
-            core.A = core.R[15];
+            core.A = _useBank0Regs ? core.R_Banked[0][15] : core.R[15];
             core.SEQ = true;
             core.MAS = BusWidth.Word;
             core.nMREQ = true;
@@ -107,8 +134,19 @@ internal static class LdmStmUtils
         {
             if (_storeLoadMultipleDoWriteback)
             {
-                core.R[_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
-                if (_writebackRegister == 15) core.ClearPipeline();
+                if (_useBank0Regs)
+                {
+                    core.R_Banked[0][_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
+                }
+                else
+                {
+                    core.R[_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
+                }
+                
+                if (_writebackRegister == 15)
+                {
+                    core.ClearPipeline();
+                }
             }
 
             Core.ResetMemoryUnitForOpcodeFetch(core, _);
