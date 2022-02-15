@@ -1,4 +1,5 @@
 ﻿using GameboyAdvanced.Core.Cpu;
+using GameboyAdvanced.Core.Cpu.Disassembler;
 using GameboyAdvanced.Core.Debug;
 using System.Runtime.CompilerServices;
 
@@ -369,6 +370,7 @@ public unsafe class Core
     {
         Pipeline.FetchedOpcode = Pipeline.FetchedOpcodeAddress = null;
         Pipeline.DecodedOpcode = Pipeline.DecodedOpcodeAddress = null;
+        A = R[15];
     }
 
     /// <summary>
@@ -452,8 +454,8 @@ public unsafe class Core
         if (Pipeline.DecodedOpcode.HasValue && Pipeline.DecodedOpcodeAddress.HasValue)
         {
             disassembly = Cpsr.ThumbMode
-                ? $"{Pipeline.DecodedOpcodeAddress:X8}: {(ushort)Pipeline.DecodedOpcode:X4} \t {Disassembler.DisassembleThumbInstruction(this, (ushort)Pipeline.DecodedOpcode)}"
-                : $"{Pipeline.DecodedOpcodeAddress:X8}: {Pipeline.DecodedOpcode:X8} \t {Disassembler.DisassembleArmInstruction(this, Pipeline.DecodedOpcode.Value)}";
+                ? $"{Pipeline.DecodedOpcodeAddress:X8}: {(ushort)Pipeline.DecodedOpcode:X4} \t {ThumbDisassembler.Disassemble(this, (ushort)Pipeline.DecodedOpcode)}"
+                : $"{Pipeline.DecodedOpcodeAddress:X8}: {Pipeline.DecodedOpcode:X8} \t {ArmDisassembler.Disassemble(this, Pipeline.DecodedOpcode.Value)}";
 
         }
         else
