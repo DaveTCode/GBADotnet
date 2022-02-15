@@ -8,7 +8,7 @@ namespace GameboyAdvanced.Arm.SourceGenerators
         public void Execute(GeneratorExecutionContext context)
         {
             var fullSource = @"// Auto-generated code
-using GameboyAdvanced.Core.Cpu.LdmStmCommon;
+using GameboyAdvanced.Core.Cpu.Shared;
 
 namespace GameboyAdvanced.Core.Cpu;
 
@@ -44,7 +44,10 @@ internal static unsafe partial class Arm
                                     (false, false) => "",
                                 };
 
-                                var writebackStr = writeback ? "LdmStmUtils._storeLoadMultipleDoWriteback = true;" : "LdmStmUtils._storeLoadMultipleDoWriteback = false;";
+                                var writebackStr = writeback 
+                                    ? @"LdmStmUtils._storeLoadMultipleDoWriteback = true;
+LdmStmUtils._writebackRegister = (int)rn;"
+                                    : "LdmStmUtils._storeLoadMultipleDoWriteback = false;";
                                 var nrwStr = load ? "core.nRW = false;" : "core.nRW = true;";
 
                                 var initialAddressValue = (up, pre) switch
@@ -64,19 +67,20 @@ internal static unsafe partial class Arm
                                 };
                                 var nextAction = load ? "LdmStmUtils.ldm_registerReadCycle" : "LdmStmUtils.stm_registerWriteCycle";
                                 var immediateNextActionStatement = load ? "" : $"{nextAction}(core, instruction);";
-
+                                var userModeStr = userMode ? "LdmStmUtils._useBank0Regs = true;" : "";
                                 var func = $@"
 static partial void {funcName}(Core core, uint instruction)
 {{
     var rn = (instruction >> 16) & 0b1111;
     var registerList = instruction & 0xFFFF;
     LdmStmUtils.Reset();
+    {userModeStr}
 
     for (var r = 0; r <= 15; r++)
     {{
         if (((registerList >> r) & 0b1) == 0b1)
         {{
-            LdmStmUtils._storeLoadMultipleState[LdmStmUtils._storeLoadMultiplePopCount] = core.R[r];
+            LdmStmUtils._storeLoadMultipleState[LdmStmUtils._storeLoadMultiplePopCount] = (uint)r;
             LdmStmUtils._storeLoadMultiplePopCount++;
         }}
     }}
