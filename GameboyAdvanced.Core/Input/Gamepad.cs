@@ -74,20 +74,18 @@ internal class Gamepad
         }
     }
 
-    internal (byte, int) ReadByte(uint address) => throw new NotImplementedException("Read byte not implemented for gamepad registers");
-    internal (uint, int) ReadWord(uint address) => throw new NotImplementedException("Read word not implemented for gamepad registers");
+    internal byte ReadByte(uint address) => throw new NotImplementedException("Read byte not implemented for gamepad registers");
 
-    internal (ushort, int) ReadHalfWord(uint address) => address switch
+    internal ushort ReadHalfWord(uint address) => address switch
     {
-        0x0400_0130 => (KeyStatusRegister(), 1),
-        0x0400_0132 => (KeyInterruptControl(), 1),
+        0x0400_0130 => KeyStatusRegister(),
+        0x0400_0132 => KeyInterruptControl(),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped to Gamepad memory space"),
     };
 
-    internal int WriteByte(uint address, byte value) => throw new NotImplementedException("Write byte not implemented for gamepad registers");
-    internal int WriteWord(uint address, uint value) => throw new NotImplementedException("Write word not implemented for gamepad registers");
+    internal void WriteByte(uint address, byte value) => throw new NotImplementedException("Write byte not implemented for gamepad registers");
 
-    internal int WriteHalfWord(uint address, ushort value)
+    internal void WriteHalfWord(uint address, ushort value)
     {
         if (address == 0x0400_0132)
         {
@@ -103,7 +101,6 @@ internal class Gamepad
             _keyIrq[Key.L] = (value & (1 << 9)) == (1 << 9);
             _irqEnabled = (value & (1 << 14)) == (1 << 14);
             _irqConditionAnd = (value & (1 << 15)) == (1 << 15);
-            return 1;
         }
 
         throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped to Gamepad memory space");

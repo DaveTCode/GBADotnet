@@ -61,7 +61,7 @@ internal class MemoryBus
                 uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadByte(address),
                 uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.ReadByte(address),
                 uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => throw new NotImplementedException("Serial comms registers not yet implemented"),
-                uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.ReadByte(address),
+                uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => (_gamepad.ReadByte(address), 0),
                 uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => throw new NotImplementedException("Serial comms registers not yet implemented"),
                 uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => _interruptController.ReadByte(address),
                 _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
@@ -91,7 +91,7 @@ internal class MemoryBus
                 uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadHalfWord(address),
                 uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.ReadHalfWord(address),
                 uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => throw new NotImplementedException("Serial comms registers not yet implemented"),
-                uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.ReadHalfWord(address),
+                uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => (_gamepad.ReadHalfWord(address), 0),
                 uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => throw new NotImplementedException("Serial comms registers not yet implemented"),
                 uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => _interruptController.ReadHalfWord(address),
                 _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
@@ -121,7 +121,7 @@ internal class MemoryBus
                 uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadWord(address),
                 uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.ReadWord(address),
                 uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => throw new NotImplementedException("Serial comms registers not yet implemented"),
-                uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.ReadWord(address),
+                uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => ((uint)(_gamepad.ReadHalfWord(address) | (_gamepad.ReadHalfWord(address + 2) << 16)), 1),
                 uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => throw new NotImplementedException("Serial comms registers not yet implemented"),
                 uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => _interruptController.ReadWord(address),
                 _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
@@ -167,7 +167,8 @@ internal class MemoryBus
                     case uint _ when address is >= 0x0400_0120 and <= 0x0400_012C:
                         throw new NotImplementedException("Serial comms registers not yet implemented");
                     case uint _ when address is >= 0x0400_0130 and <= 0x0400_0132:
-                        return _gamepad.WriteByte(address, value);
+                        _gamepad.WriteByte(address, value);
+                        return 0;
                     case uint _ when address is >= 0x0400_0134 and <= 0x0400_015A:
                         throw new NotImplementedException("Serial comms registers not yet implemented");
                     case uint _ when address is >= 0x0400_0200 and <= 0x0470_0000:
@@ -215,7 +216,8 @@ internal class MemoryBus
                     case uint _ when address is >= 0x0400_0120 and <= 0x0400_012C:
                         throw new NotImplementedException("Serial comms registers not yet implemented");
                     case uint _ when address is >= 0x0400_0130 and <= 0x0400_0132:
-                        return _gamepad.WriteHalfWord(address, value);
+                        _gamepad.WriteHalfWord(address, value);
+                        return 0;
                     case uint _ when address is >= 0x0400_0134 and <= 0x0400_015A:
                         throw new NotImplementedException("Serial comms registers not yet implemented");
                     case uint _ when address is >= 0x0400_0200 and <= 0x0470_0000:
@@ -264,7 +266,9 @@ internal class MemoryBus
                     case uint _ when address is >= 0x0400_0120 and <= 0x0400_012C:
                         throw new NotImplementedException("Serial comms registers not yet implemented");
                     case uint _ when address is >= 0x0400_0130 and <= 0x0400_0132:
-                        return _gamepad.WriteWord(address, value);
+                        _gamepad.WriteHalfWord(address, (ushort)value);
+                        _gamepad.WriteHalfWord(address + 2, (ushort)(value >> 16));
+                        return 1;
                     case uint _ when address is >= 0x0400_0134 and <= 0x0400_015A:
                         throw new NotImplementedException("Serial comms registers not yet implemented");
                     case uint _ when address is >= 0x0400_0200 and <= 0x0470_0000:
