@@ -4,6 +4,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "ARM Wrestler - Thumb Only": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\THUMB_Any.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "CPU Test": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\cpu_test\\CPUTest.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -12,9 +16,25 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\first.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - Second": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\second.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "TONC - Hello": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\hello.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - Hello World": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\GBA-master\\HelloWorld\\HelloWorld.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - Arm.gba": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\arm\\arm.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - Thumb.gba": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\thumb\\thumb.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     }
   }
 }

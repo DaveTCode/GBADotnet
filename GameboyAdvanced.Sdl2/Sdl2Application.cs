@@ -7,6 +7,7 @@ namespace GameboyAdvanced.Sdl2;
 internal class Sdl2Application : IDisposable
 {
     private readonly Device _device;
+    private readonly int _pixelSize;
     private IntPtr _window;
     private IntPtr _renderer;
     private IntPtr _texture;
@@ -14,9 +15,10 @@ internal class Sdl2Application : IDisposable
     private bool _disposedValue;
     private readonly int _msPerFrame = (int)(1.0 / 60 * 1000);
 
-    internal Sdl2Application(Device device)
+    internal Sdl2Application(Device device, int pixelSize = 1)
     {
         _device = device;
+        _pixelSize = pixelSize;
     }
 
     private void SetupSdl2()
@@ -30,8 +32,8 @@ internal class Sdl2Application : IDisposable
             $"GBA - {_device.LoadedRomName()}",
             SDL.SDL_WINDOWPOS_UNDEFINED,
             SDL.SDL_WINDOWPOS_UNDEFINED,
-            240,
-            160,
+            240 * _pixelSize,
+            160 * _pixelSize,
             SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN);
 
         if (_window == IntPtr.Zero)
