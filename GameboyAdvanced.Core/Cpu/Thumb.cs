@@ -1,5 +1,4 @@
-﻿using GameboyAdvanced.Core.Cpu.LdmStmCommon;
-using System.Runtime.CompilerServices;
+﻿using GameboyAdvanced.Core.Cpu.Shared;
 using static GameboyAdvanced.Core.Cpu.ALU;
 
 namespace GameboyAdvanced.Core.Cpu;
@@ -91,7 +90,6 @@ internal unsafe static class Thumb
     private static void BranchCommon(Core core, int offset)
     {
         core.R[15] = (uint)(core.R[15] + offset);
-        core.A = core.R[15];
         core.ClearPipeline(); // Note that this will trigger two more cycles (both just fetches, with nothing to execute)
 
         core.MoveExecutePipelineToNextInstruction();
@@ -143,7 +141,6 @@ internal unsafe static class Thumb
         var newPc = (uint)(core.R[14] + offset);
         core.R[14] = (core.R[15] - 2) | 1;
         core.R[15] = newPc;
-        core.A = core.R[15];
         core.ClearPipeline();
 
         core.MoveExecutePipelineToNextInstruction();
@@ -390,7 +387,6 @@ internal unsafe static class Thumb
                 }
 
                 core.R[15] = core.Cpsr.ThumbMode ? core.R[fullRs] & 0xFFFF_FFFE : core.R[fullRs] & 0xFFFF_FFFC;
-                core.A = core.R[15];
                 core.ClearPipeline();
 
                 // TODO - http://www.problemkaputt.de/gbatek.htm#thumbinstructionsummary suggests that CLX happens if MSBd is set, other docs don't
@@ -403,173 +399,77 @@ internal unsafe static class Thumb
 
     #region Load Register
 
-    private static int _ldrReg;
-    private static delegate*<uint, uint> _ldrCastFunc;
-
-    private static uint LDRW(uint dataBus) => dataBus;
-    private static uint LDRHW(uint dataBus) => (ushort)dataBus;
-    private static uint LDRSHW(uint dataBus)
-    {
-        // "and set bits 16 - 31 of Rd to bit 15"
-        // TODO - Is there a more efficient way to sign extend in C# which doesn't branch?
-        var bit15 = (dataBus >> 15) & 0b1;
-        return bit15 == 1
-            ? 0xFFFF_0000 | (ushort)(short)dataBus
-            : (ushort)(short)dataBus;
-    }
-
-    private static uint LDRB(uint dataBus) => (byte)dataBus;
-    private static uint LDRSB(uint dataBus)
-    {
-        // "and set bits 8 - 31 of Rd to bit 7"
-        // TODO - Is there a more efficient way to sign extend in C# which doesn't branch?
-        var bit7 = (dataBus >> 7) & 0b1;
-        return bit7 == 1
-            ? 0xFFFF_FF00 | (ushort)(sbyte)dataBus
-            : (ushort)(sbyte)dataBus;
-    }
-
-    /// <summary>
-    /// LDR takes 3 cycles (1N + 1S + 1I).
-    /// 
-    /// The first cycle (e.g. LDR_PC_Offset) calculates the address and puts it 
-    /// on the address bus.
-    /// 
-    /// The second cycle (this one) is a noop from the point of view of the executing 
-    /// pipeline (but is when the memory unit will retrieve A into D)
-    /// 
-    /// The third cycle is <see cref="LDRCycle3(Core, uint)"/>
-    /// </summary>
-    internal static void LDRCycle2(Core core, uint instruction)
-    {
-        // After an LDR the address bus (A) shows current PC + 2n and it's set up
-        // for opcode fetch but nMREQ is driven high for one internal cycle
-        core.A = core.R[15];
-        core.nOPC = false;
-        core.nRW = false;
-        core.SEQ = false;
-        core.nMREQ = true;
-        core.MAS = BusWidth.HalfWord;
-
-        // "This third cycle can normally be merged with 
-        // the next prefetch cycle to form one memory N - cycle"
-        // -
-        // TODO, what does that mean here, does nMREQ actually go low in most
-        // cases? How to know?
-        core.NextExecuteAction = &LDRCycle3;
-    }
-
-    /// <summary>
-    /// LDR takes 3 cycles (1N + 1S + 1I). <see cref="LDRCycle2(Core, uint)"/> 
-    /// for details of cycle 1 & 2.
-    /// 
-    /// On cycle 3 the data bus value is written back into the destination 
-    /// register and nMREQ is driven low so that the next cycle will cause
-    /// an opcode fetch.
-    /// </summary>
-    internal static void LDRCycle3(Core core, uint instruction)
-    {
-        core.R[_ldrReg] = _ldrCastFunc(core.D); // TODO - Do I need to take into account bus width here or will D already be truncated?
-        core.nMREQ = false;
-
-        core.MoveExecutePipelineToNextInstruction();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void LDRCommon(Core core, uint address, BusWidth busWidth, int destinationReg, delegate*<uint, uint> castFunc)
-    {
-        _ldrCastFunc = castFunc;
-        _ldrReg = destinationReg;
-        core.A = address;
-        core.MAS = busWidth;
-        core.nRW = false;
-        core.nOPC = true;
-        core.SEQ = false;
-        core.NextExecuteAction = &LDRCycle2;
-    }
-
     public static void LDR_PC_Offset(Core core, ushort instruction)
     {
         var word = instruction & 0xFF;
-        LDRCommon(core, (uint)((core.R[15] & ~3) + (word << 2)), BusWidth.Word, (instruction >> 8) & 0b111, &LDRW);
+        LdrStrUtils.LDRCommon(core, (uint)((core.R[15] & ~3) + (word << 2)), BusWidth.Word, (instruction >> 8) & 0b111, &LdrStrUtils.LDRW);
     }
 
     public static void LDR_Reg_Offset(Core core, ushort instruction)
     {
         var ro = (instruction >> 6) & 0b111;
         var rb = (instruction >> 3) & 0b111;
-        LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.Word, instruction & 0b111, &LDRW);
+        LdrStrUtils.LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.Word, instruction & 0b111, &LdrStrUtils.LDRW);
     }
 
     public static void LDRB_Reg_Offset(Core core, ushort instruction)
     {
         var ro = (instruction >> 6) & 0b111;
         var rb = (instruction >> 3) & 0b111;
-        LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.Byte, instruction & 0b111, &LDRB);
+        LdrStrUtils.LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.Byte, instruction & 0b111, &LdrStrUtils.LDRB);
     }
 
     public static void LDSB_Reg_Offset(Core core, ushort instruction)
     {
         var ro = (instruction >> 6) & 0b111;
         var rb = (instruction >> 3) & 0b111;
-        LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.Byte, instruction & 0b111, &LDRSB);
+        LdrStrUtils.LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.Byte, instruction & 0b111, &LdrStrUtils.LDRSB);
     }
 
     public static void LDRH_Reg_Offset(Core core, ushort instruction)
     {
         var ro = (instruction >> 6) & 0b111;
         var rb = (instruction >> 3) & 0b111;
-        LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.HalfWord, instruction & 0b111, &LDRHW);
+        LdrStrUtils.LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.HalfWord, instruction & 0b111, &LdrStrUtils.LDRHW);
     }
 
     public static void LDSH_Reg_Offset(Core core, ushort instruction)
     {
         var ro = (instruction >> 6) & 0b111;
         var rb = (instruction >> 3) & 0b111;
-        LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.HalfWord, instruction & 0b111, &LDRSHW);
+        LdrStrUtils.LDRCommon(core, core.R[rb] + core.R[ro], BusWidth.HalfWord, instruction & 0b111, &LdrStrUtils.LDRSHW);
     }
 
     public static void LDRB_Imm(Core core, ushort instruction)
     {
         var offset = (instruction >> 6) & 0b1_1111;
         var rb = (instruction >> 3) & 0b111;
-        LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.Byte, instruction & 0b111, &LDRB);
+        LdrStrUtils.LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.Byte, instruction & 0b111, &LdrStrUtils.LDRB);
     }
 
     public static void LDRH_Imm(Core core, ushort instruction)
     {
         var offset = ((instruction >> 6) & 0b1_1111) << 1;
         var rb = (instruction >> 3) & 0b111;
-        LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.HalfWord, instruction & 0b111, &LDRHW);
+        LdrStrUtils.LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.HalfWord, instruction & 0b111, &LdrStrUtils.LDRHW);
     }
 
     public static void LDR_SP_Rel(Core core, ushort instruction)
     {
         var offset = (instruction & 0xFF) << 2;
-        LDRCommon(core, (uint)(core.R[13] + offset), BusWidth.Word, (instruction >> 8) & 0b111, &LDRW);
+        LdrStrUtils.LDRCommon(core, (uint)(core.R[13] + offset), BusWidth.Word, (instruction >> 8) & 0b111, &LdrStrUtils.LDRW);
     }
 
     public static void LDR_Imm(Core core, ushort instruction)
     {
         var offset = ((instruction >> 6) & 0b1_1111) << 2;
         var rb = (instruction >> 3) & 0b111;
-        LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.Word, instruction & 0b111, &LDRW);
+        LdrStrUtils.LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.Word, instruction & 0b111, &LdrStrUtils.LDRW);
     }
 
     #endregion
 
     #region Store Register
-
-    private static void STRCommon(Core core, uint address, uint data, BusWidth busWidth)
-    {
-        core.A = address;
-        core.D = data;
-        core.MAS = busWidth;
-        core.nRW = true;
-        core.nOPC = true;
-        core.SEQ = false;
-        core.NextExecuteAction = &Core.ResetMemoryUnitForOpcodeFetch;
-    }
 
     public static void STR_Reg_Offset(Core core, ushort instruction)
     {
@@ -577,7 +477,7 @@ internal unsafe static class Thumb
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        STRCommon(core, core.R[rb] + core.R[ro], core.R[rd], BusWidth.Word);
+        LdrStrUtils.STRCommon(core, core.R[rb] + core.R[ro], core.R[rd], BusWidth.Word);
     }
 
     public static void STRB_Reg_Offset(Core core, ushort instruction)
@@ -586,7 +486,7 @@ internal unsafe static class Thumb
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        STRCommon(core, core.R[rb] + core.R[ro], (byte)core.R[rd], BusWidth.Byte);
+        LdrStrUtils.STRCommon(core, core.R[rb] + core.R[ro], (byte)core.R[rd], BusWidth.Byte);
     }
 
     public static void STRH_Reg_Offset(Core core, ushort instruction)
@@ -595,7 +495,7 @@ internal unsafe static class Thumb
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        STRCommon(core, core.R[rb] + core.R[ro], (ushort)core.R[rd], BusWidth.HalfWord);
+        LdrStrUtils.STRCommon(core, core.R[rb] + core.R[ro], (ushort)core.R[rd], BusWidth.HalfWord);
     }
 
     public static void STR_Imm(Core core, ushort instruction)
@@ -607,7 +507,7 @@ internal unsafe static class Thumb
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        STRCommon(core, (uint)(core.R[rb] + offset), core.R[rd], BusWidth.Word);
+        LdrStrUtils.STRCommon(core, (uint)(core.R[rb] + offset), core.R[rd], BusWidth.Word);
     }
 
     public static void STRB_Imm(Core core, ushort instruction)
@@ -616,7 +516,7 @@ internal unsafe static class Thumb
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        STRCommon(core, (uint)(core.R[rb] + offset), (byte)core.R[rd], BusWidth.Byte);
+        LdrStrUtils.STRCommon(core, (uint)(core.R[rb] + offset), (byte)core.R[rd], BusWidth.Byte);
     }
 
     public static void STRH_Imm(Core core, ushort instruction)
@@ -627,7 +527,7 @@ internal unsafe static class Thumb
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        STRCommon(core, (uint)(core.R[rb] + offset), (ushort)core.R[rd], BusWidth.HalfWord);
+        LdrStrUtils.STRCommon(core, (uint)(core.R[rb] + offset), (ushort)core.R[rd], BusWidth.HalfWord);
     }
 
     public static void STR_SP_Rel(Core core, ushort instruction)
@@ -635,7 +535,7 @@ internal unsafe static class Thumb
         var rd = (instruction >> 8) & 0b111;
         var offset = (instruction & 0xFF) << 2;
 
-        STRCommon(core, (uint)(core.R[13] + offset), core.R[rd], BusWidth.Word);
+        LdrStrUtils.STRCommon(core, (uint)(core.R[13] + offset), core.R[rd], BusWidth.Word);
     }
 
     #endregion
