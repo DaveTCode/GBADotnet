@@ -1,37 +1,10 @@
-﻿
-namespace GameboyAdvanced.Core.Cpu;
+﻿using static GameboyAdvanced.Core.Cpu.Disassembler.Utils;
 
-internal static class Disassembler
+namespace GameboyAdvanced.Core.Cpu.Disassembler;
+
+internal static class ArmDisassembler
 {
-    public static string DisassembleThumbInstruction(Core core, ushort instruction)
-    {
-        // TODO - Improve disassembly from this mess
-        return (instruction >> 8) switch
-        {
-            var i when ((i & 0b1111_0000) == 0b1111_0000) => "Long branch with link",
-            var i when ((i & 0b1111_1000) == 0b1110_0000) => "Unconditional branch",
-            var i when ((i & 0b1111_1111) == 0b1101_1111) => "SWI",
-            var i when ((i & 0b1111_0000) == 0b1101_0000) => "Conditional branch",
-            var i when ((i & 0b1111_0000) == 0b1100_0000) => "Multiple load/store",
-            var i when ((i & 0b1111_0110) == 0b1011_0100) => "PUSH/POP registers",
-            var i when ((i & 0b1111_1111) == 0b1011_0000) => "Add offset to SP",
-            var i when ((i & 0b1111_0000) == 0b1010_0000) => "Load address",
-            var i when ((i & 0b1111_0000) == 0b1001_0000) => "SP-relative load store",
-            var i when ((i & 0b1111_0000) == 0b1000_0000) => "LDRH/STRH",
-            var i when ((i & 0b1110_0000) == 0b0110_0000) => "LDR #imm/STR #imm",
-            var i when ((i & 0b1111_0010) == 0b0101_0010) => "LDR/STR sign extended",
-            var i when ((i & 0b1111_0010) == 0b0101_0000) => "LDR/STR reg offset",
-            var i when ((i & 0b1111_1000) == 0b0100_1000) => "PC-relative load",
-            var i when ((i & 0b1111_1100) == 0b0100_0100) => "Hi reg ops/BX",
-            var i when ((i & 0b1111_1100) == 0b0100_0000) => "ALU op",
-            var i when ((i & 0b1110_0000) == 0b0010_0000) => "Move/compare/add/sub #imm",
-            var i when ((i & 0b1111_1000) == 0b0001_1000) => "ADD/SUB",
-            var i when ((i & 0b1110_0000) == 0b0000_0000) => "MOV Shifted reg",
-            _ => throw new Exception("Invalid thumb instruction"),
-        };
-    }
-
-    public static string DisassembleArmInstruction(Core core, uint instruction)
+    internal static string Disassemble(Core core, uint instruction)
     {
         var condCode = (instruction >> 28) & 0b1111;
 
@@ -146,22 +119,24 @@ internal static class Disassembler
 
     private static string DisassembleArmHalfWordRegOffset(Core core, uint instruction)
     {
-        throw new NotImplementedException();
+        var l = ((instruction >> 20) & 0b1) == 0b1;
+        if (l) return "LDRH";
+        else return "STRH"; // TODO - Proper disassembly
     }
 
     private static string DisassembleArmSingleDataSwap(Core core, uint instruction)
     {
-        throw new NotImplementedException();
+        return "SWP"; // TODO
     }
 
     private static string DisassembleArmMultiplyLong(Core core, uint instruction)
     {
-        throw new NotImplementedException();
+        return "MULL"; // TODO
     }
 
     private static string DisassembleArmMultiply(Core core, uint instruction)
     {
-        throw new NotImplementedException();
+        return "MUL"; // TODO
     }
 
     private static string DisassembleArmSwi(Core _core, uint _i) => "SWI{0}";
@@ -180,14 +155,6 @@ internal static class Disassembler
     {
         throw new NotImplementedException();
     }
-
-    private static string RString(uint rd) => rd switch
-    {
-        15 => "PC",
-        14 => "LR",
-        13 => "SP",
-        _ => $"R{rd}"
-    };
 
     private static string DisassembleArmDataOp(Core core, uint instruction)
     {
