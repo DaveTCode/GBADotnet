@@ -595,8 +595,7 @@ internal unsafe static class Thumb
     {
         LoadStoreMultipleCommon(core, instruction, core.R[13], true, 13, &LdmStmUtils.stm_registerWriteCycle);
         core.A = (uint)(core.R[13] - (4 * (LdmStmUtils._storeLoadMultiplePopCount + 1)));
-        LdmStmUtils._storeLoadMutipleFinalWritebackValue = core.A;
-        core.A -= 4; // A is incremented by 4 each time before setting D
+        LdmStmUtils._storeLoadMutipleFinalWritebackValue = core.A + 4;
 
         // Check push LR
         if (((instruction >> 8) & 0b1) == 1)
