@@ -69,27 +69,6 @@ internal static unsafe partial class Arm
 
             foreach (Operation op in Enum.GetValues(typeof(Operation)))
             {
-                var opFunction = op switch
-                {
-                    Operation.And => "core.R[rd] = core.R[rn] & secondOperand;",
-                    Operation.Eor => "core.R[rd] = core.R[rn] ^ secondOperand;",
-                    Operation.Sub => "core.R[rd] = ALU.SUB(core.R[rn], secondOperand, ref core.Cpsr);",
-                    Operation.Rsb => "core.R[rd] = ALU.SUB(secondOperand, core.R[rn], ref core.Cpsr);",
-                    Operation.Add => "core.R[rd] = ALU.ADD(core.R[rn], secondOperand, ref core.Cpsr);",
-                    Operation.Adc => "core.R[rd] = ALU.ADC(core.R[rn], secondOperand, ref core.Cpsr);",
-                    Operation.Sbc => "core.R[rd] = ALU.SBC(core.R[rn], secondOperand, ref core.Cpsr);",
-                    Operation.Rsc => "core.R[rd] = ALU.SBC(secondOperand, core.R[rn], ref core.Cpsr);",
-                    Operation.Tst => "var result = core.R[rn] & secondOperand;",
-                    Operation.Teq => "var result = core.R[rn] ^ secondOperand;",
-                    Operation.Cmp => "var result = ALU.SUB(core.R[rn], secondOperand, ref core.Cpsr);",
-                    Operation.Cmn => "var result = ALU.ADD(core.R[rn], secondOperand, ref core.Cpsr);",
-                    Operation.Orr => "core.R[rd] = core.R[rn] | secondOperand;",
-                    Operation.Mov => "core.R[rd] = secondOperand;",
-                    Operation.Bic => "core.R[rd] = core.R[rn] & ~secondOperand;",
-                    Operation.Mvn => "core.R[rd] = ~secondOperand;",
-                    _ => throw new Exception($"Invalid operation during data op source generation {op}"),
-                };
-
                 foreach (var s in new[] { true, false })
                 {
                     // Cmp/Cmn/Tst/Teq don't have versions which don't set flags because that would be a noop
@@ -97,6 +76,33 @@ internal static unsafe partial class Arm
                     {
                         continue;
                     }
+
+                    var opFunction = (op, s) switch
+                    {
+                        (Operation.And, _) => "core.R[rd] = core.R[rn] & secondOperand;",
+                        (Operation.Eor, _) => "core.R[rd] = core.R[rn] ^ secondOperand;",
+                        (Operation.Sub, true) => "core.R[rd] = ALU.SUB(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Sub, false) => "core.R[rd] = (uint)(core.R[rn] - secondOperand);",
+                        (Operation.Rsb, true) => "core.R[rd] = ALU.SUB(secondOperand, core.R[rn], ref core.Cpsr);",
+                        (Operation.Rsb, false) => "core.R[rd] = (uint)(secondOperand - core.R[rn]);",
+                        (Operation.Add, true) => "core.R[rd] = ALU.ADD(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Add, false) => "core.R[rd] = (uint)(core.R[rn] + secondOperand);",
+                        (Operation.Adc, true) => "core.R[rd] = ALU.ADC(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Adc, false) => "core.R[rd] = (uint)(core.R[rn] + secondOperand + (core.Cpsr.CarryFlag ? 1 : 0));",
+                        (Operation.Sbc, true) => "core.R[rd] = ALU.SBC(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Sbc, false) => "core.R[rd] = (uint)(core.R[rn] - secondOperand - (core.Cpsr.CarryFlag ? 0 : 1));",
+                        (Operation.Rsc, true) => "core.R[rd] = ALU.SBC(secondOperand, core.R[rn], ref core.Cpsr);",
+                        (Operation.Rsc, false) => "core.R[rd] = (uint)(secondOperand - core.R[rn] - (core.Cpsr.CarryFlag ? 0 : 1));",
+                        (Operation.Tst, _) => "var result = core.R[rn] & secondOperand;",
+                        (Operation.Teq, _) => "var result = core.R[rn] ^ secondOperand;",
+                        (Operation.Cmp, _) => "var result = ALU.SUB(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Cmn, _) => "var result = ALU.ADD(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Orr, _) => "core.R[rd] = core.R[rn] | secondOperand;",
+                        (Operation.Mov, _) => "core.R[rd] = secondOperand;",
+                        (Operation.Bic, _) => "core.R[rd] = core.R[rn] & ~secondOperand;",
+                        (Operation.Mvn, _) => "core.R[rd] = ~secondOperand;",
+                        _ => throw new Exception($"Invalid operation during data op source generation {op}"),
+                    };
 
                     var funcName = op.ToString().ToLowerInvariant() + (s ? "s" : "");
                     var sStatement = (s, op) switch
