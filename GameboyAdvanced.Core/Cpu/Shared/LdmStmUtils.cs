@@ -126,7 +126,7 @@ internal static class LdmStmUtils
         {
             core.A = _useBank0Regs ? core.R_Banked[0][15] : core.R[15];
             core.SEQ = true;
-            core.MAS = BusWidth.Word;
+            core.MAS = core.Cpsr.ThumbMode ? BusWidth.HalfWord : BusWidth.Word;
             core.nMREQ = true;
         }
 
