@@ -1,4 +1,5 @@
 ﻿using GameboyAdvanced.Core;
+using GameboyAdvanced.Core.Input;
 using SDL2;
 using System.Diagnostics;
 
@@ -14,6 +15,20 @@ internal class Sdl2Application : IDisposable
     private readonly Stopwatch _stopwatch = new();
     private bool _disposedValue;
     private readonly int _msPerFrame = (int)(1.0 / 60 * 1000);
+
+    private readonly Dictionary<SDL.SDL_Keycode, Key> _keyMap = new()
+    {
+        { SDL.SDL_Keycode.SDLK_z, Key.A },
+        { SDL.SDL_Keycode.SDLK_x, Key.B },
+        { SDL.SDL_Keycode.SDLK_UP, Key.Up },
+        { SDL.SDL_Keycode.SDLK_DOWN, Key.Down },
+        { SDL.SDL_Keycode.SDLK_LEFT, Key.Left },
+        { SDL.SDL_Keycode.SDLK_RIGHT, Key.Right },
+        { SDL.SDL_Keycode.SDLK_a, Key.L },
+        { SDL.SDL_Keycode.SDLK_s, Key.R },
+        { SDL.SDL_Keycode.SDLK_q, Key.Select },
+        { SDL.SDL_Keycode.SDLK_w, Key.Start },
+    };
 
     internal Sdl2Application(Device device, int pixelSize = 1)
     {
@@ -74,7 +89,18 @@ internal class Sdl2Application : IDisposable
                     case SDL.SDL_EventType.SDL_QUIT:
                         running = false;
                         break;
-                    // TODO - Not handling inputs
+                    case SDL.SDL_EventType.SDL_KEYDOWN:
+                        if (_keyMap.TryGetValue(e.key.keysym.sym, out var dKey))
+                        {
+                            _device.PressKey(dKey);
+                        }
+                        break;
+                    case SDL.SDL_EventType.SDL_KEYUP:
+                        if (_keyMap.TryGetValue(e.key.keysym.sym, out var uKey))
+                        {
+                            _device.ReleaseKey(uKey);
+                        }
+                        break;
                 }
             }
 
