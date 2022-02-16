@@ -35,16 +35,16 @@ internal class Gamepad
     private bool _irqConditionAnd;
 
     private ushort KeyStatusRegister() => (ushort)(
-        (_keyPressed[Key.A] ? (1 << 0) : 0) |
-        (_keyPressed[Key.B] ? (1 << 1) : 0) |
-        (_keyPressed[Key.Select] ? (1 << 2) : 0) |
-        (_keyPressed[Key.Start] ? (1 << 3) : 0) |
-        (_keyPressed[Key.Right] ? (1 << 4) : 0) |
-        (_keyPressed[Key.Left] ? (1 << 5) : 0) |
-        (_keyPressed[Key.Up] ? (1 << 6) : 0) |
-        (_keyPressed[Key.Down] ? (1 << 7) : 0) |
-        (_keyPressed[Key.R] ? (1 << 8) : 0) |
-        (_keyPressed[Key.L] ? (1 << 9) : 0));
+        (_keyPressed[Key.A] ? 0 : (1 << 0)) |
+        (_keyPressed[Key.B] ? 0 : (1 << 1)) |
+        (_keyPressed[Key.Select] ? 0 : (1 << 2)) |
+        (_keyPressed[Key.Start] ? 0 : (1 << 3)) |
+        (_keyPressed[Key.Right] ? 0 : (1 << 4)) |
+        (_keyPressed[Key.Left] ? 0 : (1 << 5)) |
+        (_keyPressed[Key.Up] ? 0 : (1 << 6)) |
+        (_keyPressed[Key.Down] ? 0 : (1 << 7)) |
+        (_keyPressed[Key.R] ? 0 : (1 << 8)) |
+        (_keyPressed[Key.L] ? 0 : (1 << 9)));
 
     private ushort KeyInterruptControl() => (ushort)(
         (_keyIrq[Key.A] ? (1 << 0) : 0) |
