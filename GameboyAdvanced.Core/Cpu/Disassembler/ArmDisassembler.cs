@@ -194,7 +194,7 @@ internal static class ArmDisassembler
         {
             var i = op2 & 0b1111_1111;
             var r = (op2 >> 8) & 0b1111;
-            operand2 = $"#{Shifter.RORRegisterNoFlags(i, (byte)(r * 2), ref core.Cpsr):X}";
+            operand2 = $"#{Shifter.RORRegisterNoFlags(i, (byte)(r * 2)):X}";
         }
         else
         {
@@ -223,7 +223,7 @@ internal static class ArmDisassembler
 
         return opcodeStr switch
         {
-            var _ when opcodeStr is "TST" or "TEQ" or "CMP" or "CMN" => $"{opcodeStr}{{0}} {RString(rn)},{operand2}",
+            var _ when opcodeStr[..3] is "TST" or "TEQ" or "CMP" or "CMN" => $"{opcodeStr[..3]}{{0}} {RString(rn)},{operand2}",
             var _ when opcodeStr is "MOV" or "MVN" => $"{opcodeStr}{{0}} {RString(rd)},{operand2}",
             _ => $"{opcodeStr}{{0}} {RString(rd)},{RString(rn)},{operand2}",
         };
