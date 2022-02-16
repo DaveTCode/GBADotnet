@@ -61,6 +61,8 @@ namespace GameboyAdvanced.Arm.SourceGenerators
         public void Execute(GeneratorExecutionContext context)
         {
             var fullSource = @"// Auto-generated code
+using static GameboyAdvanced.Core.Cpu.ALU;
+using static GameboyAdvanced.Core.Cpu.Shifter;
 namespace GameboyAdvanced.Core.Cpu;
 
 internal static unsafe partial class Arm
@@ -81,22 +83,22 @@ internal static unsafe partial class Arm
                     {
                         (Operation.And, _) => "core.R[rd] = core.R[rn] & secondOperand;",
                         (Operation.Eor, _) => "core.R[rd] = core.R[rn] ^ secondOperand;",
-                        (Operation.Sub, true) => "core.R[rd] = ALU.SUB(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Sub, true) => "core.R[rd] = SUB(core.R[rn], secondOperand, ref core.Cpsr);",
                         (Operation.Sub, false) => "core.R[rd] = (uint)(core.R[rn] - secondOperand);",
-                        (Operation.Rsb, true) => "core.R[rd] = ALU.SUB(secondOperand, core.R[rn], ref core.Cpsr);",
+                        (Operation.Rsb, true) => "core.R[rd] = SUB(secondOperand, core.R[rn], ref core.Cpsr);",
                         (Operation.Rsb, false) => "core.R[rd] = (uint)(secondOperand - core.R[rn]);",
-                        (Operation.Add, true) => "core.R[rd] = ALU.ADD(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Add, true) => "core.R[rd] = ADD(core.R[rn], secondOperand, ref core.Cpsr);",
                         (Operation.Add, false) => "core.R[rd] = (uint)(core.R[rn] + secondOperand);",
-                        (Operation.Adc, true) => "core.R[rd] = ALU.ADC(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Adc, true) => "core.R[rd] = ADC(core.R[rn], secondOperand, ref core.Cpsr);",
                         (Operation.Adc, false) => "core.R[rd] = (uint)(core.R[rn] + secondOperand + (core.Cpsr.CarryFlag ? 1 : 0));",
-                        (Operation.Sbc, true) => "core.R[rd] = ALU.SBC(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Sbc, true) => "core.R[rd] = SBC(core.R[rn], secondOperand, ref core.Cpsr);",
                         (Operation.Sbc, false) => "core.R[rd] = (uint)(core.R[rn] - secondOperand - (core.Cpsr.CarryFlag ? 0 : 1));",
-                        (Operation.Rsc, true) => "core.R[rd] = ALU.SBC(secondOperand, core.R[rn], ref core.Cpsr);",
+                        (Operation.Rsc, true) => "core.R[rd] = SBC(secondOperand, core.R[rn], ref core.Cpsr);",
                         (Operation.Rsc, false) => "core.R[rd] = (uint)(secondOperand - core.R[rn] - (core.Cpsr.CarryFlag ? 0 : 1));",
                         (Operation.Tst, _) => "var result = core.R[rn] & secondOperand;",
                         (Operation.Teq, _) => "var result = core.R[rn] ^ secondOperand;",
-                        (Operation.Cmp, _) => "var result = ALU.SUB(core.R[rn], secondOperand, ref core.Cpsr);",
-                        (Operation.Cmn, _) => "var result = ALU.ADD(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Cmp, _) => "var result = SUB(core.R[rn], secondOperand, ref core.Cpsr);",
+                        (Operation.Cmn, _) => "var result = ADD(core.R[rn], secondOperand, ref core.Cpsr);",
                         (Operation.Orr, _) => "core.R[rd] = core.R[rn] | secondOperand;",
                         (Operation.Mov, _) => "core.R[rd] = secondOperand;",
                         (Operation.Bic, _) => "core.R[rd] = core.R[rn] & ~secondOperand;",
@@ -108,11 +110,11 @@ internal static unsafe partial class Arm
                     var sStatement = (s, op) switch
                     {
                         (false, _) => "",
-                        (true, Operation.Tst) => "ALU.SetZeroSignFlags(ref core.Cpsr, result);",
-                        (true, Operation.Teq) => "ALU.SetZeroSignFlags(ref core.Cpsr, result);",
-                        (true, Operation.Cmp) => "ALU.SetZeroSignFlags(ref core.Cpsr, result);",
-                        (true, Operation.Cmn) => "ALU.SetZeroSignFlags(ref core.Cpsr, result);",
-                        (true, _) => "ALU.SetZeroSignFlags(ref core.Cpsr, core.R[rd]);",
+                        (true, Operation.Tst) => "SetZeroSignFlags(ref core.Cpsr, result);",
+                        (true, Operation.Teq) => "SetZeroSignFlags(ref core.Cpsr, result);",
+                        (true, Operation.Cmp) => "SetZeroSignFlags(ref core.Cpsr, result);",
+                        (true, Operation.Cmn) => "SetZeroSignFlags(ref core.Cpsr, result);",
+                        (true, _) => "SetZeroSignFlags(ref core.Cpsr, core.R[rd]);",
                     };
 
                     // First output the op_imm and ops_imm functions as those
@@ -125,7 +127,7 @@ internal static unsafe partial class Arm
         var rd = (instruction >> 12) & 0b1111;
         var imm = instruction & 0b1111_1111;
         var rot = ((instruction >> 8) & 0b1111) * 2;
-        var secondOperand = ALU.RORNoFlags(imm, (byte)rot); // TODO - Does carry get set to output of ROR from ALU?
+        var secondOperand = RORRegisterNoFlags(imm, (byte)rot); // TODO - Does carry get set to output of ROR from ALU?
         
         {opFunction}
 
@@ -150,23 +152,23 @@ internal static unsafe partial class Arm
                     {
                         var secondOperandStatement = (s, type) switch
                         {
-                            (false, OperandType.Lli) => "ALU.LSLNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
-                            (true, OperandType.Lli) => "ALU.LSL(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
-                            (false, OperandType.Lri) => "ALU.LSRNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
-                            (true, OperandType.Lri) => "ALU.LSR(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
-                            (false, OperandType.Ari) => "ALU.ASRNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
-                            (true, OperandType.Ari) => "ALU.ASR(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
-                            (false, OperandType.Rri) => "ALU.RORNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
-                            (true, OperandType.Rri) => "ALU.ROR(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (false, OperandType.Lli) => "LSLNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
+                            (true, OperandType.Lli) => "LSL(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (false, OperandType.Lri) => "LSRImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
+                            (true, OperandType.Lri) => "LSRImmediate(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (false, OperandType.Ari) => "ASRImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
+                            (true, OperandType.Ari) => "ASRImmediate(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (false, OperandType.Rri) => "RORImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (true, OperandType.Rri) => "RORImmediate(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
 
-                            (false, OperandType.Llr) => "ALU.LSLNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
-                            (true, OperandType.Llr) => "ALU.LSL(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
-                            (false, OperandType.Lrr) => "ALU.LSRNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
-                            (true, OperandType.Lrr) => "ALU.LSR(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
-                            (false, OperandType.Arr) => "ALU.ASRNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
-                            (true, OperandType.Arr) => "ALU.ASR(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
-                            (false, OperandType.Rrr) => "ALU.RORNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
-                            (true, OperandType.Rrr) => "ALU.ROR(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
+                            (false, OperandType.Llr) => "LSLNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (true, OperandType.Llr) => "LSL(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
+                            (false, OperandType.Lrr) => "LSRRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (true, OperandType.Lrr) => "LSRRegister(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
+                            (false, OperandType.Arr) => "ASRRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (true, OperandType.Arr) => "ASRRegister(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
+                            (false, OperandType.Rrr) => "RORRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (true, OperandType.Rrr) => "RORRegister(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
                             _ => throw new Exception("Invalid data operation"),
                         };
 

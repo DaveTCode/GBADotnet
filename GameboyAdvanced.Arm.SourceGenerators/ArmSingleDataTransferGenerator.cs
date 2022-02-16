@@ -27,6 +27,8 @@ namespace GameboyAdvanced.Arm.SourceGenerators
         public void Execute(GeneratorExecutionContext context)
         {
             var fullSource = @"// Auto-generated code
+using static GameboyAdvanced.Core.Cpu.ALU;
+using static GameboyAdvanced.Core.Cpu.Shifter;
 using GameboyAdvanced.Core.Cpu.Shared;
 namespace GameboyAdvanced.Core.Cpu;
 
@@ -101,10 +103,10 @@ var shiftAmount = (byte)((instruction >> 7) & 0b1_1111);",
                                     };
                                     var offsetAdjustStr = shiftedStr + (shiftType switch
                                     {
-                                        ShiftType.Ll => "var offset = ALU.LSLNoFlags(core.R[rm], shiftAmount);",
-                                        ShiftType.Lr => "var offset = ALU.LSRNoFlags(core.R[rm], shiftAmount);",
-                                        ShiftType.Ar => "var offset = ALU.ASRNoFlags(core.R[rm], shiftAmount);",
-                                        ShiftType.Rr => "var offset = ALU.RORNoFlags(core.R[rm], shiftAmount);",
+                                        ShiftType.Ll => "var offset = LSLNoFlags(core.R[rm], shiftAmount);",
+                                        ShiftType.Lr => "var offset = LSRImmediateNoFlags(core.R[rm], shiftAmount);",
+                                        ShiftType.Ar => "var offset = ASRImmediateNoFlags(core.R[rm], shiftAmount);",
+                                        ShiftType.Rr => "var offset = RORRegisterNoFlags(core.R[rm], shiftAmount);",
                                         ShiftType.Imm => "var offset = instruction & 0b1111_1111_1111;",
                                         _ => throw new Exception(),
                                     });

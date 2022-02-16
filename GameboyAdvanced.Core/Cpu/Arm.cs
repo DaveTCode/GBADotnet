@@ -1,4 +1,6 @@
-﻿namespace GameboyAdvanced.Core.Cpu;
+﻿using GameboyAdvanced.Core.Cpu.Shared;
+
+namespace GameboyAdvanced.Core.Cpu;
 
 internal static unsafe partial class Arm
 {
@@ -271,141 +273,6 @@ internal static unsafe partial class Arm
 
 #pragma warning disable IDE1006 // Naming Styles
 
-    /// <summary>
-    /// Unused but leaving here in case I want to compare costs of running this 
-    /// vs the auto generated code
-    /// </summary>
-    internal static void data_op(Core core, uint instruction)
-    {
-        var is_immediate = (instruction >> 25) & 0b1;
-        var opcode = (instruction >> 21) & 0b1111;
-        var s = (instruction >> 20) & 0b1;
-        var rn = (instruction >> 16) & 0b1111;
-        var rd = (instruction >> 12) & 0b1111;
-
-        uint secondOperand;
-        if (is_immediate == 1)
-        {
-            var imm = instruction & 0b1111_1111;
-            var rot = ((instruction >> 8) & 0b1111) * 2;
-            secondOperand = ALU.RORNoFlags(imm, (byte)rot); // TODO - Does carry get set to output of ROR from ALU?
-        }
-        else
-        {
-            var shift = (instruction >> 4) & 0b1111_1111;
-            var rm = instruction & 0b1111;
-            var useRegister = shift & 0b1;
-            var shiftType = (shift >> 1) & 0b11;
-
-            secondOperand = (s, useRegister, shiftType) switch
-            {
-                (0, 0, 0b00) => ALU.LSLNoFlags(core.R[rm], (byte)((shift >> 7) & 0b1_1111)),
-                (0, 0, 0b01) => ALU.LSRNoFlags(core.R[rm], (byte)((shift >> 7) & 0b1_1111)),
-                (0, 0, 0b10) => ALU.ASRNoFlags(core.R[rm], (byte)((shift >> 7) & 0b1_1111)),
-                (0, 0, 0b11) => ALU.RORNoFlags(core.R[rm], (byte)((shift >> 7) & 0b1_1111)),
-                (1, 0, 0b00) => ALU.LSL(core.R[rm], (byte)((shift >> 7) & 0b1_1111), ref core.Cpsr),
-                (1, 0, 0b01) => ALU.LSR(core.R[rm], (byte)((shift >> 7) & 0b1_1111), ref core.Cpsr),
-                (1, 0, 0b10) => ALU.ASR(core.R[rm], (byte)((shift >> 7) & 0b1_1111), ref core.Cpsr),
-                (1, 0, 0b11) => ALU.ROR(core.R[rm], (byte)((shift >> 7) & 0b1_1111), ref core.Cpsr),
-
-                (0, 1, 0b00) => ALU.LSLNoFlags(core.R[rm], (byte)core.R[(shift >> 8) & 0b1111]),
-                (0, 1, 0b01) => ALU.LSRNoFlags(core.R[rm], (byte)core.R[(shift >> 8) & 0b1111]),
-                (0, 1, 0b10) => ALU.ASRNoFlags(core.R[rm], (byte)core.R[(shift >> 8) & 0b1111]),
-                (0, 1, 0b11) => ALU.RORNoFlags(core.R[rm], (byte)core.R[(shift >> 8) & 0b1111]),
-
-                (1, 1, 0b00) => ALU.LSL(core.R[rm], (byte)core.R[(shift >> 8) & 0b1111], ref core.Cpsr),
-                (1, 1, 0b01) => ALU.LSR(core.R[rm], (byte)core.R[(shift >> 8) & 0b1111], ref core.Cpsr),
-                (1, 1, 0b10) => ALU.ASR(core.R[rm], (byte)core.R[(shift >> 8) & 0b1111], ref core.Cpsr),
-                (1, 1, 0b11) => ALU.ROR(core.R[rm], (byte)core.R[(shift >> 8) & 0b1111], ref core.Cpsr),
-                _ => throw new Exception("Invalid data operation"),
-            };
-
-            // Shifts by a register quantity cause a single I cycle which we represent by adding a wait state
-            // Note that I cycles aren't wait states, but I'm not convinced that you can tell from outside the cpu at the moment!
-            if (useRegister == 1)
-            {
-                core.WaitStates++;
-            }
-        }
-
-        switch (opcode)
-        {
-            case 0x0: // AND
-                core.R[rd] = core.R[rn] & secondOperand;
-                break;
-            case 0x1: // EOR
-                core.R[rd] = core.R[rn] ^ secondOperand;
-                break;
-            case 0x2: // SUB
-                core.R[rd] = ALU.SUB(core.R[rn], secondOperand, ref core.Cpsr);
-                break;
-            case 0x3: // RSB
-                core.R[rd] = ALU.SUB(secondOperand, core.R[rn], ref core.Cpsr);
-                break;
-            case 0x4: // ADD
-                core.R[rd] = ALU.ADD(core.R[rn], secondOperand, ref core.Cpsr);
-                break;
-            case 0x5: // ADC
-                core.R[rd] = ALU.ADC(core.R[rn], secondOperand, ref core.Cpsr);
-                break;
-            case 0x6: // SBC
-                core.R[rd] = ALU.SBC(core.R[rn], secondOperand, ref core.Cpsr);
-                break;
-            case 0x7: // RSC
-                core.R[rd] = ALU.SBC(secondOperand, core.R[rn], ref core.Cpsr);
-                break;
-            case 0x8: // TST
-                {
-                    var result = core.R[rn] & secondOperand;
-                    ALU.SetZeroSignFlags(ref core.Cpsr, result);
-                    return;
-                }
-            case 0x9: // TEQ
-                {
-                    var result = core.R[rn] ^ secondOperand;
-                    ALU.SetZeroSignFlags(ref core.Cpsr, result);
-                    return;
-                }
-            case 0xA: // CMP
-                {
-                    var result = ALU.SUB(core.R[rn], secondOperand, ref core.Cpsr);
-                    ALU.SetZeroSignFlags(ref core.Cpsr, result);
-                    return;
-                }
-            case 0xB: // CMN
-                {
-                    var result = ALU.ADD(core.R[rn], secondOperand, ref core.Cpsr);
-                    ALU.SetZeroSignFlags(ref core.Cpsr, result);
-                    return;
-                }
-            case 0xC: // ORR
-                core.R[rd] = core.R[rn] | secondOperand;
-                break;
-            case 0xD: // MOV
-                core.R[rd] = secondOperand;
-                break;
-            case 0xE: // BIC
-                core.R[rd] = core.R[rn] & ~secondOperand;
-                break;
-            case 0xF: // MVN
-                core.R[rd] = ~secondOperand;
-                break;
-            default:
-                throw new Exception("Invalid data operation");
-        }
-
-        if (s == 1) ALU.SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
-
-        // Writes to PC cause 2 extra cycles as the pipeline is flushed, note
-        // though that the 2 extra cycles aren't specific to the instruction
-        // they're an artifact of the flushed pipeline so don't get treated
-        // here as wait states
-        if (rd == 15)
-        {
-            core.ClearPipeline();
-        }
-    }
-
     #region ALU Partials
 
     static partial void and_lli(Core core, uint instruction);
@@ -666,10 +533,36 @@ internal static unsafe partial class Arm
     internal static void undefined(Core core, uint instruction) => throw new NotImplementedException("undefined not implemented");
 
     #region Multiply
-    internal static void mul(Core core, uint instruction) => throw new NotImplementedException("mul not implemented");
-    internal static void muls(Core core, uint instruction) => throw new NotImplementedException("muls not implemented");
-    internal static void mla(Core core, uint instruction) => throw new NotImplementedException("mla not implemented");
-    internal static void mlas(Core core, uint instruction) => throw new NotImplementedException("mlas not implemented");
+    internal static void mul(Core core, uint instruction)
+    {
+        var rd = (instruction >> 16) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyUtils.SetupForMultiply(core, (int)rd, (int)rs, (int)rm);
+    }
+    internal static void muls(Core core, uint instruction)
+    {
+        var rd = (instruction >> 16) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyUtils.SetupForMultiplyFlags(core, (int)rd, (int)rs, (int)rm);
+    }
+    internal static void mla(Core core, uint instruction)
+    {
+        var rd = (instruction >> 16) & 0b1111;
+        var rn = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyUtils.SetupForMultiplyAccumulate(core, (int)rd, (int)rs, (int)rm, (int)rn);
+    }
+    internal static void mlas(Core core, uint instruction)
+    {
+        var rd = (instruction >> 16) & 0b1111;
+        var rn = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyUtils.SetupForMultiplyAccumulateFlags(core, (int)rd, (int)rs, (int)rm, (int)rn);
+    }
     internal static void umull(Core core, uint instruction) => throw new NotImplementedException("umull not implemented");
     internal static void umulls(Core core, uint instruction) => throw new NotImplementedException("umulls not implemented");
     internal static void umlal(Core core, uint instruction) => throw new NotImplementedException("umlal not implemented");
@@ -978,26 +871,27 @@ internal static unsafe partial class Arm
         core.MoveExecutePipelineToNextInstruction();
     }
 
-    internal static void stc_ofm(Core core, uint instruction) => throw new NotImplementedException("stc_ofm not implemented");
-    internal static void ldc_ofm(Core core, uint instruction) => throw new NotImplementedException("ldc_ofm not implemented");
-    internal static void stc_prm(Core core, uint instruction) => throw new NotImplementedException("stc_prm not implemented");
-    internal static void ldc_prm(Core core, uint instruction) => throw new NotImplementedException("ldc_prm not implemented");
-    internal static void stc_ofp(Core core, uint instruction) => throw new NotImplementedException("stc_ofp not implemented");
-    internal static void ldc_ofp(Core core, uint instruction) => throw new NotImplementedException("ldc_ofp not implemented");
-    internal static void stc_prp(Core core, uint instruction) => throw new NotImplementedException("stc_prp not implemented");
-    internal static void ldc_prp(Core core, uint instruction) => throw new NotImplementedException("ldc_prp not implemented");
-    internal static void stc_unm(Core core, uint instruction) => throw new NotImplementedException("stc_unm not implemented");
-    internal static void ldc_unm(Core core, uint instruction) => throw new NotImplementedException("ldc_unm not implemented");
-    internal static void stc_ptm(Core core, uint instruction) => throw new NotImplementedException("stc_ptm not implemented");
-    internal static void ldc_ptm(Core core, uint instruction) => throw new NotImplementedException("ldc_ptm not implemented");
-    internal static void stc_unp(Core core, uint instruction) => throw new NotImplementedException("stc_unp not implemented");
-    internal static void ldc_unp(Core core, uint instruction) => throw new NotImplementedException("ldc_unp not implemented");
-    internal static void stc_ptp(Core core, uint instruction) => throw new NotImplementedException("stc_ptp not implemented");
-    internal static void ldc_ptp(Core core, uint instruction) => throw new NotImplementedException("ldc_ptp not implemented");
-    internal static void cdp(Core core, uint instruction) => throw new NotImplementedException("cdp not implemented");
-    internal static void mcr(Core core, uint instruction) => throw new NotImplementedException("mcr not implemented");
-    internal static void mrc(Core core, uint instruction) => throw new NotImplementedException("mrc not implemented");
     internal static void swi(Core core, uint instruction) => throw new NotImplementedException("swi not implemented");
+
+    internal static void stc_ofm(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void ldc_ofm(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void stc_prm(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void ldc_prm(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void stc_ofp(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void ldc_ofp(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void stc_prp(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void ldc_prp(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void stc_unm(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void ldc_unm(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void stc_ptm(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void ldc_ptm(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void stc_unp(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void ldc_unp(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void stc_ptp(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void ldc_ptp(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void cdp(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void mcr(Core core, uint instruction) => throw new Exception("No coprocessors");
+    internal static void mrc(Core core, uint instruction) => throw new Exception("No coprocessors");
 
 #pragma warning restore IDE1006 // Naming Styles
 }

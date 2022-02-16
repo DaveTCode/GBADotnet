@@ -194,7 +194,7 @@ internal static class ArmDisassembler
         {
             var i = op2 & 0b1111_1111;
             var r = (op2 >> 8) & 0b1111;
-            operand2 = $"#{ALU.RORNoFlags(i, (byte)(r * 2)):X}";
+            operand2 = $"#{Shifter.RORRegisterNoFlags(i, (byte)(r * 2), ref core.Cpsr):X}";
         }
         else
         {

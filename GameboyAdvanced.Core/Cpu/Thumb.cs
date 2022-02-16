@@ -1,5 +1,6 @@
 ﻿using GameboyAdvanced.Core.Cpu.Shared;
 using static GameboyAdvanced.Core.Cpu.ALU;
+using static GameboyAdvanced.Core.Cpu.Shifter;
 
 namespace GameboyAdvanced.Core.Cpu;
 
@@ -168,7 +169,7 @@ internal unsafe static class Thumb
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        core.R[rd] = LSR(core.R[rs], (byte)offset, ref core.Cpsr);
+        core.R[rd] = LSRImmediate(core.R[rs], (byte)offset, ref core.Cpsr);
 
         core.MoveExecutePipelineToNextInstruction();
     }
@@ -179,7 +180,7 @@ internal unsafe static class Thumb
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
-        core.R[rd] = ASR(core.R[rs], (byte)offset, ref core.Cpsr);
+        core.R[rd] = ASRImmediate(core.R[rs], (byte)offset, ref core.Cpsr);
 
         core.MoveExecutePipelineToNextInstruction();
     }
@@ -287,11 +288,11 @@ internal unsafe static class Thumb
                 core.WaitStates++; // Extra I cycle
                 break;
             case 0x3: // LSR
-                core.R[rd] = LSR(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.R[rd] = LSRRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
                 core.WaitStates++; // Extra I cycle
                 break;
             case 0x4: // ASR
-                core.R[rd] = ASR(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.R[rd] = ASRRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
                 core.WaitStates++; // Extra I cycle
                 break;
             case 0x5: // ADC
@@ -301,7 +302,7 @@ internal unsafe static class Thumb
                 core.R[rd] = SBC(core.R[rd], core.R[rs], ref core.Cpsr);
                 break;
             case 0x7: // ROR
-                core.R[rd] = ROR(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.R[rd] = RORRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
                 core.WaitStates++; // Extra I cycle
                 break;
             case 0x8: // TST
@@ -322,7 +323,8 @@ internal unsafe static class Thumb
                 SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
                 break;
             case 0xD: // MUL
-                throw new NotImplementedException("MUL not implemented yet");
+                MultiplyUtils.SetupForMultiplyFlags(core, rd, rs, rd);
+                break;
             case 0xE: // BIC
                 core.R[rd] = core.R[rd] & (~core.R[rs]);
                 SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
