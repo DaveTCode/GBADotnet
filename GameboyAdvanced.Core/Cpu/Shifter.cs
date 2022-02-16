@@ -87,10 +87,9 @@ internal static class Shifter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint ASRRegister(uint op1, byte offset, ref CPSR cpsr)
     {
-        if (offset == 0) return op1;
-
         var (result, carry) = offset switch
         {
+            0 => (op1, cpsr.CarryFlag),
             _ when offset < 32 => ((uint)((int)op1 >> offset), ((op1 >> (offset - 1)) & 1) == 1),
             _ => ((op1 & 0x8000_0000) == 0x8000_0000 ? 0xFFFF_FFFF : 0, (op1 & 0x8000_0000) == 0x8000_0000),
         };
@@ -134,7 +133,11 @@ internal static class Shifter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint RORRegister(uint op1, byte offset, ref CPSR cpsr)
     {
-        if (offset == 0) return op1;
+        if (offset == 0) 
+        {
+            SetZeroSignFlags(ref cpsr, op1);
+            return op1;
+        }
         if (offset > 32) offset = (byte)(offset & 31);
 
         var (result, carry) = offset switch
@@ -162,6 +165,7 @@ internal static class Shifter
         {
             var c = cpsr.CarryFlag ? 0x8000_0000 : 0;
             cpsr.CarryFlag = (op1 & 0b1) == 0b1;
+            SetZeroSignFlags(ref cpsr, op1 >> 1);
             return (op1 >> 1) | c;
         }
 
