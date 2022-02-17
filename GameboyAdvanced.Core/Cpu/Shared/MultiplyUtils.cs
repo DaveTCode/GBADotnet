@@ -30,6 +30,46 @@ internal static unsafe class MultiplyUtils
         _requiredCycles++; // 1 extra I cycle for MLA operation
     }
 
+    internal static int CyclesForMultiplyA(uint operand)
+    {
+        if ((operand & 0xFFFF_FF00) is 0 or 0xFFFF_FF00)
+        {
+            return 1;
+        }
+        else if ((operand & 0xFFFF_0000) is 0 or 0xFFFF_0000)
+        {
+            return 2;
+        }
+        else if ((operand & 0xFF00_0000) is 0 or 0xFF00_0000)
+        {
+            return 3;
+        }
+        else
+        {
+            return 4;
+        }
+    }
+
+    internal static int CyclesForMultiplyB(uint operand)
+    {
+        if ((operand & 0xFFFF_FF00) is 0)
+        {
+            return 1;
+        }
+        else if ((operand & 0xFFFF_0000) is 0)
+        {
+            return 2;
+        }
+        else if ((operand & 0xFF00_0000) is 0)
+        {
+            return 3;
+        }
+        else
+        {
+            return 4;
+        }
+    }
+
     internal static void SetupForMultiply(Core core, int rd, int rs, int rm)
     {
         core.SEQ = false;
@@ -37,24 +77,7 @@ internal static unsafe class MultiplyUtils
         core.nMREQ = true;
         _destinationReg = rd;
         _currentCycles = 0;
-
-        if ((core.R[rs] & 0xFFFF_FF00) is 0 or 0xFFFF_FF00)
-        {
-            _requiredCycles = 1;
-        }
-        else if ((core.R[rs] & 0xFFFF_0000) is 0 or 0xFFFF_0000)
-        {
-            _requiredCycles = 2;
-        }
-        else if ((core.R[rs] & 0xFF00_0000) is 0 or 0xFF00_0000)
-        {
-            _requiredCycles = 3;
-        }
-        else
-        {
-            _requiredCycles = 4;
-        }
-
+        _requiredCycles = CyclesForMultiplyA(core.R[rs]); // TODO - Suspect, is it really A not B? Data sheet says yes but they've been wrong before
         _multiplyResult = core.R[rs] * core.R[rm];
 
         core.NextExecuteAction = &MultiplyCycle;

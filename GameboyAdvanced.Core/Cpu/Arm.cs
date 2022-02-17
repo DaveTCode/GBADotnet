@@ -563,14 +563,70 @@ internal static unsafe partial class Arm
         var rm = instruction & 0b1111;
         MultiplyUtils.SetupForMultiplyAccumulateFlags(core, (int)rd, (int)rs, (int)rm, (int)rn);
     }
-    internal static void umull(Core core, uint instruction) => throw new NotImplementedException("umull not implemented");
-    internal static void umulls(Core core, uint instruction) => throw new NotImplementedException("umulls not implemented");
-    internal static void umlal(Core core, uint instruction) => throw new NotImplementedException("umlal not implemented");
-    internal static void umlals(Core core, uint instruction) => throw new NotImplementedException("umlals not implemented");
-    internal static void smull(Core core, uint instruction) => throw new NotImplementedException("smull not implemented");
-    internal static void smulls(Core core, uint instruction) => throw new NotImplementedException("smulls not implemented");
-    internal static void smlal(Core core, uint instruction) => throw new NotImplementedException("smlal not implemented");
-    internal static void smlals(Core core, uint instruction) => throw new NotImplementedException("smlals not implemented");
+    internal static void umull(Core core, uint instruction)
+    {
+        var rdHi = (instruction >> 16) & 0b1111;
+        var rdLo = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyLongUtils.SetupForMultiplyLong(core, rdHi, rdLo, rs, rm);
+    }
+    internal static void umulls(Core core, uint instruction)
+    {
+        var rdHi = (instruction >> 16) & 0b1111;
+        var rdLo = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyLongUtils.SetupForMultiplyLongFlags(core, rdHi, rdLo, rs, rm);
+    }
+    internal static void umlal(Core core, uint instruction)
+    {
+        var rdHi = (instruction >> 16) & 0b1111;
+        var rdLo = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyLongUtils.SetupForMultiplyLongAccumulate(core, rdHi, rdLo, rs, rm);
+    }
+    internal static void umlals(Core core, uint instruction)
+    {
+        var rdHi = (instruction >> 16) & 0b1111;
+        var rdLo = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyLongUtils.SetupForMultiplyLongAccumulateFlags(core, rdHi, rdLo, rs, rm);
+    }
+    internal static void smull(Core core, uint instruction)
+    {
+        var rdHi = (instruction >> 16) & 0b1111;
+        var rdLo = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyLongUtils.SetupForSignedMultiplyLong(core, rdHi, rdLo, rs, rm);
+    }
+    internal static void smulls(Core core, uint instruction)
+    {
+        var rdHi = (instruction >> 16) & 0b1111;
+        var rdLo = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyLongUtils.SetupForSignedMultiplyLongFlags(core, rdHi, rdLo, rs, rm);
+    }
+    internal static void smlal(Core core, uint instruction)
+    {
+        var rdHi = (instruction >> 16) & 0b1111;
+        var rdLo = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyLongUtils.SetupForSignedMultiplyAccumulateLong(core, rdHi, rdLo, rs, rm);
+    }
+    internal static void smlals(Core core, uint instruction)
+    {
+        var rdHi = (instruction >> 16) & 0b1111;
+        var rdLo = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+        MultiplyLongUtils.SetupForSignedMultiplyAccumulateLongFlags(core, rdHi, rdLo, rs, rm);
+    }
     #endregion
 
     #region Half Word & Signed Single Data Transfers
@@ -661,8 +717,56 @@ internal static unsafe partial class Arm
     #endregion
 
     #region SWP
-    internal static void swp(Core core, uint instruction) => throw new NotImplementedException("swp not implemented");
-    internal static void swpb(Core core, uint instruction) => throw new NotImplementedException("swpb not implemented");
+    private static uint _swpCachedVal;
+    private static uint _swpDestinationReg;
+    private static uint _swpSourceReg;
+    private static uint _dataMask;
+
+    internal static void swpCycle2(Core core, uint _instruction)
+    {
+        _swpCachedVal = core.D;
+        core.nRW = true;
+        core.D = core.R[_swpSourceReg] & _dataMask;
+        core.NextExecuteAction = &swpCycle3;
+    }
+
+    internal static void swpCycle3(Core core, uint _instruction)
+    {
+        core.nRW = false;
+        core.nMREQ = true;
+        core.NextExecuteAction = &swpCycle4;
+    }
+
+    internal static void swpCycle4(Core core, uint instruction)
+    {
+        core.R[_swpDestinationReg] = _swpCachedVal & _dataMask;
+        Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
+    }
+
+    internal static void swp(Core core, uint instruction)
+    {
+        var rn = (instruction >> 16) & 0b1111;
+        _swpDestinationReg = (instruction >> 12) & 0b1111;
+        _swpSourceReg = instruction & 0b1111;
+        _dataMask = 0xFFFF_FFFF;
+        core.A = core.R[rn];
+        core.MAS = BusWidth.Word;
+        core.SEQ = false;
+        core.nOPC = true;
+        core.NextExecuteAction = &swpCycle2;
+    }
+    internal static void swpb(Core core, uint instruction)
+    {
+        var rn = (instruction >> 16) & 0b1111;
+        _swpDestinationReg = (instruction >> 12) & 0b1111;
+        _swpSourceReg = instruction & 0b1111;
+        _dataMask = 0xFF;
+        core.A = core.R[rn];
+        core.MAS = BusWidth.Byte;
+        core.SEQ = false;
+        core.nOPC = true;
+        core.NextExecuteAction = &swpCycle2;
+    }
     #endregion SWP
 
     #region Single Data Transfer partials

@@ -12,6 +12,13 @@ internal static class ALU
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void SetZeroSignFlags(ref CPSR cpsr, ulong result)
+    {
+        cpsr.SignFlag = ((result >> 63) & 1) == 1;
+        cpsr.ZeroFlag = result == 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint ADD(uint op1, uint op2, ref CPSR cpsr)
     {
         var result = (long)op1 + op2;

@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		Notes.md = Notes.md
+		Tests.md = Tests.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Core.Benchmarks", "GameboyAdvanced.Core.Benchmarks\GameboyAdvanced.Core.Benchmarks.csproj", "{BE81EEE1-B4F2-446A-AB22-6E2DF5EF63F3}"
@@ -25,7 +26,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Arm.SourceG
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.BlazorClient", "GameboyAdvanced.Blazor\GameboyAdvanced.BlazorClient.csproj", "{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameboyAdvanced.Headless", "GameboyAdvanced.Headless\GameboyAdvanced.Headless.csproj", "{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Headless", "GameboyAdvanced.Headless\GameboyAdvanced.Headless.csproj", "{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
