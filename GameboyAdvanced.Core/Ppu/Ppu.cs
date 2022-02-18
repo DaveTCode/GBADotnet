@@ -6,6 +6,16 @@
 /// </summary>
 internal class Ppu
 {
+    private const int CyclesPerDot = 4;
+    private const int CyclesPerVisibleLine = CyclesPerDot * Device.WIDTH; // 960
+    private const int HBlankDots = 68;
+    private const int CyclesPerHBlank = CyclesPerDot * HBlankDots; // 272
+    private const int CyclesPerLine = CyclesPerVisibleLine + CyclesPerHBlank; // 1232
+    private const int VBlankLines = 68;
+    private const int VisibleLineCycles = Device.HEIGHT * CyclesPerLine; // 197,120
+    private const int VBlankCycles = VBlankLines * CyclesPerLine; // 83,776
+    private const int FrameCycles = VisibleLineCycles + VBlankCycles; // 280,896
+
     // TODO - Might be more efficient to store as ushorts given access is over 16 bit bus?
     private readonly byte[] _paletteRam = new byte[0x400]; // 1KB
     private readonly byte[] _vram = new byte[0x18000]; // 96KB
@@ -16,7 +26,15 @@ internal class Ppu
     private ushort _greenSwap;
     private GeneralLcdStatus _dispstat = new();
     private ushort _verticalCounter;
-    private readonly BgControlReg[] _bgCnt = new BgControlReg[4] { new BgControlReg(), new BgControlReg(), new BgControlReg(), new BgControlReg() };
+    private readonly Background[] _backgrounds = new Background[4] { new Background(0), new Background(1), new Background(2), new Background(3) };
+
+    private WindowControl _winIn = new();
+    private WindowControl _winOut = new();
+    private readonly Window[] _windows = new Window[2] { new Window(0), new Window(1) };
+
+    private Mosaic _mosaic = new();
+
+    private int _currentFrameCycles;
 
     internal void Reset()
     {
@@ -28,9 +46,16 @@ internal class Ppu
         _greenSwap = 0;
         _dispstat = new GeneralLcdStatus();
         _verticalCounter = 0;
-        for (var ii = 0; ii < 4; ii++)
+        _winIn = new WindowControl();
+        _winOut = new WindowControl();
+        _mosaic = new Mosaic();
+        foreach (var bg in _backgrounds)
         {
-            _bgCnt[ii] = new BgControlReg();
+            bg.Reset();
+        }
+        foreach (var window in _windows)
+        {
+            window.Reset();
         }
     }
 
@@ -40,6 +65,7 @@ internal class Ppu
     /// </summary>
     internal byte[] GetFrame()
     {
+        // TODO - BG mode 0-2
         if (_dispcnt.BgMode == BgMode.Video3)
         {
             // TODO - This just hacks up a return of the vram buffer from mode 3 -> RGB instead of processing per pixel
@@ -56,6 +82,8 @@ internal class Ppu
         }
         else if (_dispcnt.BgMode == BgMode.Video4)
         {
+            var baseAddress = _dispcnt.Frame1Select ? 0x0600A000 : 0x0;
+
             // TODO - This just hacks up a return of the vram buffer from mode 4 -> palette -> RGB instead of processing per pixel
             for (var row = 0; row < 160; row++)
             {
@@ -63,11 +91,15 @@ internal class Ppu
                 {
                     var vramPtr = ((row * 240) + col);
                     var fbPtr = 4 * vramPtr;
-                    var paletteIndex = _vram[vramPtr] * 2; // 2 bytes per color in palette
+                    var paletteIndex = _vram[baseAddress + vramPtr] * 2; // 2 bytes per color in palette
                     var color = _paletteRam[paletteIndex] | (_paletteRam[paletteIndex + 1] << 8);
                     Utils.ColorToRgb(color, _frameBuffer.AsSpan(fbPtr));
                 }
             }
+        }
+        else if (_dispcnt.BgMode == BgMode.Video5)
+        {
+            throw new NotImplementedException("BG Mode 5 not implemented");
         }
 
         return _frameBuffer;
@@ -76,10 +108,10 @@ internal class Ppu
     /// <summary>
     /// Step the PPU by the specified number of cycles
     /// </summary>
-    /// <param name="cycles"></param>
     internal void Step(int cycles)
     {
         // TODO - Implement PPU
+        _currentFrameCycles += cycles;
     }
 
     internal void WriteRegisterByte(uint address, byte value) => throw new NotImplementedException("Writing byte wide values to PPU register not implemented");
@@ -99,63 +131,104 @@ internal class Ppu
                 _dispstat.Update(value);
                 break;
             case 0x0400_0008:
-                _bgCnt[0].Update(value);
+                _backgrounds[0].Control.Update(value);
                 break;
             case 0x0400_000A:
-                _bgCnt[1].Update(value);
+                _backgrounds[1].Control.Update(value);
                 break;
             case 0x0400_000C:
-                _bgCnt[2].Update(value);
+                _backgrounds[2].Control.Update(value);
                 break;
             case 0x0400_000E:
-                _bgCnt[3].Update(value);
+                _backgrounds[3].Control.Update(value);
                 break;
             case 0x0400_0010:
-                throw new NotImplementedException("BG0HOFS not yet implemented");
+                _backgrounds[0].XOffset = value & 0x1FF;
+                break;
             case 0x0400_0012:
-                throw new NotImplementedException("BG0VOFS not yet implemented");
+                _backgrounds[0].YOffset = value & 0x1FF;
+                break;
             case 0x0400_0014:
-                throw new NotImplementedException("BG1HOFS not yet implemented");
+                _backgrounds[1].XOffset = value & 0x1FF;
+                break;
             case 0x0400_0016:
-                throw new NotImplementedException("BG1VOFS not yet implemented");
+                _backgrounds[1].YOffset = value & 0x1FF;
+                break;
             case 0x0400_0018:
-                throw new NotImplementedException("BG2HOFS not yet implemented");
+                _backgrounds[2].XOffset = value & 0x1FF;
+                break;
             case 0x0400_001A:
-                throw new NotImplementedException("BG2VOFS not yet implemented");
+                _backgrounds[2].YOffset = value & 0x1FF;
+                break;
             case 0x0400_001C:
-                throw new NotImplementedException("BG3HOFS not yet implemented");
+                _backgrounds[3].XOffset = value & 0x1FF;
+                break;
             case 0x0400_001E:
-                throw new NotImplementedException("BG3VOFS not yet implemented");
+                _backgrounds[3].YOffset = value & 0x1FF;
+                break;
             case 0x0400_0020:
-                throw new NotImplementedException("BG2PA not yet implemented");
+                _backgrounds[2].Dx = value;
+                break;
             case 0x0400_0022:
-                throw new NotImplementedException("BG2PB not yet implemented");
+                _backgrounds[2].Dmx = value;
+                break;
             case 0x0400_0024:
-                throw new NotImplementedException("BG2PC not yet implemented");
+                _backgrounds[2].Dy = value;
+                break;
             case 0x0400_0026:
-                throw new NotImplementedException("BG2PD not yet implemented");
+                _backgrounds[2].Dmy = value;
+                break;
+            case 0x0400_0028:
+                _backgrounds[2].RefPointX = (int)((_backgrounds[2].RefPointX & 0xFFFF_0000) | value);
+                break;
+            case 0x0400_002A:
+                _backgrounds[2].RefPointX = (_backgrounds[2].RefPointX & 0x0000_FFFF) | (value << 16);
+                _backgrounds[2].RefPointX = (_backgrounds[2].RefPointX << 4) >> 4;
+                break;
             case 0x0400_0030:
-                throw new NotImplementedException("BG3PA not yet implemented");
+                _backgrounds[3].Dx = value;
+                break;
             case 0x0400_0032:
-                throw new NotImplementedException("BG3PB not yet implemented");
+                _backgrounds[3].Dmx = value;
+                break;
             case 0x0400_0034:
-                throw new NotImplementedException("BG3PC not yet implemented");
+                _backgrounds[3].Dy = value;
+                break;
             case 0x0400_0036:
-                throw new NotImplementedException("BG3PD not yet implemented");
-            case 0x0400_0040:
-                throw new NotImplementedException("WIN0H not yet implemented");
-            case 0x0400_0042:
-                throw new NotImplementedException("WIN1H not yet implemented");
-            case 0x0400_0044:
-                throw new NotImplementedException("WIN0V not yet implemented");
-            case 0x0400_0046:
-                throw new NotImplementedException("WIN1V not yet implemented");
-            case 0x0400_0048:
-                throw new NotImplementedException("WININ not yet implemented");
-            case 0x0400_004A:
-                throw new NotImplementedException("WINOUT not yet implemented");
-            case 0x0400_004C:
-                throw new NotImplementedException("MOSAIC not yet implemented");
+                _backgrounds[3].Dmy = value;
+                break;
+            case 0x0400_0038:
+                _backgrounds[3].RefPointX = (int)((_backgrounds[3].RefPointX & 0xFFFF_0000) | value);
+                break;
+            case 0x0400_003A:
+                _backgrounds[3].RefPointX = (_backgrounds[3].RefPointX & 0x0000_FFFF) | (value << 16);
+                _backgrounds[3].RefPointX = (_backgrounds[3].RefPointX << 4) >> 4;
+                break;
+            case 0x0400_0040: // WIN0H
+                _windows[0].X1 = value >> 8;
+                _windows[0].X2 = (value & 0xFF);
+                break;
+            case 0x0400_0042: // WIN1H
+                _windows[1].X1 = value >> 8;
+                _windows[1].X2 = (value & 0xFF);
+                break;
+            case 0x0400_0044: // WIN0V
+                _windows[0].Y1 = value >> 8;
+                _windows[0].Y2 = (value & 0xFF);
+                break;
+            case 0x0400_0046: // WIN1V
+                _windows[1].Y1 = value >> 8;
+                _windows[1].Y2 = (value & 0xFF);
+                break;
+            case 0x0400_0048: // WININ
+                _winIn.Set(value);
+                break;
+            case 0x0400_004A: // WINOUT
+                _winOut.Set(value);
+                break;
+            case 0x0400_004C: // MOSAIC
+                _mosaic.Set(value);
+                break;
             case 0x0400_0050:
                 throw new NotImplementedException("BLDCNT not yet implemented");
             case 0x0400_0052:
@@ -177,13 +250,13 @@ internal class Ppu
         0x0400_0000 => _dispcnt.Read(),
         0x0400_0002 => _greenSwap,
         0x0400_0004 => _dispstat.Read(),
-        0x0400_0006 => _verticalCounter,
-        0x0400_0008 => _bgCnt[0].Read(),
-        0x0400_000A => _bgCnt[1].Read(),
-        0x0400_000C => _bgCnt[2].Read(),
-        0x0400_000E => _bgCnt[3].Read(),
-        0x0400_0048 => throw new NotImplementedException("WININ register not implemented"),
-        0x0400_004A => throw new NotImplementedException("WINOUT register not implemented"),
+        0x0400_0006 => (ushort)(_currentFrameCycles / CyclesPerLine),
+        0x0400_0008 => _backgrounds[0].Control.Read(),
+        0x0400_000A => _backgrounds[1].Control.Read(),
+        0x0400_000C => _backgrounds[2].Control.Read(),
+        0x0400_000E => _backgrounds[3].Control.Read(),
+        0x0400_0048 => _winIn.Get(),
+        0x0400_004A => _winOut.Get(),
         0x0400_0050 => throw new NotImplementedException("BLDCNT register not implemented"),
         0x0400_0052 => throw new NotImplementedException("BLDALPHA register not implemented"),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Unmapped PPU register read at {address:X8}") // TODO - Handle unused addresses properly
@@ -222,6 +295,7 @@ internal class Ppu
 
     internal void WriteHalfWord(uint address, ushort value)
     {
+        // TODO - "VRAM and Palette RAM may be accessed during H-Blanking. OAM can accessed only if "H-Blank Interval Free" bit in DISPCNT register is set."
         switch (address)
         {
             case uint _ when address is >= 0x0500_0000 and <= 0x0500_03FF:
