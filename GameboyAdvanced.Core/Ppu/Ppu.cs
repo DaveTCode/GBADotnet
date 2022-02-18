@@ -25,7 +25,7 @@ internal class Ppu
     private DisplayCtrl _dispcnt = new();
     private ushort _greenSwap;
     private GeneralLcdStatus _dispstat = new();
-    private ushort _verticalCounter;
+    private ushort _currentLine;
     private readonly Background[] _backgrounds = new Background[4] { new Background(0), new Background(1), new Background(2), new Background(3) };
 
     private WindowControl _winIn = new();
@@ -34,7 +34,7 @@ internal class Ppu
 
     private Mosaic _mosaic = new();
 
-    private int _currentFrameCycles;
+    private int _currentLineCycles;
 
     internal void Reset()
     {
@@ -45,7 +45,8 @@ internal class Ppu
         _dispcnt = new DisplayCtrl();
         _greenSwap = 0;
         _dispstat = new GeneralLcdStatus();
-        _verticalCounter = 0;
+        _currentLine = 0;
+        _currentLineCycles = 0;
         _winIn = new WindowControl();
         _winOut = new WindowControl();
         _mosaic = new Mosaic();
@@ -82,7 +83,7 @@ internal class Ppu
         }
         else if (_dispcnt.BgMode == BgMode.Video4)
         {
-            var baseAddress = _dispcnt.Frame1Select ? 0x0600A000 : 0x0;
+            var baseAddress = _dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
 
             // TODO - This just hacks up a return of the vram buffer from mode 4 -> palette -> RGB instead of processing per pixel
             for (var row = 0; row < 160; row++)
@@ -106,12 +107,33 @@ internal class Ppu
     }
 
     /// <summary>
-    /// Step the PPU by the specified number of cycles
+    /// Step the PPU by a single master clock cycle
     /// </summary>
-    internal void Step(int cycles)
+    internal void Step()
     {
-        // TODO - Implement PPU
-        _currentFrameCycles += cycles;
+        // TODO - Implement PPU properly
+        _currentLineCycles++;
+
+        if (_currentLineCycles == CyclesPerVisibleLine)
+        {
+            _dispstat.HBlankFlag = true;
+        }
+        else if (_currentLineCycles == CyclesPerLine)
+        {
+            _dispstat.HBlankFlag = false;
+            _currentLine++;
+            _currentLineCycles = 0;
+
+            if (_currentLine == Device.HEIGHT)
+            {
+                _dispstat.VBlankFlag = true;
+            }
+            else if (_currentLine == VBlankLines + Device.HEIGHT)
+            {
+                _dispstat.VBlankFlag = false;
+                _currentLine = 0;
+            }
+        }
     }
 
     internal void WriteRegisterByte(uint address, byte value) => throw new NotImplementedException("Writing byte wide values to PPU register not implemented");
@@ -250,7 +272,7 @@ internal class Ppu
         0x0400_0000 => _dispcnt.Read(),
         0x0400_0002 => _greenSwap,
         0x0400_0004 => _dispstat.Read(),
-        0x0400_0006 => (ushort)(_currentFrameCycles / CyclesPerLine),
+        0x0400_0006 => _currentLine,
         0x0400_0008 => _backgrounds[0].Control.Read(),
         0x0400_000A => _backgrounds[1].Control.Read(),
         0x0400_000C => _backgrounds[2].Control.Read(),
