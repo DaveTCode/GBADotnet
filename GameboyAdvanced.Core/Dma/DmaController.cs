@@ -9,9 +9,9 @@ internal class DmaController
 
     internal void Reset()
     {
-        for (var ii = 0; ii < _channels.Length; ii++)
+        foreach (var channel in _channels)
         {
-            _channels[ii] = new DmaChannel(ii);
+            channel.Reset();
         }
     }
 

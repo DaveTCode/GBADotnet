@@ -2,7 +2,7 @@
 
 internal struct DmaChannel
 {
-    private static int[] MaxWordCounts = new int[] { 0x4000, 0x4000, 0x4000, 0x10000 };
+    private static readonly int[] MaxWordCounts = new int[] { 0x4000, 0x4000, 0x4000, 0x10000 };
 
     internal int Id;
     internal uint SourceAddress;
@@ -39,6 +39,18 @@ internal struct DmaChannel
             IntDestinationAddress = DestinationAddress;
             IntWordCount = (WordCount == 0) ? MaxWordCounts[Id] : WordCount; // 0 is a special case that means copy MAX bytes
         }
+    }
+
+    internal void Reset()
+    {
+        SourceAddress = 0;
+        DestinationAddress = 0;
+        WordCount = 0;
+        IntSourceAddress = 0;
+        IntDestinationAddress = 0;
+        IntWordCount = 0;
+        _clocksToStart = 0;
+        ControlReg.Reset();
     }
 
     public override string ToString() => $"DMA Channel {Id}";

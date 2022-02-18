@@ -60,4 +60,16 @@ internal struct DmaControlRegister
          ((uint)StartTiming << 12) |
          (IrqOnEnd ? (1u << 14) : 0) |
          (DmaEnable ? (1u << 15) : 0));
+
+    internal void Reset()
+    {
+        DestAddressCtrl = DestAddressCtrl.Increment;
+        SrcAddressCtrl = SrcAddressCtrl.Increment;
+        Repeat = false;
+        Is32Bit = false;
+        GamePakDRQ = false;
+        StartTiming = StartTiming.Immediate;
+        IrqOnEnd = false;
+        DmaEnable = false;
+    }
 }
