@@ -3,6 +3,7 @@ using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
 using GameboyAdvanced.Core.Rom;
+using GameboyAdvanced.Core.Serial;
 using GameboyAdvanced.Core.Timer;
 
 namespace GameboyAdvanced.Core;
@@ -27,6 +28,7 @@ public unsafe class Device
     private readonly Ppu.Ppu _ppu;
     private readonly TimerController _timerController;
     private readonly InterruptWaitStateAndPowerControlRegisters _interruptController;
+    private readonly SerialController _serialController;
 
     private delegate*<Device, void> _nextPpuAction = null;
     private delegate*<Device, void> _nextApuAction = null;
@@ -68,7 +70,8 @@ public unsafe class Device
         _timerController = new TimerController();
         _ppu = new Ppu.Ppu();
         _dma = new DmaController();
-        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dma, _timerController, _interruptController, debugger);
+        _serialController = new SerialController(debugger);
+        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dma, _timerController, _interruptController, _serialController, debugger);
         _cpu = new Core(Bus, startVector, debugger);
         Debugger = debugger;
     }
@@ -82,7 +85,7 @@ public unsafe class Device
         }
         #endif
         _cpu.Clock();
-        _ppu.Step(1);
+        _ppu.Step();
     }
 
     public void Reset(uint startVector = 0x0000_0000)

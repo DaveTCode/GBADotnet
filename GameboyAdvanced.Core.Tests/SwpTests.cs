@@ -3,6 +3,7 @@ using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
 using GameboyAdvanced.Core.Rom;
+using GameboyAdvanced.Core.Serial;
 using GameboyAdvanced.Core.Timer;
 using System;
 using Xunit;
@@ -19,6 +20,7 @@ public class SwpTests
     private readonly static TimerController _testTimerController = new();
     private readonly static InterruptWaitStateAndPowerControlRegisters _interruptWaitStateAndPowerControlRegisters = new();
     private readonly static TestDebugger _testDebugger = new();
+    private readonly static SerialController _serialController = new(_testDebugger);
 
     [Fact]
     public void TestSwp()
@@ -26,7 +28,7 @@ public class SwpTests
         Array.Clear(_bios);
         var instruction = 0b1110_0001_0000_0000_0001_0000_1001_0010; // SWP R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, 0, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
@@ -64,7 +66,7 @@ public class SwpTests
         Array.Clear(_bios);
         var instruction = 0b1110_0001_0100_0000_0001_0000_1001_0010; // SWPB R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, 0, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
