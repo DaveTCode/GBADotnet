@@ -47,7 +47,7 @@ internal struct Pipeline
 /// </summary>
 public unsafe class Core
 {
-    private readonly BaseDebugger _debugger;
+    internal readonly BaseDebugger Debugger;
     internal ulong Cycles;
     internal readonly MemoryBus Bus;
     internal CPSR Cpsr;
@@ -56,16 +56,9 @@ public unsafe class Core
     // Current registers (irrespective of mode)
     internal readonly uint[] R = new uint[16];
 
-    // Banked versions of registers, note that in most cases all banks will
-    // have the same value. This invariant is handled during mode switch.
-    internal readonly uint[][] R_Banked = new uint[5][]
-    {
-        new uint[16],
-        new uint[16],
-        new uint[16],
-        new uint[16],
-        new uint[16]
-    };
+    private readonly uint[] _spBanks = new uint[6];
+    private readonly uint[] _lrBanks = new uint[6];
+    private readonly uint[] _fiqHiRegs = new uint[5];
 
     /// <summary>
     /// The 32 bit address bus value, set the cycle before it is used
@@ -144,7 +137,7 @@ public unsafe class Core
     internal Core(MemoryBus bus, uint startVector, BaseDebugger debugger)
     {
         Bus = bus;
-        _debugger = debugger;
+        Debugger = debugger;
         Reset(startVector);
     }
 
@@ -248,12 +241,10 @@ public unsafe class Core
 
         Array.Clear(R, 0, R.Length);
         R[15] = startVector;
-        R_Banked[0][15] = startVector;
         R[13] = 0x03007F00; // TODO - Is this correct? It's probably set by bios but roms assume it's here
-        R_Banked[0][13] = 0x03007F00;
         ClearPipeline();
 
-        // TODO - What is the initial value of CPSR
+        // TODO - What is the initial value of CPSR, do we start in supervisor?
         Cpsr.FiqDisable = true;
         Cpsr.IrqDisable = true;
         Cpsr.Mode = CPSRMode.Supervisor;
@@ -288,7 +279,7 @@ public unsafe class Core
         }
 
 #if DEBUG
-        core._debugger.Log(core.ToString());
+        core.Debugger.Log(core.ToString());
 #endif
 
         var instruction = core.Pipeline.CurrentInstruction.Value;
@@ -392,20 +383,28 @@ public unsafe class Core
 
     internal void SwitchToThumb()
     {
+#if DEBUG
+        if (!Cpsr.ThumbMode)
+        {
+            Debugger.FireEvent(DebugEvent.SwitchToThumb, this);
+        }
+#endif
         Cpsr.ThumbMode = true;
         MAS = BusWidth.HalfWord;
         ClearPipeline();
-
-        // TODO - Do we need to do anything else here? Feels a bit bare!
     }
 
     internal void SwitchToArm()
     {
+#if DEBUG
+        if (Cpsr.ThumbMode)
+        {
+            Debugger.FireEvent(DebugEvent.SwitchToArm, this);
+        }
+#endif
         Cpsr.ThumbMode = false;
         MAS = BusWidth.Word;
         ClearPipeline();
-
-        // TODO - Do we need to do anything else here? Feels a bit bare!
     }
 
     /// <summary>
@@ -417,33 +416,96 @@ public unsafe class Core
     {
         NextExecuteAction = &ExecuteFirstInstructionCycle;
 #if DEBUG
-        if (_debugger.CheckBreakOnNextInstruction())
+        if (Debugger.CheckBreakOnNextInstruction())
         {
-            _debugger.ForceBreakpointNextCycle();
+            Debugger.ForceBreakpointNextCycle();
         }
 
-        if (Pipeline.FetchedOpcodeAddress.HasValue && _debugger.BreakOnExecute(Pipeline.FetchedOpcodeAddress.Value))
+        if (Pipeline.FetchedOpcodeAddress.HasValue && Debugger.BreakOnExecute(Pipeline.FetchedOpcodeAddress.Value))
         {
-            _debugger.ForceBreakpointNextCycle();
+            Debugger.ForceBreakpointNextCycle();
         }
 #endif
     }
 
-    internal CPSR CurrentSpsr() => Cpsr.Mode switch
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal CPSR CurrentSpsr() => Spsr[Cpsr.Mode.Index()];
+
+    internal uint GetUserModeRegister(int reg) => (reg, Cpsr.Mode) switch
     {
-        CPSRMode.OldUser => Spsr[0],
-        CPSRMode.OldFiq => Spsr[1],
-        CPSRMode.OldIrq => Spsr[4],
-        CPSRMode.OldSupervisor => Spsr[2],
-        CPSRMode.User => Spsr[0],
-        CPSRMode.Fiq => Spsr[1],
-        CPSRMode.Irq => Spsr[4],
-        CPSRMode.Supervisor => Spsr[2],
-        CPSRMode.Abort => Spsr[3],
-        CPSRMode.Undefined => Spsr[5],
-        CPSRMode.System => Spsr[0],
-        _ => throw new Exception($"Invalid cpsr mode {Cpsr.Mode}"),
+        (_, CPSRMode.User) => R[reg],
+        (13, _) => _spBanks[0],
+        (14, _) => _lrBanks[0],
+        (15, _) => R[15],
+        (_, _) when reg < 8 => R[reg],
+        (_, _) when reg < 13 => R[reg], // Would handle FIQ banking here but can't be bothered yet
+        _ => throw new Exception("Invalid get user mode register request")
     };
+
+    internal void WriteUserModeRegister(int reg, uint value)
+    {
+        switch ((reg, Cpsr.Mode))
+        {
+            case (_, CPSRMode.User):
+                R[reg] = value;
+                break;
+            case (13, _):
+                _spBanks[0] = value;
+                break;
+            case (14, _):
+                _lrBanks[0] = value;
+                break;
+            case (15, _):
+#if DEBUG
+                if (value == 0)
+                {
+                    Debugger.FireEvent(Debug.DebugEvent.BranchToZero, this);
+                }
+#endif
+                R[15] = value;
+                ClearPipeline();
+                break;
+            case (_, _) when reg < 8:
+                R[reg] = value;
+                break;
+            case (_, _) when reg < 13:
+                R[reg] = value;
+                break;
+            default:
+                throw new Exception("Invalid get user mode register request");
+        }
+    }
+
+    internal void HandleInterrupt(uint irqVector, uint retAddress, CPSRMode newMode)
+    {
+        // First save off current bank of registers into mode specific bank
+        _spBanks[Cpsr.Mode.Index()] = R[13];
+        _lrBanks[Cpsr.Mode.Index()] = R[14];
+        if (Cpsr.Mode is CPSRMode.Fiq or CPSRMode.OldFiq)
+        {
+            throw new NotImplementedException("FIQ not implemented");
+        }
+
+        // Then move banked registers into current
+        R[13] = _spBanks[newMode.Index()];
+        R[14] = retAddress; // Don't care what was banked here as return address will overwrite it
+        if (newMode is CPSRMode.Fiq or CPSRMode.OldFiq)
+        {
+            throw new NotImplementedException("FIQ not implemented");
+        }
+
+        // Put the current CPSR into SPSR for the destination mode
+        Spsr[newMode.Index()].Set(Cpsr.Get());
+
+        // Set up the interrupt vector and clear the pipeline
+        R[15] = irqVector;
+        ClearPipeline();
+        
+        Cpsr.Mode = newMode;
+        Cpsr.ThumbMode = false;
+        Cpsr.IrqDisable = true;
+        Cpsr.FiqDisable = true;
+    }
 
     /// <summary>
     /// This roughly matches the string representation that mGBA uses when

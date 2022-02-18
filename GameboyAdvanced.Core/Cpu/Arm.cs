@@ -63,11 +63,11 @@ internal static unsafe partial class Arm
         &rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,&rscs_imm,
         &undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,
         &tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,&tsts_imm,
-        &msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,&msr_ic,
+        &msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,&msr_imm_cpsr,
         &teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,&teqs_imm,
         &undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,&undefined,
         &cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,&cmps_imm,
-        &msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,&msr_is,
+        &msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,&msr_imm_spsr,
         &cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,&cmns_imm,
         &orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,&orr_imm,
         &orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,&orrs_imm,
@@ -712,8 +712,22 @@ internal static unsafe partial class Arm
         core.CurrentSpsr().Set(core.R[rm]);
         core.MoveExecutePipelineToNextInstruction();
     }
-    internal static void msr_ic(Core core, uint instruction) => throw new NotImplementedException("msr_ic not implemented");
-    internal static void msr_is(Core core, uint instruction) => throw new NotImplementedException("msr_is not implemented");
+    internal static void msr_imm_cpsr(Core core, uint instruction)
+    {
+        var offset = instruction & 0xFF;
+        var rot = (instruction >> 8) & 0b1111;
+        var val = Shifter.RORRegisterNoFlags(offset, (byte)rot);
+        core.Cpsr.Set(val);
+        core.MoveExecutePipelineToNextInstruction();
+    }
+    internal static void msr_imm_spsr(Core core, uint instruction)
+    {
+        var offset = instruction & 0xFF;
+        var rot = (instruction >> 8) & 0b1111;
+        var val = Shifter.RORRegisterNoFlags(offset, (byte)rot);
+        core.CurrentSpsr().Set(val);
+        core.MoveExecutePipelineToNextInstruction();
+    }
     #endregion
 
     #region SWP
@@ -935,6 +949,12 @@ internal static unsafe partial class Arm
     internal static void b(Core core, uint instruction)
     {
         var offset = ((int)((instruction & 0xFF_FFFF) << 8)) >> 6;
+#if DEBUG
+        if ((uint)(core.R[15] + offset) == 0)
+        {
+            core.Debugger.FireEvent(Debug.DebugEvent.BranchToZero, core);
+        }
+#endif
         core.R[15] = (uint)(core.R[15] + offset);
         core.ClearPipeline(); // Note that this will trigger two more cycles (both just fetches, with nothing to execute)
 
@@ -958,6 +978,12 @@ internal static unsafe partial class Arm
     internal static void bx(Core core, uint instruction)
     {
         var rn = instruction & 0b1111;
+#if DEBUG
+        if ((uint)(core.R[rn] & (~1)) == 0)
+        {
+            core.Debugger.FireEvent(Debug.DebugEvent.BranchToZero, core);
+        }
+#endif
         core.R[15] = (uint)(core.R[rn] & (~1));
         core.ClearPipeline();
 
@@ -975,7 +1001,11 @@ internal static unsafe partial class Arm
         core.MoveExecutePipelineToNextInstruction();
     }
 
-    internal static void swi(Core core, uint instruction) => throw new NotImplementedException("swi not implemented");
+    internal static void swi(Core core, uint instruction)
+    {
+        core.HandleInterrupt(0x08u, core.R[15] - 4, CPSRMode.Supervisor);
+        core.MoveExecutePipelineToNextInstruction();
+    }
 
     internal static void stc_ofm(Core core, uint instruction) => throw new Exception("No coprocessors");
     internal static void ldc_ofm(Core core, uint instruction) => throw new Exception("No coprocessors");

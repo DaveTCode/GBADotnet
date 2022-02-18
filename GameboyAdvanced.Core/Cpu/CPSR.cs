@@ -1,4 +1,6 @@
-﻿namespace GameboyAdvanced.Core;
+﻿using System.Runtime.CompilerServices;
+
+namespace GameboyAdvanced.Core;
 
 internal enum CPSRMode
 {
@@ -13,6 +15,25 @@ internal enum CPSRMode
     Abort = 0x17,
     Undefined = 0x1B,
     System = 0x1F,
+}
+
+internal static class CPSRModeExtensions
+{
+    internal static int Index(this CPSRMode mode) => mode switch
+    {
+        CPSRMode.OldUser => 0,
+        CPSRMode.OldFiq => 1,
+        CPSRMode.OldIrq => 4,
+        CPSRMode.OldSupervisor => 2,
+        CPSRMode.User => 0,
+        CPSRMode.Fiq => 1,
+        CPSRMode.Irq => 4,
+        CPSRMode.Supervisor => 2,
+        CPSRMode.Abort => 3,
+        CPSRMode.Undefined => 5,
+        CPSRMode.System => 0,
+        _ => throw new Exception($"Invalid cpsr mode {mode}"),
+    };
 }
 
 internal struct CPSR

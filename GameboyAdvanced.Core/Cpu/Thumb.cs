@@ -90,6 +90,12 @@ internal unsafe static class Thumb
     #region Branches
     private static void BranchCommon(Core core, int offset)
     {
+        #if DEBUG
+        if ((uint)(core.R[15] + offset) == 0)
+        {
+            core.Debugger.FireEvent(Debug.DebugEvent.BranchToZero, core);
+        }
+        #endif
         core.R[15] = (uint)(core.R[15] + offset);
         core.ClearPipeline(); // Note that this will trigger two more cycles (both just fetches, with nothing to execute)
 
@@ -140,6 +146,12 @@ internal unsafe static class Thumb
     {
         var offset = (instruction & 0b111_1111_1111) << 1;
         var newPc = (uint)(core.R[14] + offset);
+#if DEBUG
+        if (newPc == 0)
+        {
+            core.Debugger.FireEvent(Debug.DebugEvent.BranchToZero, core);
+        }
+#endif
         core.R[14] = (core.R[15] - 2) | 1;
         core.R[15] = newPc;
         core.ClearPipeline();
@@ -148,7 +160,11 @@ internal unsafe static class Thumb
     }
     #endregion
 
-    public static void SWI(Core _core, ushort _instruction) => throw new NotImplementedException("SWI Thumb not implemented");
+    public static void SWI(Core core, ushort _instruction)
+    {
+        core.HandleInterrupt(0x08u, core.R[15] - 2, CPSRMode.Supervisor);
+        core.MoveExecutePipelineToNextInstruction();
+    }
 
     public static void Undefined(Core _core, ushort _instruction) => throw new NotImplementedException();
 
@@ -569,7 +585,7 @@ internal unsafe static class Thumb
     }
 
     #region Load/Store/Push/Pop multiple
-    private static void LoadStoreMultipleCommon(Core core, ushort instruction, uint initialAddress, bool nRW, int writebackReg, delegate*<Core, uint, void> nextAction)
+    private static void LoadStoreMultipleCommon(Core core, ushort instruction, uint initialAddress, bool nRW, uint writebackReg, delegate*<Core, uint, void> nextAction)
     {
         LdmStmUtils.Reset();
         LdmStmUtils._storeLoadMultipleDoWriteback = true;
@@ -590,14 +606,12 @@ internal unsafe static class Thumb
         core.A = initialAddress;
         core.nRW = nRW;
         core.NextExecuteAction = nextAction;
-        LdmStmUtils._writebackRegister = writebackReg;
+        LdmStmUtils._writebackRegister = (int)writebackReg;
     }
 
     public static void PUSH(Core core, ushort instruction)
     {
         LoadStoreMultipleCommon(core, instruction, core.R[13], true, 13, &LdmStmUtils.stm_registerWriteCycle);
-        core.A = (uint)(core.R[13] - (4 * (LdmStmUtils._storeLoadMultiplePopCount + 1)));
-        LdmStmUtils._storeLoadMutipleFinalWritebackValue = core.A + 4;
 
         // Check push LR
         if (((instruction >> 8) & 0b1) == 1)
@@ -605,6 +619,9 @@ internal unsafe static class Thumb
             LdmStmUtils._storeLoadMultipleState[LdmStmUtils._storeLoadMultiplePopCount] = 14;
             LdmStmUtils._storeLoadMultiplePopCount++;
         }
+
+        core.A = (uint)(core.R[13] - (4 * (LdmStmUtils._storeLoadMultiplePopCount + 1)));
+        LdmStmUtils._storeLoadMutipleFinalWritebackValue = core.A + 4;
 
         LdmStmUtils.stm_registerWriteCycle(core, instruction);
     }
@@ -616,7 +633,6 @@ internal unsafe static class Thumb
     public static void POP(Core core, ushort instruction)
     {
         LoadStoreMultipleCommon(core, instruction, core.R[13], false, 13, &LdmStmUtils.ldm_registerReadCycle);
-        LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[13] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
 
         // Check pop PC
         if (((instruction >> 8) & 0b1) == 1)
@@ -624,11 +640,13 @@ internal unsafe static class Thumb
             LdmStmUtils._storeLoadMultipleState[LdmStmUtils._storeLoadMultiplePopCount] = 15;
             LdmStmUtils._storeLoadMultiplePopCount++;
         }
+
+        LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[13] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
     }
 
     public static void STMIA(Core core, ushort instruction)
     {
-        var rb = (instruction >> 8) & 0b111;
+        var rb = (uint)((instruction >> 8) & 0b111);
         LoadStoreMultipleCommon(core, instruction, core.R[rb] - 4, true, rb, &LdmStmUtils.stm_registerWriteCycle);
         LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rb] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
         LdmStmUtils.stm_registerWriteCycle(core, instruction);
@@ -636,7 +654,7 @@ internal unsafe static class Thumb
 
     public static void LDMIA(Core core, ushort instruction)
     {
-        var rb = (instruction >> 8) & 0b111;
+        var rb = (uint)((instruction >> 8) & 0b111);
         LoadStoreMultipleCommon(core, instruction, core.R[rb], false, rb, &LdmStmUtils.ldm_registerReadCycle);
         LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rb] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
     }

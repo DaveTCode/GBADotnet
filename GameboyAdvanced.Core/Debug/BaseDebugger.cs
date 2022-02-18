@@ -31,6 +31,12 @@ public abstract class BaseDebugger
 
     internal bool BreakOnExecute(uint address) => _codeBreakpoints.Contains(address);
 
+    internal void FireEvent(DebugEvent e, Core core)
+    {
+        // TODO - Better way to register events
+        Console.WriteLine($"Event {e}\n{core}");
+    }
+
     internal bool CheckBreakpoints(Core core)
     {
         if (_forceBreakNextCycle)

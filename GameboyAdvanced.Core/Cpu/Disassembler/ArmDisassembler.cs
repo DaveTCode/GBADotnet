@@ -139,7 +139,59 @@ internal static class ArmDisassembler
         return "MUL"; // TODO
     }
 
-    private static string DisassembleArmSwi(Core _core, uint _i) => "SWI{0}";
+    private static string DisassembleArmSwi(Core _core, uint instruction)
+    {
+        var biosFunctionIx = (instruction & 0xFF_FFFF) >> 16;
+        var biosFunctionName = biosFunctionIx switch
+        {
+            0x00 => "SoftReset",
+            0x08 => "Sqrt",
+            0x01 => "RegisterRamReset",
+            0x09 => "ArcTan",
+            0x02 => "Halt",
+            0x0A => "ArcTan2",
+            0x03 => "Stop",
+            0x0B => "CPUSet",
+            0x04 => "IntrWait",
+            0x0C => "CPUFastSet",
+            0x05 => "VBlankIntrWait",
+            0x0D => "BiosChecksum",
+            0x06 => "Div",
+            0x0E => "BgAffineSet",
+            0x07 => "DivArm",
+            0x0F => "ObjAffineSet",
+            0x10 => "BitUnPack",
+            0x18 => "Diff16bitUnFilter",
+            0x11 => "LZ77UnCompWRAM",
+            0x19 => "SoundBiasChange",
+            0x12 => "LZ77UnCompVRAM",
+            0x1A => "SoundDriverInit",
+            0x13 => "HuffUnComp",
+            0x1B => "SoundDriverMode",
+            0x14 => "RLUnCompWRAM",
+            0x1C => "SoundDriverMain",
+            0x15 => "RLUnCompVRAM",
+            0x1D => "SoundDriverVSync",
+            0x16 => "Diff8bitUnFilterWRAM",
+            0x1E => "SoundChannelClear",
+            0x17 => "Diff8bitUnFilterVRAM",
+            0x1F => "MIDIKey2Freq",
+            0x20 => "MusicPlayerOpen",
+            0x28 => "SoundDriverVSyncOff",
+            0x21 => "MusicPlayerStart",
+            0x29 => "SoundDriverVSyncOn",
+            0x22 => "MusicPlayerStop",
+            0x2A => "GetJumpList",
+            0x23 => "MusicPlayerContinue",
+            0x24 => "MusicPlayerFadeOut",
+            0x25 => "MultiBoot",
+            0x26 => "HardReset",
+            0x27 => "CustomHalt",
+            _ => "Invalid Bios function"
+        };
+
+        return $"SWI #{biosFunctionIx << 16:X6} = {biosFunctionName}";
+    }
 
     private static string DisassembleArmCoProcessorDataTransfer(Core core, uint instruction)
     {

@@ -103,7 +103,7 @@ static partial void {funcName}(Core core, uint instruction)
                                 // This is some gloriously filthy string replacement to refer registers to the banked versions instead of the real versions
                                 if (userMode)
                                 {
-                                    func = func.Replace("core.R[", "core.R_Banked[0][");
+                                    func = func.Replace("core.R[rn]", "core.GetUserModeRegister((int)rn)");
                                 }
 
                                 fullSource += func;

@@ -50,7 +50,7 @@ internal static class LdmStmUtils
             {
                 if (_useBank0Regs)
                 {
-                    core.R_Banked[0][_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
+                    core.WriteUserModeRegister(_writebackRegister, _storeLoadMutipleFinalWritebackValue);
                 }
                 else
                 {
@@ -69,7 +69,7 @@ internal static class LdmStmUtils
         {
             core.A += 4;
             core.D = _useBank0Regs
-                ? core.R_Banked[0][_storeLoadMultipleState[_storeLoadMultiplePtr]]
+                ? core.GetUserModeRegister((int)_storeLoadMultipleState[_storeLoadMultiplePtr])
                 : core.R[_storeLoadMultipleState[_storeLoadMultiplePtr]];
 
             _storeLoadMultiplePtr++;
@@ -106,7 +106,7 @@ internal static class LdmStmUtils
         {
             if (_useBank0Regs)
             {
-                core.R_Banked[0][_storeLoadMultipleState[_storeLoadMultiplePtr - 1]] = _cachedLdmValue;
+                core.WriteUserModeRegister((int)_storeLoadMultipleState[_storeLoadMultiplePtr - 1], _cachedLdmValue);
             }
             else
             {
@@ -124,7 +124,7 @@ internal static class LdmStmUtils
 
         if (_storeLoadMultiplePtr == _storeLoadMultiplePopCount - 1)
         {
-            core.A = _useBank0Regs ? core.R_Banked[0][15] : core.R[15];
+            core.A = core.R[15];
             core.SEQ = true;
             core.MAS = core.Cpsr.ThumbMode ? BusWidth.HalfWord : BusWidth.Word;
             core.nMREQ = true;
@@ -136,7 +136,7 @@ internal static class LdmStmUtils
             {
                 if (_useBank0Regs)
                 {
-                    core.R_Banked[0][_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
+                    core.WriteUserModeRegister(_writebackRegister, _storeLoadMutipleFinalWritebackValue);
                 }
                 else
                 {
