@@ -578,8 +578,9 @@ internal unsafe static class Thumb
 
     public static void ADD_Offset_SP(Core core, ushort instruction)
     {
-        var offset = (sbyte)(instruction & 0xFF) << 2;
-        core.R[13] = (uint)(core.R[13] + offset);
+        var sign = ((instruction >> 7) & 0b1) * -1;
+        var val = (instruction & 0b111_1111) << 2;
+        core.R[13] = (uint)(core.R[13] + (sign * val));
 
         core.MoveExecutePipelineToNextInstruction();
     }
