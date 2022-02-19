@@ -60,6 +60,16 @@ internal static unsafe class LdrStrUtils
         core.nMREQ = true;
         core.MAS = core.Cpsr.ThumbMode ? BusWidth.HalfWord : BusWidth.Word;
 
+        if (_doWriteback)
+        {
+            core.R[_writebackReg] = _writebackVal;
+            if (_writebackReg == 15)
+            {
+                // TODO - This would be really naughty - probably want an event to hook into the debug system
+                core.ClearPipeline();
+            }
+        }
+
         // "This third cycle can normally be merged with 
         // the next prefetch cycle to form one memory N - cycle"
         // -
@@ -79,15 +89,7 @@ internal static unsafe class LdrStrUtils
     internal static void LDRCycle3(Core core, uint instruction)
     {
         core.R[_ldrReg] = _ldrCastFunc(core.D);
-        if (_doWriteback)
-        {
-            core.R[_writebackReg] = _writebackVal;
-            if (_writebackReg == 15)
-            {
-                // TODO - This would be really naughty - probably want an event to hook into the debug system
-                core.ClearPipeline();
-            }
-        }
+        
         if (_ldrReg == 15)
         {
             core.ClearPipeline();
@@ -153,6 +155,7 @@ internal static unsafe class LdrStrUtils
     {
         STRCommon(core, address, data, busWidth);
         _doWriteback = true;
-        core.R[writebackReg] = writebackVal;
+        _writebackReg = writebackReg;
+        _writebackVal = writebackVal;
     }
 }
