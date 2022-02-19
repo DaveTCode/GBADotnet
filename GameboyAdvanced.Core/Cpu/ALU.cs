@@ -60,7 +60,7 @@ internal static class ALU
         var result = op1 - op2 - (cpsr.CarryFlag ? 0 : 1);
 
         SetZeroSignFlags(ref cpsr, (uint)result);
-        cpsr.CarryFlag = op1 >= op2;
+        cpsr.CarryFlag = op1 >= (op2 + (cpsr.CarryFlag ? 0 : 1));
         cpsr.OverflowFlag = (op1 & 0x8000_0000) != (op2 & 0x8000_0000) && (op1 & 0x8000_0000) != (result & 0x8000_0000);
 
         return (uint)result;
