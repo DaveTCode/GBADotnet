@@ -66,8 +66,44 @@ internal class Ppu
     /// </summary>
     internal byte[] GetFrame()
     {
-        // TODO - BG mode 0-2
-        if (_dispcnt.BgMode == BgMode.Video3)
+        if (_dispcnt.BgMode == BgMode.Video0)
+        {
+            // TODO - Mode 0 only implemented in so far as required for Deadbody cpu tests
+            // Assume BG0 only, 32*32 tiles, 4 bit color depth
+            var tileMapBase = _backgrounds[0].Control.ScreenBaseBlock * 0x800;
+            var charMapBase = _backgrounds[0].Control.CharBaseBlock * 0x4000;
+
+            for (var row = 0; row < 20; row++)
+            {
+                for (var col = 0; col < 30; col++)
+                {
+                    var frameBufferTileAddress = col * 8 * 4 + row * Device.WIDTH * 4 * 8;
+                    var tileMapAddress = tileMapBase + (row * 64) + (col * 2);
+                    var tileMap = _vram[tileMapAddress] | (_vram[tileMapAddress + 1] << 8);
+                    var tile = tileMap & 0b11_1111_1111;
+                    var _horizontalFlip = ((tileMap >> 10) & 1) == 1;
+                    var _verticalFlip = ((tileMap >> 11) & 1) == 1;
+                    var _paletteNumber = (tileMap >> 12) & 0b1111;
+
+                    var tileAddress = charMapBase + (tile * 32);
+                    for (var b = 0; b < 32; b++)
+                    {
+                        var x = b % 4;
+                        var y = b / 4;
+                        var tileData = _vram[tileAddress + b];
+                        var pixel1PalNo = tileData & 0b1111;
+                        var pixel2PalNo = tileData >> 4;
+                        var pixel1Color = _paletteRam[pixel1PalNo] | (_paletteRam[pixel1PalNo + 1] << 8);
+                        var pixel2Color = _paletteRam[pixel2PalNo] | (_paletteRam[pixel2PalNo + 1] << 8);
+                        var fbPtr = frameBufferTileAddress + (x * 8) + (y * Device.WIDTH * 4);
+                        Utils.ColorToRgb(pixel1Color, _frameBuffer.AsSpan(fbPtr));
+                        Utils.ColorToRgb(pixel2Color, _frameBuffer.AsSpan(fbPtr + 4));
+                    }
+                }
+            }
+        }
+        // TODO - BG mode 1-2
+        else if (_dispcnt.BgMode == BgMode.Video3)
         {
             // TODO - This just hacks up a return of the vram buffer from mode 3 -> RGB instead of processing per pixel
             for (var row = 0; row < 160; row++)
