@@ -184,11 +184,11 @@ public unsafe class Core
                 case BusWidth.Word:
                     if (nRW)
                     {
-                        waitStates = Bus.WriteWord(A, D);
+                        waitStates = Bus.WriteWord(A & 0xFFFF_FFFC, D);
                     }
                     else
                     {
-                        (D, waitStates) = Bus.ReadWord(A);
+                        (D, waitStates) = Bus.ReadWord(A & 0xFFFF_FFFC);
                     }
                     break;
                 default:
