@@ -715,7 +715,7 @@ internal static unsafe partial class Arm
     internal static void msr_imm_cpsr(Core core, uint instruction)
     {
         var offset = instruction & 0xFF;
-        var rot = (instruction >> 8) & 0b1111;
+        var rot = ((instruction >> 8) & 0b1111) * 2;
         var val = Shifter.RORRegisterNoFlags(offset, (byte)rot);
         core.Cpsr.Set(val);
         core.MoveExecutePipelineToNextInstruction();
@@ -723,7 +723,7 @@ internal static unsafe partial class Arm
     internal static void msr_imm_spsr(Core core, uint instruction)
     {
         var offset = instruction & 0xFF;
-        var rot = (instruction >> 8) & 0b1111;
+        var rot = ((instruction >> 8) & 0b1111) * 2;
         var val = Shifter.RORRegisterNoFlags(offset, (byte)rot);
         core.CurrentSpsr().Set(val);
         core.MoveExecutePipelineToNextInstruction();
