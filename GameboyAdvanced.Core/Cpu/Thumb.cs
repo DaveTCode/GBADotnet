@@ -301,15 +301,15 @@ internal unsafe static class Thumb
                 break;
             case 0x2: // LSL
                 core.R[rd] = LSL(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
-                core.WaitStates++; // Extra I cycle
+                core.WaitStates++; // TODO - Treat as proper extra I cycle
                 break;
             case 0x3: // LSR
                 core.R[rd] = LSRRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
-                core.WaitStates++; // Extra I cycle
+                core.WaitStates++; // TODO - Treat as proper extra I cycle
                 break;
             case 0x4: // ASR
                 core.R[rd] = ASRRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
-                core.WaitStates++; // Extra I cycle
+                core.WaitStates++; // TODO - Treat as proper extra I cycle
                 break;
             case 0x5: // ADC
                 core.R[rd] = ADC(core.R[rd], core.R[rs], ref core.Cpsr);
@@ -319,7 +319,7 @@ internal unsafe static class Thumb
                 break;
             case 0x7: // ROR
                 core.R[rd] = RORRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
-                core.WaitStates++; // Extra I cycle
+                core.WaitStates++; // TODO - Treat as proper extra I cycle
                 break;
             case 0x8: // TST
                 var result = core.R[rd] & core.R[rs];
@@ -367,7 +367,7 @@ internal unsafe static class Thumb
 
         var operand = fullRs switch
         {
-            15 => (core.R[15] + 4) & 0xFFFF_FFFE,
+            15 => core.R[15] & 0xFFFF_FFFE,
             _ => core.R[fullRs]
         };
 
@@ -562,7 +562,7 @@ internal unsafe static class Thumb
     {
         var rd = (instruction >> 8) & 0b111;
         var offset = (instruction & 0xFF) << 2;
-        core.R[rd] = (uint)(((core.R[15] + 4) & ~2) + offset);
+        core.R[rd] = (uint)((core.R[15] & ~2) + offset);
 
         core.MoveExecutePipelineToNextInstruction();
     }
