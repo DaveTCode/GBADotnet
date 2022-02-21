@@ -172,28 +172,16 @@ internal static unsafe partial class Arm
                             _ => throw new Exception("Invalid data operation"),
                         };
 
-                        var waitStatesStatement = type switch
-                        {
-                            var t when t == OperandType.Llr || t == OperandType.Lrr || t == OperandType.Arr || t == OperandType.Rrr => @"
-// Shifts by a register quantity cause a single I cycle which we represent by adding a wait state
-// Note that I cycles aren't wait states, but I'm not convinced that you can tell from outside the cpu at the moment!
-core.WaitStates++;",
-                            _ => ""
-                        };
-
-                        var source = $@" // Auto-generated code
-static partial void {funcName + "_" + type.ToString().ToLowerInvariant()}(Core core, uint instruction)
-    {{
+                        // Most data ops take 1S cycle to operate but operations which use a register shifted
+                        // value as the second operand take 1S + 1I cycle.
+                        var secondCycleFunc = $@"
+static partial void {funcName + "_" + type.ToString().ToLowerInvariant()}_write(Core core, uint instruction)
+{{
         var rn = (instruction >> 16) & 0b1111;
         var rd = (instruction >> 12) & 0b1111;
-
-        uint secondOperand;
-        var shift = (instruction >> 4) & 0b1111_1111;
         var rm = instruction & 0b1111;
 
-        secondOperand = {secondOperandStatement}
-
-        {waitStatesStatement}
+        var secondOperand = {secondOperandStatement}
 
         {opFunction}
 
@@ -208,11 +196,24 @@ static partial void {funcName + "_" + type.ToString().ToLowerInvariant()}(Core c
             core.ClearPipeline();
         }}
 
-        core.MoveExecutePipelineToNextInstruction();
+        Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
+}}
+";
+                        var nextActionStatement = type == OperandType.Llr || type == OperandType.Lrr || type == OperandType.Arr || type == OperandType.Rrr
+                            ? $@"
+core.nMREQ = true;
+core.nOPC = true;
+core.NextExecuteAction = &{funcName + "_" + type.ToString().ToLowerInvariant()}_write;"
+                            : $"{funcName + "_" + type.ToString().ToLowerInvariant()}_write(core, instruction);";
+
+                        var source = $@" // Auto-generated code
+static partial void {funcName + "_" + type.ToString().ToLowerInvariant()}(Core core, uint instruction)
+    {{
+        {nextActionStatement}
     }}
 ";
 
-                        fullSource += source;
+                        fullSource += secondCycleFunc + source;
                     }
                 }
             }
@@ -223,7 +224,7 @@ static partial void {funcName + "_" + type.ToString().ToLowerInvariant()}(Core c
 
         public void Initialize(GeneratorInitializationContext context)
         {
-            
+
         }
     }
 }
