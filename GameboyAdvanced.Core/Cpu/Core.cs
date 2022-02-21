@@ -26,12 +26,26 @@ internal enum BusWidth
 /// </summary>
 internal struct Pipeline
 {
+    /// <summary>
+    /// If R15 is set on a cycle then we need to know so that we know not to 
+    /// increment the address bus/R15 during pipeline step.
+    /// </summary>
+    internal bool ClearedThisCycle;
+
     internal uint? FetchedOpcode;
     internal uint? FetchedOpcodeAddress;
     internal uint? DecodedOpcode;
     internal uint? DecodedOpcodeAddress;
     internal uint? CurrentInstruction;
     internal uint? CurrentInstructionAddress;
+
+    public Pipeline()
+    {
+        ClearedThisCycle = false;
+        FetchedOpcode = FetchedOpcodeAddress = null;
+        DecodedOpcode = DecodedOpcodeAddress = null;
+        CurrentInstruction = CurrentInstructionAddress = null;
+    }
 }
 
 /// <summary>
@@ -171,11 +185,11 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            waitStates = Bus.WriteHalfWord(A, (ushort)D);
+                            waitStates = Bus.WriteHalfWord(A & 0xFFFF_FFFE, (ushort)D);
                         }
                         else
                         {
-                            (var ret, waitStates) = Bus.ReadHalfWord(A);
+                            (var ret, waitStates) = Bus.ReadHalfWord(A & 0xFFFF_FFFE);
                             D = (D & 0xFFFF_0000) | ret;
                         }
 
@@ -189,6 +203,10 @@ public unsafe class Core
                     else
                     {
                         (D, waitStates) = Bus.ReadWord(A & 0xFFFF_FFFC);
+
+                        // TODO - I'm not really sure about this, misaligned reads to register rotate the value into the reg but is that all reads? Is it handled on the data bus or somewhere else?
+                        var rotate = 8 * (int)(A % 4);
+                        D = (D >> rotate) | (D << (32 - rotate));
                     }
                     break;
                 default:
@@ -196,30 +214,6 @@ public unsafe class Core
             }
 
             WaitStates += waitStates;
-        }
-    }
-
-    /// <summary>
-    /// This function is responsible for stepping the pipeline.
-    /// 
-    /// It is critical that it occurs _after_ stepping the memory unit as this
-    /// function is responsible for incrementing R[15]/PC and announcing it on
-    /// the address bus (A) for the next fetch cycle.
-    /// </summary>
-    internal void StepPipeline()
-    {
-        if (Pipeline.FetchedOpcode.HasValue && Pipeline.FetchedOpcodeAddress.HasValue)
-        {
-            Pipeline.DecodedOpcode = Pipeline.FetchedOpcode.Value;
-            Pipeline.DecodedOpcodeAddress = Pipeline.FetchedOpcodeAddress.Value;
-        }
-
-        if (!nOPC && !nMREQ)
-        {
-            Pipeline.FetchedOpcode = D;
-            Pipeline.FetchedOpcodeAddress = A;
-            A += (uint)MAS;
-            R[15] = A;
         }
     }
 
@@ -243,6 +237,7 @@ public unsafe class Core
         R[15] = startVector;
         R[13] = 0x03007F00; // TODO - Is this correct? It's probably set by bios but roms assume it's here
         ClearPipeline();
+        Pipeline.ClearedThisCycle = false; // Despite the pipeline being cleared this is part of RESET so don't skip address increments
 
         // TODO - What is the initial value of CPSR, do we start in supervisor?
         Cpsr.FiqDisable = true;
@@ -267,12 +262,7 @@ public unsafe class Core
         core.IsFirstInstructionCycle = false;
 #endif
 
-        if (core.Pipeline.DecodedOpcode.HasValue && core.Pipeline.DecodedOpcodeAddress.HasValue)
-        {
-            core.Pipeline.CurrentInstruction = core.Pipeline.DecodedOpcode.Value;
-            core.Pipeline.CurrentInstructionAddress = core.Pipeline.DecodedOpcodeAddress.Value;
-        }
-        else
+        if (!core.Pipeline.CurrentInstruction.HasValue || !core.Pipeline.CurrentInstructionAddress.HasValue)
         {
             // Nothing in the execute unit of the pipeline, skip this cycle
             return;
@@ -344,8 +334,41 @@ public unsafe class Core
         }
 
         StepMemoryUnit();
-        StepPipeline();
+
+        if (!nOPC && !nMREQ)
+        {
+            if (Pipeline.DecodedOpcode.HasValue && Pipeline.DecodedOpcodeAddress.HasValue)
+            {
+                Pipeline.CurrentInstruction = Pipeline.DecodedOpcode.Value;
+                Pipeline.CurrentInstructionAddress = Pipeline.DecodedOpcodeAddress.Value;
+            }
+
+            if (Pipeline.FetchedOpcode.HasValue && Pipeline.FetchedOpcodeAddress.HasValue)
+            {
+                Pipeline.DecodedOpcode = Pipeline.FetchedOpcode.Value;
+                Pipeline.DecodedOpcodeAddress = Pipeline.FetchedOpcodeAddress.Value;
+            }
+
+            // This needs to happen before executing as the contents of D/A may
+            // change
+            Pipeline.FetchedOpcode = D;
+            Pipeline.FetchedOpcodeAddress = A;
+        }
+        
+        // Actually execute anything that's in the right part of the pipeline
         NextExecuteAction(this, Pipeline.CurrentInstruction ?? 0u);
+
+        // If the pipeline was cleared this cycle it was because R15 was just set,
+        // in which case we don't want to modify it for OPC
+        if (Pipeline.ClearedThisCycle)
+        {
+            Pipeline.ClearedThisCycle = false;
+        }
+        else if (A == Pipeline.FetchedOpcodeAddress)
+        {
+            A += (uint)MAS;
+            R[15] = A;
+        }
     }
 
     /// <summary>
@@ -361,7 +384,9 @@ public unsafe class Core
     {
         Pipeline.FetchedOpcode = Pipeline.FetchedOpcodeAddress = null;
         Pipeline.DecodedOpcode = Pipeline.DecodedOpcodeAddress = null;
+        Pipeline.CurrentInstruction = Pipeline.CurrentInstructionAddress = null;
         A = R[15];
+        Pipeline.ClearedThisCycle = true;
     }
 
     /// <summary>
@@ -513,11 +538,11 @@ public unsafe class Core
     public override string ToString()
     {
         string disassembly;
-        if (Pipeline.DecodedOpcode.HasValue && Pipeline.DecodedOpcodeAddress.HasValue)
+        if (Pipeline.CurrentInstruction.HasValue && Pipeline.CurrentInstructionAddress.HasValue)
         {
             disassembly = Cpsr.ThumbMode
-                ? $"{Pipeline.DecodedOpcodeAddress:X8}: {(ushort)Pipeline.DecodedOpcode:X4} \t {ThumbDisassembler.Disassemble(this, (ushort)Pipeline.DecodedOpcode)}"
-                : $"{Pipeline.DecodedOpcodeAddress:X8}: {Pipeline.DecodedOpcode:X8} \t {ArmDisassembler.Disassemble(this, Pipeline.DecodedOpcode.Value)}";
+                ? $"{Pipeline.CurrentInstructionAddress:X8}: {(ushort)Pipeline.CurrentInstruction:X4} \t {ThumbDisassembler.Disassemble(this, (ushort)Pipeline.CurrentInstruction)}"
+                : $"{Pipeline.CurrentInstructionAddress:X8}: {Pipeline.CurrentInstruction:X8} \t {ArmDisassembler.Disassemble(this, Pipeline.CurrentInstruction.Value)}";
 
         }
         else
