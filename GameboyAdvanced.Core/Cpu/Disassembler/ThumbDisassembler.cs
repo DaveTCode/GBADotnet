@@ -27,7 +27,7 @@ internal static class ThumbDisassembler
             var i when ((i & 0b1110_0000) == 0b0010_0000) => "Move/compare/add/sub #imm",
             var i when ((i & 0b1111_1000) == 0b0001_1000) => "ADD/SUB",
             var i when ((i & 0b1110_0000) == 0b0000_0000) => "MOV Shifted reg",
-            _ => throw new Exception("Invalid thumb instruction"),
+            _ => "Invalid thumb instruction",
         };
     }
 
