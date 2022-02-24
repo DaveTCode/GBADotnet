@@ -1,4 +1,5 @@
-﻿using GameboyAdvanced.Core.Cpu.Interrupts;
+﻿using static GameboyAdvanced.Core.IORegs;
+using GameboyAdvanced.Core.Cpu.Interrupts;
 using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
@@ -6,7 +7,7 @@ using GameboyAdvanced.Core.Rom;
 using GameboyAdvanced.Core.Serial;
 using GameboyAdvanced.Core.Timer;
 
-namespace GameboyAdvanced.Core;
+namespace GameboyAdvanced.Core.Bus;
 
 /// <summary>
 /// The memory bus is the interconnect unit between the CPU and the other components.
@@ -20,28 +21,30 @@ internal class MemoryBus
     private readonly Ppu.Ppu _ppu;
     private readonly Gamepad _gamepad;
     private readonly GamePak _gamePak;
-    private readonly DmaController _dma;
+    private readonly DmaDataUnit _dma;
     private readonly TimerController _timerController;
     private readonly InterruptWaitStateAndPowerControlRegisters _interruptController;
     private readonly SerialController _serialController;
     private readonly byte[] _bios = new byte[0x4000];
     private readonly byte[] _onBoardWRam = new byte[0x4_0000];
     private readonly byte[] _onChipWRam = new byte[0x8000];
+    private WaitControl _waitControl;
 
     internal void Reset()
     {
         Array.Clear(_onBoardWRam);
         Array.Clear(_onChipWRam);
+        _waitControl.Reset();
     }
 
     internal MemoryBus(
-        byte[] bios, 
-        Gamepad gamepad, 
-        GamePak gamePak, 
-        Ppu.Ppu ppu, 
-        DmaController dma, 
-        TimerController timerController, 
-        InterruptWaitStateAndPowerControlRegisters interruptController, 
+        byte[] bios,
+        Gamepad gamepad,
+        GamePak gamePak,
+        Ppu.Ppu ppu,
+        DmaDataUnit dma,
+        TimerController timerController,
+        InterruptWaitStateAndPowerControlRegisters interruptController,
         SerialController serialController,
         BaseDebugger debugger)
     {
@@ -57,6 +60,7 @@ internal class MemoryBus
         _interruptController = interruptController ?? throw new ArgumentNullException(nameof(interruptController));
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
         _serialController = serialController ?? throw new ArgumentNullException(nameof(serialController));
+        _waitControl = new WaitControl();
     }
 
     internal (byte, int) ReadByte(uint address)
@@ -75,7 +79,7 @@ internal class MemoryBus
                 uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => (_serialController.ReadByte(address), 0),
                 uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => (_gamepad.ReadByte(address), 0),
                 uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => (_serialController.ReadByte(address), 0),
-                uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => _interruptController.ReadByte(address),
+                uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => (_interruptController.ReadByte(address), 0),
                 _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
             },
             uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF => (_ppu.ReadByte(address), 0),
@@ -83,9 +87,9 @@ internal class MemoryBus
             _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not memory mapped")
         };
 
-        #if DEBUG
+#if DEBUG
         _debugger.Log($"R {address:X8}={val:X2}");
-        #endif
+#endif
         return (val, waitStates);
     }
 
@@ -105,7 +109,8 @@ internal class MemoryBus
                 uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => (_serialController.ReadHalfWord(address), 0),
                 uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => (_gamepad.ReadHalfWord(address), 0),
                 uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => (_serialController.ReadHalfWord(address), 0),
-                uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => _interruptController.ReadHalfWord(address),
+                WAITCNT => (_waitControl.Get(), 0),
+                uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => (_interruptController.ReadHalfWord(address), 0),
                 _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
             },
             uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => (_ppu.ReadHalfWord(address), 0),
@@ -128,14 +133,15 @@ internal class MemoryBus
             uint a when a is >= 0x0300_0000 and <= 0x0300_7FFF => (Utils.ReadWord(_onChipWRam, address, 0x7FFF), 0),
             uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => address switch
             {
-                uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => ((uint)(_ppu.ReadRegisterHalfWord(address) | (_ppu.ReadRegisterHalfWord(address + 2) << 16)), 1), // TODO - not really a wait state?
+                uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => ((uint)(_ppu.ReadRegisterHalfWord(address) | (_ppu.ReadRegisterHalfWord(address + 2) << 16)), 0),
                 uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => throw new NotImplementedException("Sound registers not yet implemented"),
                 uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => (_dma.ReadWord(address), 0),
                 uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.ReadWord(address),
                 uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => (_serialController.ReadWord(address), 0),
                 uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => ((uint)(_gamepad.ReadHalfWord(address) | (_gamepad.ReadHalfWord(address + 2) << 16)), 0),
                 uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => (_serialController.ReadWord(address), 0),
-                uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => _interruptController.ReadWord(address),
+                WAITCNT => (_waitControl.Get(), 0),
+                uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => (_interruptController.ReadWord(address), 0),
                 _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
             },
             uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => ((uint)(_ppu.ReadHalfWord(address) | (_ppu.ReadHalfWord(address + 2) << 16)), 1),
@@ -186,9 +192,13 @@ internal class MemoryBus
                     case uint _ when address is >= 0x0400_0134 and <= 0x0400_015A:
                         _serialController.WriteByte(address, value);
                         return 0;
+                    case WAITCNT:
+                        _waitControl.Set(value); // TODO - Setting byte value into waitcontrol
+                        return 0;
                     case uint _ when address is >= 0x0400_0200 and <= 0x0470_0000:
-                        return _interruptController.WriteByte(address, value);
-                    default: 
+                        _interruptController.WriteByte(address, value);
+                        return 0;
+                    default:
                         throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped");
                 };
             case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
@@ -223,12 +233,15 @@ internal class MemoryBus
                         _ppu.WriteRegisterHalfWord(address, value);
                         return 0;
                     case uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8:
-                        throw new NotImplementedException("Sound registers not yet implemented");
+                        // TODO - No APU or sound registers yet
+                        return 0;
                     case uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE:
                         _dma.WriteHalfWord(address, value);
                         return 0;
                     case uint _ when address is >= 0x0400_0100 and <= 0x0400_0110:
                         return _timerController.WriteHalfWord(address, value);
+                    case 0x0400_0114: // BIOS bug writes to this
+                        return 0;
                     case uint _ when address is >= 0x0400_0120 and <= 0x0400_012C:
                         _serialController.WriteHalfWord(address, value);
                         return 0;
@@ -238,8 +251,12 @@ internal class MemoryBus
                     case uint _ when address is >= 0x0400_0134 and <= 0x0400_015A:
                         _serialController.WriteHalfWord(address, value);
                         return 0;
+                    case WAITCNT:
+                        _waitControl.Set(value);
+                        return 0;
                     case uint _ when address is >= 0x0400_0200 and <= 0x0470_0000:
-                        return _interruptController.WriteHalfWord(address, value);
+                        _interruptController.WriteHalfWord(address, value);
+                        return 0;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped");
                 };
@@ -258,6 +275,7 @@ internal class MemoryBus
 #if DEBUG
         _debugger.Log($"W {address:X8}={value:X8}");
 #endif
+
         switch (address)
         {
             case uint _ when address <= 0x0000_3FFF:
@@ -274,7 +292,7 @@ internal class MemoryBus
                     case uint _ when address is >= 0x0400_0000 and <= 0x0400_0056:
                         _ppu.WriteRegisterHalfWord(address, (ushort)value);
                         _ppu.WriteRegisterHalfWord(address + 2, (ushort)(value >> 16));
-                        return 1;
+                        return 0;
                     case uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8:
                         throw new NotImplementedException("Sound registers not yet implemented");
                     case uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE:
@@ -292,8 +310,13 @@ internal class MemoryBus
                     case uint _ when address is >= 0x0400_0134 and <= 0x0400_015A:
                         _serialController.WriteWord(address, value);
                         return 0;
+                    case WAITCNT:
+                        _waitControl.Set((ushort)value);
+                        // 206 is unused so no extra write here
+                        return 0;
                     case uint _ when address is >= 0x0400_0200 and <= 0x0470_0000:
-                        return _interruptController.WriteWord(address, value);
+                        _interruptController.WriteWord(address, value);
+                        return 0;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped");
                 };
