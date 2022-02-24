@@ -651,7 +651,17 @@ internal unsafe static class Thumb
     {
         var rb = (uint)((instruction >> 8) & 0b111);
         LoadStoreMultipleCommon(core, instruction, core.R[rb] - 4, true, rb, &LdmStmUtils.stm_registerWriteCycle);
-        LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rb] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
+        if (LdmStmUtils._storeLoadMultiplePopCount == 0)
+        {
+            LdmStmUtils._storeLoadMutipleFinalWritebackValue = core.R[rb] + 0x40;
+            LdmStmUtils._storeLoadMultiplePopCount = 1;
+            LdmStmUtils._storeLoadMultipleState[0] = 15;
+        }
+        else
+        {
+            LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rb] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
+        }
+        
         LdmStmUtils.stm_registerWriteCycle(core, instruction);
     }
 
@@ -659,7 +669,17 @@ internal unsafe static class Thumb
     {
         var rb = (uint)((instruction >> 8) & 0b111);
         LoadStoreMultipleCommon(core, instruction, core.R[rb], false, rb, &LdmStmUtils.ldm_registerReadCycle);
-        LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rb] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
+        
+        if (LdmStmUtils._storeLoadMultiplePopCount == 0)
+        {
+            LdmStmUtils._storeLoadMutipleFinalWritebackValue = core.R[rb] + 0x40;
+            LdmStmUtils._storeLoadMultiplePopCount = 1;
+            LdmStmUtils._storeLoadMultipleState[0] = 15;
+        }
+        else
+        {
+            LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rb] + (4 * LdmStmUtils._storeLoadMultiplePopCount));
+        }
     }
 
     #endregion

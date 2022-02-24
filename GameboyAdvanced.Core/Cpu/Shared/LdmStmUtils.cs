@@ -56,6 +56,17 @@ internal static class LdmStmUtils
                 ? core.GetUserModeRegister((int)_storeLoadMultipleState[_storeLoadMultiplePtr])
                 : core.R[_storeLoadMultipleState[_storeLoadMultiplePtr]];
 
+            // This is bit horrible, during an STM if PC is in the source list
+            // then the written value would be one cycle later (because the
+            // memory unit really uses the register not our cached val)
+            // TODO - A much nicer solution here would be for the memory unit
+            // to hold references to registers in D instead of uints so the cache
+            // isn't required and this special case code would magically go away.
+            if (_storeLoadMultipleState[_storeLoadMultiplePtr] == 15)
+            {
+                core.D += core.Cpsr.ThumbMode ? 2u : 4;
+            }
+
             _storeLoadMultiplePtr++;
         }
 
