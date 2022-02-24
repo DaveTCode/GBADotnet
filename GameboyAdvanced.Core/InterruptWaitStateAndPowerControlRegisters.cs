@@ -1,4 +1,6 @@
-﻿namespace GameboyAdvanced.Core.Cpu.Interrupts;
+﻿using static GameboyAdvanced.Core.IORegs;
+
+namespace GameboyAdvanced.Core.Cpu.Interrupts;
 
 /// <summary>
 /// This class encapsulates the various IO registers which are located between
@@ -62,56 +64,47 @@ internal class InterruptWaitStateAndPowerControlRegisters
     private InterruptRegister _interruptEnable;
     private InterruptRegister _interruptRequest;
 
-    internal (byte, int) ReadByte(uint _) => throw new NotImplementedException("Byte reads from interrupt registers not implemented");
+    internal byte ReadByte(uint _) => throw new NotImplementedException("Byte reads from interrupt registers not implemented");
 
-    internal (ushort, int) ReadHalfWord(uint address) => address switch
+    internal ushort ReadHalfWord(uint address) => address switch
     {
-        0x0400_0200 => (_interruptEnable.Get(), 0),
-        0x0400_0202 => (_interruptRequest.Get(), 0),
-        0x0400_0208 => ((ushort)(_interruptMasterEnable ? 1 : 0u), 0),
+        IE => _interruptEnable.Get(),
+        IF => _interruptRequest.Get(),
+        IME => (ushort)(_interruptMasterEnable ? 1 : 0u),
         _ => throw new NotImplementedException($"Invalid address {address:X8} for interrupt registers")
     };
 
-    internal (byte, int) ReadWord(uint _) => throw new NotImplementedException("Word reads from interrupt registers not implemented");
+    internal uint ReadWord(uint address) => 
+        (uint)(ReadHalfWord(address) | (ReadHalfWord(address + 2) << 8));
 
-    internal int WriteByte(uint address, byte val)
+    internal void WriteByte(uint address, byte val)
     {
         var hwVal = (ushort)(val | (val << 8));
-        var hwAddress = address & ~1u;
-        return WriteHalfWord(hwAddress, hwVal); // TODO - Is this correct? That's how I think 16 bit address buses work when writing bytes to them
+        var hwAddress = address & 0xFFFF_FFFE;
+        WriteHalfWord(hwAddress, hwVal); // TODO - Is this correct? That's how I think 16 bit address buses work when writing bytes to them
     }
 
-    internal int WriteHalfWord(uint address, ushort val)
+    internal void WriteHalfWord(uint address, ushort val)
     {
         switch (address)
         {
-            case 0x0400_0200: // IE - Interrupt Enable Register
+            case IE:
                 _interruptEnable.Set(val);
-                return 0;
-            case 0x0400_0202: // IE - Interrupt Request Flags / IRQ Acknowledge
+                break;
+            case IF:
                 _interruptRequest.Set(val);
-                return 0;
-            case 0x0400_0208: // IME - Interrupt Master Enable Register
+                break;
+            case IME:
                 _interruptMasterEnable = (val & 0b1) == 0b1;
-                return 0;
+                break;
             default:
                 throw new NotImplementedException($"Address {address:X8} not implemented in IO registers");
         }
     }
 
-    internal int WriteWord(uint address, uint val)
+    internal void WriteWord(uint address, uint val)
     {
-        switch (address)
-        {
-            case 0x0400_0200: // IE/IF
-                _interruptEnable.Set((ushort)val);
-                _interruptRequest.Set((ushort)(val >> 8));
-                return 0; // TODO - Do we add wait states for double writes on a 16 bit bus
-            case 0x0400_0208: // IME
-                _interruptMasterEnable = (val & 0b1) == 0b1;
-                return 0;
-            default:
-                throw new NotImplementedException($"Address {address:X8} not implemented in IO registers");
-        }
+        WriteHalfWord(address, (ushort)val);
+        WriteHalfWord(address, (ushort)(val >> 8));
     }
 }
