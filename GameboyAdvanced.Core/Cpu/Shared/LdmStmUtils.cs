@@ -27,6 +27,7 @@ internal static class LdmStmUtils
     {
         _storeLoadMultiplePopCount = 0;
         _storeLoadMultiplePtr = 0;
+        _storeLoadMultipleDoWriteback = false;
         _useBank0Regs = false;
     }
 
@@ -39,30 +40,13 @@ internal static class LdmStmUtils
     /// and simply sets A & D again.
     /// 
     /// After all writes have happened (the same cycle that the last write has
-    /// happened on the memory unit) the writeback happens and the memory unit
-    /// is reset for opcode fetches.
+    /// happened on the memory unit) the memory unit is reset for opcode 
+    /// fetches.
     /// </summary>
     internal static void stm_registerWriteCycle(Core core, uint _)
     {
         if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount)
         {
-            if (_storeLoadMultipleDoWriteback)
-            {
-                if (_useBank0Regs)
-                {
-                    core.WriteUserModeRegister(_writebackRegister, _storeLoadMutipleFinalWritebackValue);
-                }
-                else
-                {
-                    core.R[_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
-                }
-                
-                if (_writebackRegister == 15) 
-                {
-                    core.ClearPipeline(); // TODO - This is a really bad idea, why would you use PC as writeback, probably needs a special log
-                }
-            }
-
             Core.ResetMemoryUnitForOpcodeFetch(core, _);
         }
         else
@@ -73,6 +57,25 @@ internal static class LdmStmUtils
                 : core.R[_storeLoadMultipleState[_storeLoadMultiplePtr]];
 
             _storeLoadMultiplePtr++;
+        }
+
+        // The writeback happens at the end of the 2nd cycle (after one register write)
+        if (_storeLoadMultipleDoWriteback)
+        {
+            _storeLoadMultipleDoWriteback = false;
+            if (_useBank0Regs)
+            {
+                core.WriteUserModeRegister(_writebackRegister, _storeLoadMutipleFinalWritebackValue);
+            }
+            else
+            {
+                core.R[_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
+            }
+
+            if (_writebackRegister == 15)
+            {
+                core.ClearPipeline(); // TODO - This is a really bad idea, why would you use PC as writeback, probably needs a special log
+            }
         }
     }
 
@@ -102,6 +105,26 @@ internal static class LdmStmUtils
     /// </summary>
     internal static void ldm_registerReadCycle(Core core, uint _)
     {
+        // Writeback happens at the end of the second cycle (before any
+        // registers are loaded)
+        if (_storeLoadMultipleDoWriteback)
+        {
+            _storeLoadMultipleDoWriteback = false;
+            if (_useBank0Regs)
+            {
+                core.WriteUserModeRegister(_writebackRegister, _storeLoadMutipleFinalWritebackValue);
+            }
+            else
+            {
+                core.R[_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
+            }
+
+            if (_writebackRegister == 15)
+            {
+                core.ClearPipeline();
+            }
+        }
+
         if (_storeLoadMultiplePtr > 0)
         {
             if (_useBank0Regs)
@@ -132,23 +155,6 @@ internal static class LdmStmUtils
 
         if (_storeLoadMultiplePtr == _storeLoadMultiplePopCount)
         {
-            if (_storeLoadMultipleDoWriteback)
-            {
-                if (_useBank0Regs)
-                {
-                    core.WriteUserModeRegister(_writebackRegister, _storeLoadMutipleFinalWritebackValue);
-                }
-                else
-                {
-                    core.R[_writebackRegister] = _storeLoadMutipleFinalWritebackValue;
-                }
-                
-                if (_writebackRegister == 15)
-                {
-                    core.ClearPipeline();
-                }
-            }
-
             Core.ResetMemoryUnitForOpcodeFetch(core, _);
         }
 
