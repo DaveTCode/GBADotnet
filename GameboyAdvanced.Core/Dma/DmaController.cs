@@ -1,6 +1,5 @@
 ﻿using GameboyAdvanced.Core.Bus;
 using GameboyAdvanced.Core.Debug;
-using static GameboyAdvanced.Core.IORegs;
 
 namespace GameboyAdvanced.Core.Dma;
 

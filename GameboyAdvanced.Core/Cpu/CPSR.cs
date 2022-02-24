@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace GameboyAdvanced.Core;
+﻿namespace GameboyAdvanced.Core;
 
 internal enum CPSRMode
 {

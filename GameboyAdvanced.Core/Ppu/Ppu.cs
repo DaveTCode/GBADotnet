@@ -1,4 +1,6 @@
-﻿namespace GameboyAdvanced.Core.Ppu;
+﻿using static GameboyAdvanced.Core.IORegs;
+
+namespace GameboyAdvanced.Core.Ppu;
 
 /// <summary>
 /// This class both encapsulates the state of the PPU and provides 
@@ -68,36 +70,51 @@ internal class Ppu
     {
         if (_dispcnt.BgMode == BgMode.Video0)
         {
-            // TODO - Mode 0 only implemented in so far as required for Deadbody cpu tests
-            // Assume BG0 only, 32*32 tiles, 4 bit color depth
-            var tileMapBase = _backgrounds[0].Control.ScreenBaseBlock * 0x800;
-            var charMapBase = _backgrounds[0].Control.CharBaseBlock * 0x4000;
-
-            for (var row = 0; row < 20; row++)
+            foreach (var background in _backgrounds)
             {
-                for (var col = 0; col < 30; col++)
+                if ((_dispcnt.ScreenDisplayBg0 && background.Index == 0) ||
+                    (_dispcnt.ScreenDisplayBg1 && background.Index == 1) ||
+                    (_dispcnt.ScreenDisplayBg2 && background.Index == 2) ||
+                    (_dispcnt.ScreenDisplayBg3 && background.Index == 3))
                 {
-                    var frameBufferTileAddress = col * 8 * 4 + row * Device.WIDTH * 4 * 8;
-                    var tileMapAddress = tileMapBase + (row * 64) + (col * 2);
-                    var tileMap = _vram[tileMapAddress] | (_vram[tileMapAddress + 1] << 8);
-                    var tile = tileMap & 0b11_1111_1111;
-                    var _horizontalFlip = ((tileMap >> 10) & 1) == 1;
-                    var _verticalFlip = ((tileMap >> 11) & 1) == 1;
-                    var _paletteNumber = (tileMap >> 12) & 0b1111;
+                    // TODO - Mode 0 only implemented in so far as required for Deadbody cpu tests
+                    // 32*32 tiles, 4 bit color depth, no flipping
+                    var tileMapBase = background.Control.ScreenBaseBlock * 0x800;
+                    var charMapBase = background.Control.CharBaseBlock * 0x4000;
 
-                    var tileAddress = charMapBase + (tile * 32);
-                    for (var b = 0; b < 32; b++)
+                    for (var row = 0; row < 20; row++)
                     {
-                        var x = b % 4;
-                        var y = b / 4;
-                        var tileData = _vram[tileAddress + b];
-                        var pixel1PalNo = tileData & 0b1111;
-                        var pixel2PalNo = tileData >> 4;
-                        var pixel1Color = _paletteRam[pixel1PalNo] | (_paletteRam[pixel1PalNo + 1] << 8);
-                        var pixel2Color = _paletteRam[pixel2PalNo] | (_paletteRam[pixel2PalNo + 1] << 8);
-                        var fbPtr = frameBufferTileAddress + (x * 8) + (y * Device.WIDTH * 4);
-                        Utils.ColorToRgb(pixel1Color, _frameBuffer.AsSpan(fbPtr));
-                        Utils.ColorToRgb(pixel2Color, _frameBuffer.AsSpan(fbPtr + 4));
+                        for (var col = 0; col < 30; col++)
+                        {
+                            var frameBufferTileAddress = (col * 8 * 4) + (row * Device.WIDTH * 4 * 8);
+                            var tileMapAddress = tileMapBase + (row * 64) + (col * 2);
+                            var tileMap = _vram[tileMapAddress] | (_vram[tileMapAddress + 1] << 8);
+                            var tile = tileMap & 0b11_1111_1111;
+                            var _horizontalFlip = ((tileMap >> 10) & 1) == 1;
+                            var _verticalFlip = ((tileMap >> 11) & 1) == 1;
+                            var paletteNumber = ((tileMap >> 12) & 0b1111) << 4;
+
+                            var tileAddress = charMapBase + (tile * 32);
+                            for (var b = 0; b < 32; b++)
+                            {
+                                var x = b % 4;
+                                var y = b / 4;
+                                var tileData = _vram[tileAddress + b];
+                                var pixel1PalIx = tileData & 0b1111;
+                                var pixel2PalIx = tileData >> 4;
+
+                                // Color 0 in each BG/OBJ palette is transparent so replace with palette 0 color 0
+                                var pixel1PalNo = (pixel1PalIx == 0) ? 0 : (paletteNumber | pixel1PalIx) * 2;
+                                var pixel2PalNo = (pixel2PalIx == 0) ? 0 : (paletteNumber | pixel2PalIx) * 2;
+
+                                // Each palette takes up 2
+                                var pixel1Color = _paletteRam[pixel1PalNo] | (_paletteRam[pixel1PalNo + 1] << 8);
+                                var pixel2Color = _paletteRam[pixel2PalNo] | (_paletteRam[pixel2PalNo + 1] << 8);
+                                var fbPtr = frameBufferTileAddress + (x * 8) + (y * Device.WIDTH * 4);
+                                Utils.ColorToRgb(pixel1Color, _frameBuffer.AsSpan(fbPtr));
+                                Utils.ColorToRgb(pixel2Color, _frameBuffer.AsSpan(fbPtr + 4));
+                            }
+                        }
                     }
                 }
             }
@@ -179,119 +196,119 @@ internal class Ppu
         // TODO - Some of these writes won't be valid depending on the PPU state
         switch (address)
         {
-            case 0x0400_0000:
+            case DISPCNT:
                 _dispcnt.Update(value);
                 break;
-            case 0x0400_0002:
+            case GREENSWAP:
                 _greenSwap = value;
                 break;
-            case 0x0400_0004:
+            case DISPSTAT:
                 _dispstat.Update(value);
                 break;
-            case 0x0400_0008:
+            case BG0CNT:
                 _backgrounds[0].Control.Update(value);
                 break;
-            case 0x0400_000A:
+            case BG1CNT:
                 _backgrounds[1].Control.Update(value);
                 break;
-            case 0x0400_000C:
+            case BG2CNT:
                 _backgrounds[2].Control.Update(value);
                 break;
-            case 0x0400_000E:
+            case BG3CNT:
                 _backgrounds[3].Control.Update(value);
                 break;
-            case 0x0400_0010:
+            case BG0HOFS:
                 _backgrounds[0].XOffset = value & 0x1FF;
                 break;
-            case 0x0400_0012:
+            case BG0VOFS:
                 _backgrounds[0].YOffset = value & 0x1FF;
                 break;
-            case 0x0400_0014:
+            case BG1HOFS:
                 _backgrounds[1].XOffset = value & 0x1FF;
                 break;
-            case 0x0400_0016:
+            case BG1VOFS:
                 _backgrounds[1].YOffset = value & 0x1FF;
                 break;
-            case 0x0400_0018:
+            case BG2HOFS:
                 _backgrounds[2].XOffset = value & 0x1FF;
                 break;
-            case 0x0400_001A:
+            case BG2VOFS:
                 _backgrounds[2].YOffset = value & 0x1FF;
                 break;
-            case 0x0400_001C:
+            case BG3HOFS:
                 _backgrounds[3].XOffset = value & 0x1FF;
                 break;
-            case 0x0400_001E:
+            case BG3VOFS:
                 _backgrounds[3].YOffset = value & 0x1FF;
                 break;
-            case 0x0400_0020:
+            case BG2PA:
                 _backgrounds[2].Dx = value;
                 break;
-            case 0x0400_0022:
+            case BG2PB:
                 _backgrounds[2].Dmx = value;
                 break;
-            case 0x0400_0024:
+            case BG2PC:
                 _backgrounds[2].Dy = value;
                 break;
-            case 0x0400_0026:
+            case BG2PD:
                 _backgrounds[2].Dmy = value;
                 break;
-            case 0x0400_0028:
+            case BG2X:
                 _backgrounds[2].RefPointX = (int)((_backgrounds[2].RefPointX & 0xFFFF_0000) | value);
                 break;
-            case 0x0400_002A:
+            case BG2Y:
                 _backgrounds[2].RefPointX = (_backgrounds[2].RefPointX & 0x0000_FFFF) | (value << 16);
                 _backgrounds[2].RefPointX = (_backgrounds[2].RefPointX << 4) >> 4;
                 break;
-            case 0x0400_0030:
+            case BG3PA:
                 _backgrounds[3].Dx = value;
                 break;
-            case 0x0400_0032:
+            case BG3PB:
                 _backgrounds[3].Dmx = value;
                 break;
-            case 0x0400_0034:
+            case BG3PC:
                 _backgrounds[3].Dy = value;
                 break;
-            case 0x0400_0036:
+            case BG3PD:
                 _backgrounds[3].Dmy = value;
                 break;
-            case 0x0400_0038:
+            case BG3X:
                 _backgrounds[3].RefPointX = (int)((_backgrounds[3].RefPointX & 0xFFFF_0000) | value);
                 break;
-            case 0x0400_003A:
+            case BG3Y:
                 _backgrounds[3].RefPointX = (_backgrounds[3].RefPointX & 0x0000_FFFF) | (value << 16);
                 _backgrounds[3].RefPointX = (_backgrounds[3].RefPointX << 4) >> 4;
                 break;
-            case 0x0400_0040: // WIN0H
+            case WIN0H:
                 _windows[0].X1 = value >> 8;
                 _windows[0].X2 = (value & 0xFF);
                 break;
-            case 0x0400_0042: // WIN1H
+            case WIN1H:
                 _windows[1].X1 = value >> 8;
                 _windows[1].X2 = (value & 0xFF);
                 break;
-            case 0x0400_0044: // WIN0V
+            case WIN0V:
                 _windows[0].Y1 = value >> 8;
                 _windows[0].Y2 = (value & 0xFF);
                 break;
-            case 0x0400_0046: // WIN1V
+            case WIN1V:
                 _windows[1].Y1 = value >> 8;
                 _windows[1].Y2 = (value & 0xFF);
                 break;
-            case 0x0400_0048: // WININ
+            case WININ:
                 _winIn.Set(value);
                 break;
-            case 0x0400_004A: // WINOUT
+            case WINOUT:
                 _winOut.Set(value);
                 break;
-            case 0x0400_004C: // MOSAIC
+            case MOSAIC:
                 _mosaic.Set(value);
                 break;
-            case 0x0400_0050:
+            case BLDCNT:
                 throw new NotImplementedException("BLDCNT not yet implemented");
-            case 0x0400_0052:
+            case BLDALPHA:
                 throw new NotImplementedException("BLDALPHA not yet implemented");
-            case 0x0400_0054:
+            case BLDY:
                 throw new NotImplementedException("BLDY not yet implemented");
             default:
                 throw new NotImplementedException($"Unregistered half word write to PPU registers {address:X8}={value:X4}");
@@ -305,18 +322,18 @@ internal class Ppu
 
     internal ushort ReadRegisterHalfWord(uint address) => address switch
     {
-        0x0400_0000 => _dispcnt.Read(),
-        0x0400_0002 => _greenSwap,
-        0x0400_0004 => _dispstat.Read(),
-        0x0400_0006 => _currentLine,
-        0x0400_0008 => _backgrounds[0].Control.Read(),
-        0x0400_000A => _backgrounds[1].Control.Read(),
-        0x0400_000C => _backgrounds[2].Control.Read(),
-        0x0400_000E => _backgrounds[3].Control.Read(),
-        0x0400_0048 => _winIn.Get(),
-        0x0400_004A => _winOut.Get(),
-        0x0400_0050 => throw new NotImplementedException("BLDCNT register not implemented"),
-        0x0400_0052 => throw new NotImplementedException("BLDALPHA register not implemented"),
+        DISPCNT => _dispcnt.Read(),
+        GREENSWAP => _greenSwap,
+        DISPSTAT => _dispstat.Read(),
+        VCOUNT => _currentLine,
+        BG0CNT => _backgrounds[0].Control.Read(),
+        BG1CNT => _backgrounds[1].Control.Read(),
+        BG2CNT => _backgrounds[2].Control.Read(),
+        BG3CNT => _backgrounds[3].Control.Read(),
+        WININ => _winIn.Get(),
+        WINOUT => _winOut.Get(),
+        BLDCNT => throw new NotImplementedException("BLDCNT register not implemented"),
+        BLDALPHA => throw new NotImplementedException("BLDALPHA register not implemented"),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Unmapped PPU register read at {address:X8}") // TODO - Handle unused addresses properly
     };
 
