@@ -41,27 +41,79 @@ internal class SerialController
         _ => throw new Exception($"Serial controller doesn't map address {address:X8} for word reads"),
     };
 
-    internal void WriteByte(uint address, byte value) => throw new NotImplementedException("Byte writes to serial controller not yet implemented");
+    internal void WriteByte(uint address, byte value)
+    {
+        switch (address)
+        {
+            case SIODATA32:
+            case SIOMULTI1:
+            case SIOMULTI2:
+            case SIOMULTI3:
+            case SIOCNT:
+            case SIODATA8:
+            case RCNT:
+            case JOYCNT:
+            case JOY_RECV:
+            case JOY_TRANS:
+            case JOYSTAT:
+                // TODO - Actually do something with these
+#if DEBUG
+                _debugger.Log($"Byte write to {address:X8}={value:X4} but serial registers aren't doing anything yet");
+#endif
+                return;
+            default:
+                throw new Exception($"Invalid address {address:X8} for serial controller write byte");
+        }
+    }
 
     internal void WriteHalfWord(uint address, ushort value)
     {
         // TODO - This is only implemented at all because both doom and mgba expect to write to RCNT
         switch (address)
         {
+            case SIODATA32:
+            case SIOMULTI1:
+            case SIOMULTI2:
+            case SIOMULTI3:
             case SIOCNT:
-#if DEBUG
-                _debugger.Log($"Write to SIOCNT={value:X4} which is not properly implemented");
-#endif
-                break;
+            case SIODATA8:
             case RCNT:
+            case JOYCNT:
+            case JOY_RECV:
+            case JOY_TRANS:
+            case JOYSTAT:
+                // TODO - Actually do something with these
 #if DEBUG
-                _debugger.Log($"Write to RCNT={value:X4} which is not properly implemented");
+                _debugger.Log($"Half word write to {address:X8}={value:X4} but serial registers aren't doing anything yet");
 #endif
-                break;
+                return;
             default:
-                throw new NotImplementedException("Serial controller is not really implemented");
+                throw new Exception($"Invalid address {address:X8} for serial controller write half word");
         }
     }
 
-    internal void WriteWord(uint address, uint value) => throw new NotImplementedException("Word writes to serial controller not yet implemented");
+    internal void WriteWord(uint address, uint value)
+    {
+        switch (address)
+        {
+            case SIODATA32:
+            case SIOMULTI1:
+            case SIOMULTI2:
+            case SIOMULTI3:
+            case SIOCNT:
+            case SIODATA8:
+            case RCNT:
+            case JOYCNT:
+            case JOY_RECV:
+            case JOY_TRANS:
+            case JOYSTAT:
+                // TODO - Actually do something with these
+#if DEBUG
+                _debugger.Log($"Half word write to {address:X8}={value:X4} but serial registers aren't doing anything yet");
+#endif
+                return;
+            default:
+                throw new Exception($"Invalid address {address:X8} for serial controller write word");
+        }
+    }
 }
