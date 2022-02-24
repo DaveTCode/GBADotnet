@@ -13,13 +13,22 @@ internal static unsafe class LdrStrUtils
     private static int _writebackReg;
     private static uint _writebackVal;
     private static bool _doWriteback;
-    private static delegate*<uint, uint> _ldrCastFunc;
+    private static delegate*<uint, uint, uint> _ldrCastFunc;
+    private static uint _cachedValue;
 
-    internal static uint LDRW(uint dataBus) => dataBus;
-    internal static uint LDRHW(uint dataBus) => (ushort)dataBus;
-    internal static uint LDRSHW(uint dataBus)
+    internal static uint LDRW(uint addressBus, uint dataBus)
     {
-        // "and set bits 16 - 31 of Rd to bit 15"
+        var rotate = 8 * (int)(addressBus % 4);
+        return (dataBus >> rotate) | (dataBus << (32 - rotate));
+    }
+    internal static uint LDRHW(uint addressBus, uint dataBus)
+    {
+        var rotate = 8 * (int)(addressBus % 2);
+        return (dataBus >> rotate) | (dataBus << (32 - rotate));
+    }
+    internal static uint LDRSHW(uint addressBus, uint dataBus)
+    {
+        // TODO - Fails jsmolka thumb 219 which expects rotated data sign extended from the rotate?
         // TODO - Is there a more efficient way to sign extend in C# which doesn't branch?
         var bit15 = (dataBus >> 15) & 0b1;
         return bit15 == 1
@@ -27,8 +36,8 @@ internal static unsafe class LdrStrUtils
             : (ushort)(short)dataBus;
     }
 
-    internal static uint LDRB(uint dataBus) => (byte)dataBus;
-    internal static uint LDRSB(uint dataBus)
+    internal static uint LDRB(uint addressBus, uint dataBus) => (byte)dataBus;
+    internal static uint LDRSB(uint addressBus, uint dataBus)
     {
         // "and set bits 8 - 31 of Rd to bit 7"
         // TODO - Is there a more efficient way to sign extend in C# which doesn't branch?
@@ -51,6 +60,7 @@ internal static unsafe class LdrStrUtils
     /// </summary>
     internal static void LDRCycle2(Core core, uint instruction)
     {
+        _cachedValue = _ldrCastFunc(core.A, core.D);
         // After an LDR the address bus (A) shows current PC + 2n and it's set up
         // for opcode fetch but nMREQ is driven high for one internal cycle
         core.A = core.R[15];
@@ -88,7 +98,7 @@ internal static unsafe class LdrStrUtils
     /// </summary>
     internal static void LDRCycle3(Core core, uint instruction)
     {
-        core.R[_ldrReg] = _ldrCastFunc(core.D);
+        core.R[_ldrReg] = _cachedValue;
         
         if (_ldrReg == 15)
         {
@@ -100,7 +110,7 @@ internal static unsafe class LdrStrUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void LDRCommon(Core core, uint address, BusWidth busWidth, int destinationReg, delegate*<uint, uint> castFunc)
+    internal static void LDRCommon(Core core, uint address, BusWidth busWidth, int destinationReg, delegate*<uint, uint, uint> castFunc)
     {
         _doWriteback = false;
         _ldrCastFunc = castFunc;
@@ -114,7 +124,7 @@ internal static unsafe class LdrStrUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void LDRCommonWriteback(Core core, uint address, BusWidth busWidth, int destinationReg, delegate*<uint, uint> castFunc, int writebackReg, uint writebackVal)
+    internal static void LDRCommonWriteback(Core core, uint address, BusWidth busWidth, int destinationReg, delegate*<uint, uint, uint> castFunc, int writebackReg, uint writebackVal)
     {
         LDRCommon(core, address, busWidth, destinationReg, castFunc);
         _doWriteback = true;
