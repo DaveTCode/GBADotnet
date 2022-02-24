@@ -5,7 +5,7 @@ internal enum DestAddressCtrl
     Increment = 0b00,
     Decrement = 0b01,
     Fixed = 0b10,
-    IncrememntReload = 0b11,
+    IncrementReload = 0b11,
 }
 
 internal enum SrcAddressCtrl

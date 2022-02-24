@@ -1,4 +1,5 @@
-﻿using GameboyAdvanced.Core.Cpu.Interrupts;
+﻿using GameboyAdvanced.Core.Bus;
+using GameboyAdvanced.Core.Cpu.Interrupts;
 using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
@@ -22,18 +23,14 @@ public unsafe class Device
 
     internal readonly MemoryBus Bus;
     private readonly Core _cpu;
-    private readonly DmaController _dma;
+    private readonly DmaDataUnit _dmaData;
+    private readonly DmaController _dmaCtrl;
     private readonly GamePak _gamepak;
     private readonly Gamepad _gamepad;
     private readonly Ppu.Ppu _ppu;
     private readonly TimerController _timerController;
     private readonly InterruptWaitStateAndPowerControlRegisters _interruptController;
     private readonly SerialController _serialController;
-
-    private delegate*<Device, void> _nextPpuAction = null;
-    private delegate*<Device, void> _nextApuAction = null;
-    private delegate*<Device, void> _nextTimerAction = null;
-    private delegate*<Device, void> _nextDmaAction = null;
 
     /// <summary>
     /// Constructs a device which can be used to exectue a rom by running 
@@ -69,9 +66,10 @@ public unsafe class Device
         _gamepad = new Gamepad();
         _timerController = new TimerController();
         _ppu = new Ppu.Ppu();
-        _dma = new DmaController();
+        _dmaData = new DmaDataUnit();
         _serialController = new SerialController(debugger);
-        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dma, _timerController, _interruptController, _serialController, debugger);
+        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dmaData, _timerController, _interruptController, _serialController, debugger);
+        _dmaCtrl = new DmaController(Bus, debugger, _dmaData);
         _cpu = new Core(Bus, startVector, debugger);
         Debugger = debugger;
     }
@@ -84,7 +82,11 @@ public unsafe class Device
             throw new BreakpointException();
         }
         #endif
-        _cpu.Clock();
+        if (!_dmaCtrl.Step())
+        {
+            // Only step the CPU unit if the DMA is inactive
+            _cpu.Clock();
+        }
         _ppu.Step();
     }
 
@@ -93,7 +95,8 @@ public unsafe class Device
         _cpu.Reset(startVector);
         Bus.Reset();
         _ppu.Reset();
-        _dma.Reset();
+        _dmaCtrl.Reset();
+        _dmaData.Reset();
         _timerController.Reset();
         _gamepad.Reset();
     }

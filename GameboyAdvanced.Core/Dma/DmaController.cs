@@ -1,125 +1,109 @@
-﻿namespace GameboyAdvanced.Core.Dma;
+﻿using GameboyAdvanced.Core.Bus;
+using GameboyAdvanced.Core.Debug;
+using static GameboyAdvanced.Core.IORegs;
+
+namespace GameboyAdvanced.Core.Dma;
 
 internal class DmaController
 {
-    private readonly DmaChannel[] _channels = new DmaChannel[4]
+    private readonly MemoryBus _bus;
+    private readonly BaseDebugger _debugger;
+    private readonly DmaDataUnit _dmaDataUnit;
+
+    /// <summary>
+    /// Like the CPU, when DMA accesses memory addresses it can stretch out N/S
+    /// cycles causing what's known as wait states.
+    /// 
+    /// These wait states block CPU/DMA from executing.
+    /// </summary>
+    private int _waitStates = 0;
+
+    internal DmaController(MemoryBus bus, BaseDebugger debugger, DmaDataUnit dmaDataUnit)
     {
-        new DmaChannel(0), new DmaChannel(1), new DmaChannel(2), new DmaChannel(3)
-    };
+        _bus = bus ?? throw new ArgumentNullException(nameof(bus));
+        _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
+        _dmaDataUnit = dmaDataUnit ?? throw new ArgumentNullException(nameof(dmaDataUnit));
+    }
 
     internal void Reset()
     {
-        foreach (var channel in _channels)
+        _waitStates = 0;
+    }
+
+    /// <summary>
+    /// Steps the DMA controller and returns a boolean indicating whether DMA 
+    /// is active (and therefore the CPU should be paused)
+    /// </summary>
+    /// 
+    /// <remarks>
+    /// TODO - Cycle timing of DMA isn't something I properly understand yet.
+    /// Likely right with memory read/writes and wait states but not with
+    /// where the additional I cycles go.
+    /// </remarks>
+    /// 
+    /// <returns>
+    /// true if any DMA channel is active, false otherwise
+    /// </returns>
+    internal bool Step()
+    {
+        if (_waitStates > 0)
         {
-            channel.Reset();
+            _waitStates--;
+            return true;
         }
-    }
 
-    internal void Step()
-    {
-        // TODO - Actually implement DMA
-    }
-
-    #region Memory Read Write
-
-    internal byte ReadByte(uint address) => address switch
-    {
-        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA read byte") // TODO - Handle unused addresses properly
-    };
-
-    internal ushort ReadHalfWord(uint address) => address switch
-    {
-        0x0400_00BA => _channels[0].ControlReg.Read(),
-        0x0400_00C6 => _channels[1].ControlReg.Read(),
-        0x0400_00D2 => _channels[2].ControlReg.Read(),
-        0x0400_00DE => _channels[3].ControlReg.Read(),
-        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA read half word") // TODO - Handle unused addresses properly
-    };
-
-    internal uint ReadWord(uint address) => throw new NotImplementedException("Word reads from DMA registers not implemented");
-
-    internal void WriteByte(uint address, byte value)
-    {
-        throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA write"); // TODO - Handle unused addresses properly
-    }
-
-    internal void WriteHalfWord(uint address, ushort value)
-    {
-        switch (address)
+        for (var ii = 0; ii < _dmaDataUnit.Channels.Length; ii++)
         {
-            case 0x0400_00B8: // DMA0CNT_L
-                _channels[0].WordCount = (ushort)(value & 0x3FFF);
-                break;
-            case 0x0400_00BA: // DMA0CNT_H
-                _channels[0].UpdateControlRegister(value);
-                break;
-            case 0x0400_00C4: // DMA1CNT_L
-                _channels[1].WordCount = (ushort)(value & 0x3FFF);
-                break;
-            case 0x0400_00C6: // DMA0CNT_H
-                _channels[1].UpdateControlRegister(value);
-                break;
-            case 0x0400_00D0: // DMA2CNT_L
-                _channels[2].WordCount = (ushort)(value & 0x3FFF);
-                break;
-            case 0x0400_00D2: // DMA0CNT_H
-                _channels[2].UpdateControlRegister(value);
-                break;
-            case 0x0400_00DC: // DMA3CNT_L
-                _channels[3].WordCount = value; // Accepts lengths up to 0xFFFF so no mask
-                break;
-            case 0x0400_00DE: // DMA0CNT_H
-                _channels[3].UpdateControlRegister(value);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA half word write"); // TODO - Handle unused addresses properly
-        }
-    }
+            if (_dmaDataUnit.Channels[ii].ControlReg.DmaEnable)
+            {
+                if (_dmaDataUnit.Channels[ii].ControlReg.StartTiming != StartTiming.Immediate)
+                {
+                    throw new NotImplementedException("Only immediate DMA implemented at the moment");
+                }
 
-    internal void WriteWord(uint address, uint value)
-    {
-        switch (address)
-        {
-            case 0x0400_00B0: // DMA0SAD
-                _channels[0].SourceAddress = value & 0x0FFF_FFFF; // TODO - when is this mask 0x07FF_FFFF instead of 0x0FFF_FFFF?
-                break;
-            case 0x0400_00B4: // DMA0DAD
-                _channels[0].DestinationAddress = value & 0x0FFF_FFFF; // TODO - when is this mask 0x07FF_FFFF instead of 0x0FFF_FFFF?
-                break;
-            case 0x0400_00B8: // DMA0CNT
-                _ = _channels[0].ControlReg.Update(value); // TODO - Presumably this might trigger a DMA
-                break;
-            case 0x0400_00BC: // DMA1SAD
-                _channels[1].SourceAddress = value & 0x0FFF_FFFF;
-                break;
-            case 0x0400_00C0: // DMA1DAD
-                _channels[1].DestinationAddress = value & 0x0FFF_FFFF; // TODO - when is this mask 0x07FF_FFFF instead of 0x0FFF_FFFF?
-                break;
-            case 0x0400_00C4: // DMA1CNT
-                _ = _channels[1].ControlReg.Update(value); // TODO - Presumably this might trigger a DMA
-                break;
-            case 0x0400_00C8: // DMA2SAD
-                _channels[2].SourceAddress = value & 0x0FFF_FFFF;
-                break;
-            case 0x0400_00CC: // DMA2DAD
-                _channels[2].DestinationAddress = value & 0x0FFF_FFFF; // TODO - when is this mask 0x07FF_FFFF instead of 0x0FFF_FFFF?
-                break;
-            case 0x0400_00D0: // DMA2CNT
-                _ = _channels[2].ControlReg.Update(value); // TODO - Presumably this might trigger a DMA
-                break;
-            case 0x0400_00D4: // DMA3SAD
-                _channels[3].SourceAddress = value & 0x0FFF_FFFF;
-                break;
-            case 0x0400_00D8: // DMA3DAD
-                _channels[3].DestinationAddress = value & 0x0FFF_FFFF; // TODO - when is this mask 0x07FF_FFFF instead of 0x0FFF_FFFF?
-                break;
-            case 0x0400_00DC: // DMA3CNT
-                _ = _channels[3].ControlReg.Update(value); // TODO - Presumably this might trigger a DMA
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA word write"); // TODO - Handle unused addresses properly
-        }
-    }
+                // DMA takes 2 I cycles to start
+                // TODO - Lots about this I'm not sure about, No$ docs say 4I cycles if both src/dest in gamepak but I bet that's not at the start
+                // TODO - Do these cycles cause paused CPU? Right now I say no. Do they count down on all channels at the same time? No for now.
+                if (_dmaDataUnit.Channels[ii].ClocksToStart > 0)
+                {
+                    _dmaDataUnit.Channels[ii].ClocksToStart--;
+                    continue;
+                }
 
-    #endregion
+                // DMA takes 2S cycles per read (apart from the first which is a pair of N cycles)
+                if (_dmaDataUnit.Channels[ii].IntCachedValue.HasValue)
+                {
+                    _waitStates += (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
+                        ? _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value)
+                        : _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value);
+                    _dmaDataUnit.Channels[ii].IntDestinationAddress = (uint)(_dmaDataUnit.Channels[ii].IntDestinationAddress + _dmaDataUnit.Channels[ii].IntDestAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
+                    _dmaDataUnit.Channels[ii].IntWordCount--;
+                    _dmaDataUnit.Channels[ii].IntCachedValue = null;
+
+                    if (_dmaDataUnit.Channels[ii].IntWordCount == 0)
+                    {
+                        _dmaDataUnit.Channels[ii].ControlReg.DmaEnable = false;
+
+                        if (_dmaDataUnit.Channels[ii].ControlReg.IrqOnEnd)
+                        {
+                            throw new NotImplementedException("No IRQ on DMA implemented yet");
+                        }
+                    }
+                }
+                else
+                {
+                    (_dmaDataUnit.Channels[ii].IntCachedValue, var waitStates) = (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
+                        ? _bus.ReadWord(_dmaDataUnit.Channels[ii].IntSourceAddress)
+                        : _bus.ReadHalfWord(_dmaDataUnit.Channels[ii].IntSourceAddress);
+                    _waitStates += waitStates;
+                    _dmaDataUnit.Channels[ii].IntSourceAddress = (uint)(_dmaDataUnit.Channels[ii].IntSourceAddress + _dmaDataUnit.Channels[ii].IntSrcAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
+                }
+
+                // Only one DMA runs at a time in priority order from 0-3, return true here if a DMA ran
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

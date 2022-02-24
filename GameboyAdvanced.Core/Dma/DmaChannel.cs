@@ -2,7 +2,7 @@
 
 internal struct DmaChannel
 {
-    private static readonly int[] MaxWordCounts = new int[] { 0x4000, 0x4000, 0x4000, 0x10000 };
+    private readonly static int[] MaxWordCounts = new int[] { 0x4000, 0x4000, 0x4000, 0x10000 };
 
     internal int Id;
     internal uint SourceAddress;
@@ -11,11 +11,14 @@ internal struct DmaChannel
 
     internal uint IntSourceAddress;
     internal uint IntDestinationAddress;
+    internal uint? IntCachedValue;
     internal int IntWordCount;
+    internal int IntDestAddressIncrement;
+    internal int IntSrcAddressIncrement;
 
     internal DmaControlRegister ControlReg;
 
-    private int _clocksToStart;
+    internal int ClocksToStart;
 
     internal DmaChannel(int id)
     {
@@ -23,9 +26,12 @@ internal struct DmaChannel
         SourceAddress = IntSourceAddress = 0;
         DestinationAddress = IntDestinationAddress = 0;
         WordCount = 0;
+        IntCachedValue = null;
         IntWordCount = 0;
+        IntDestAddressIncrement = 0;
+        IntSrcAddressIncrement = 0;
         ControlReg = new DmaControlRegister();
-        _clocksToStart = 0;
+        ClocksToStart = 0;
     }
 
     internal void UpdateControlRegister(ushort value)
@@ -34,10 +40,31 @@ internal struct DmaChannel
 
         if (enableBitFlip)
         {
-            _clocksToStart = 2; // 2 clock cycles after setting before DMA starts
+            ClocksToStart = 2; // 2 clock cycles after setting before DMA starts
             IntSourceAddress = SourceAddress;
             IntDestinationAddress = DestinationAddress;
+            IntCachedValue = null;
             IntWordCount = (WordCount == 0) ? MaxWordCounts[Id] : WordCount; // 0 is a special case that means copy MAX bytes
+            IntDestAddressIncrement = (ControlReg.Is32Bit, ControlReg.DestAddressCtrl) switch
+            {
+                (_, DestAddressCtrl.Fixed) => 0,
+                (true, DestAddressCtrl.Increment) => 4,
+                (true, DestAddressCtrl.IncrementReload) => 4,
+                (true, DestAddressCtrl.Decrement) => -4,
+                (false, DestAddressCtrl.Increment) => 2,
+                (false, DestAddressCtrl.IncrementReload) => 2,
+                (false, DestAddressCtrl.Decrement) => -2,
+                _ => throw new Exception("Invalid destination address control")
+            };
+            IntSrcAddressIncrement = (ControlReg.Is32Bit, ControlReg.SrcAddressCtrl) switch
+            {
+                (_, SrcAddressCtrl.Fixed) => 0,
+                (true, SrcAddressCtrl.Increment) => 4,
+                (true, SrcAddressCtrl.Decrement) => -4,
+                (false, SrcAddressCtrl.Increment) => 2,
+                (false, SrcAddressCtrl.Decrement) => -2,
+                _ => throw new Exception("Invalid source address control")
+            };
         }
     }
 
@@ -48,8 +75,11 @@ internal struct DmaChannel
         WordCount = 0;
         IntSourceAddress = 0;
         IntDestinationAddress = 0;
+        IntCachedValue = null;
         IntWordCount = 0;
-        _clocksToStart = 0;
+        IntDestAddressIncrement = 0;
+        IntSrcAddressIncrement = 0;
+        ClocksToStart = 0;
         ControlReg.Reset();
     }
 
