@@ -77,16 +77,24 @@ message which you can't click through to because VS has decided it doesn't want 
 	* At least LDR as I've set it up seems to take 2 cycles (one to set up A and one to write it back, cycle 3 is missing) but all cycle counting seems off what mgba is reporting
 * All DenSinH fuzz tests are working implying that the various data operations are _fairly_ robust at this point
 * Seen evidence of stack pointer incorrect at various points in roms, need to spend some time deliberately testing all STM/LDM operations
+* Major issue that Thumb mode seems to have a logic bug somewhere which is causing programs to execute the wrong instruction
 
 ## Status
 
-| Component     | Status | Notes |
-| ------------- | ------ | ----- |
+| Component     | Status | Notes                         |
+| ------------- | ------ | ----------------------------- |
 | CPU - General | 95%    | All instructions implemented and DenSinH tests passed, definitely still bugs in some instructions |
 | CPU - Timing  | 30%    | Implementation considers timing properly but it's totally untested until mgba test suite can run |
-| Dma           | 5%     | Not even all registers |
+| Dma           | 30%    | Shown working for DMA3 in a Peter Lemon test rom (hello world), all DMAs theoretically implemented but only via immediate timings, not sure on I cycle timings of DMA yet |
 | Input         | 50%    | Register read/write working and input from SDL app appears fine, no IRQs implemented, tested working on DenSinH tests |
 | Ppu           | 10%    | BG1-2 not implemented at all, BG0 only insofar as required for tests, 3-5 implemented as single end of frame render. No FIFO pixel pipeline, no IRQs, none of the required bits for tile maps etc |
 | Gamepak       | ?      | Not sure what will even be needed here although I can load a basic rom |
 | Serial        | 5%     | Just enough register read/writes mocked out to get roms which check them to pass |
 | Timers        | 5%     | Timer registers are mostly implemented but nothing else |
+| APU           | 0%     | No registers or anything handled here yet |
+| OpenBus       | 0%     | Noting as a separate area since there's a bunch of work to be done |
+| IRQs          | 0%     | IE/IF exist and the master interrupt enable cpu flag does but nothing generates IRQs and there's no provision for them apart from SWI |
+
+## Surprising things
+
+### Writes to odd registers during BIOS
