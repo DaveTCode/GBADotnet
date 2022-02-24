@@ -106,7 +106,7 @@ var shiftAmount = (byte)((instruction >> 7) & 0b1_1111);",
                                         ShiftType.Ll => "var offset = LSLNoFlags(core.R[rm], shiftAmount);",
                                         ShiftType.Lr => "var offset = LSRImmediateNoFlags(core.R[rm], shiftAmount);",
                                         ShiftType.Ar => "var offset = ASRImmediateNoFlags(core.R[rm], shiftAmount);",
-                                        ShiftType.Rr => "var offset = RORRegisterNoFlags(core.R[rm], shiftAmount);",
+                                        ShiftType.Rr => "var offset = RORNoFlagsIncRRX(core.R[rm], shiftAmount, ref core.Cpsr);",
                                         ShiftType.Imm => "var offset = instruction & 0b1111_1111_1111;",
                                         _ => throw new Exception(),
                                     });

@@ -58,7 +58,7 @@ internal struct CPSR
         IrqDisable = false;
         FiqDisable = false;
         ThumbMode = false;
-        Mode = CPSRMode.System; // TODO - What's the initial mode?
+        Mode = CPSRMode.System;
     }
 
     internal uint Get() => (SignFlag ? 0x8000_0000 : 0)
@@ -68,9 +68,10 @@ internal struct CPSR
              | (uint)(AbortDisable ? 0x100 : 0)
              | (uint)(IrqDisable ? 0x80 : 0)
              | (uint)(FiqDisable ? 0x40 : 0)
-             | (uint)(ThumbMode ? 0x20 : 0);
+             | (uint)(ThumbMode ? 0x20 : 0)
+             | (uint)Mode;
 
-    internal void Set(uint v)
+    internal CPSRMode Set(uint v)
     {
         SignFlag = (v & 0x8000_0000) == 0x8000_0000;
         ZeroFlag = (v & 0x4000_0000) == 0x4000_0000;
@@ -80,31 +81,21 @@ internal struct CPSR
         IrqDisable = (v & 0x80) == 0x80;
         FiqDisable = (v & 0x40) == 0x40;
         ThumbMode = (v & 0x20) == 0x20;
-    }
 
-    internal void CopyFrom(CPSR cpsr)
-    {
-        SignFlag = cpsr.SignFlag;
-        ZeroFlag = cpsr.ZeroFlag;
-        CarryFlag = cpsr.CarryFlag;
-        OverflowFlag = cpsr.OverflowFlag;
-        AbortDisable = cpsr.AbortDisable;
-        IrqDisable = cpsr.IrqDisable;
-        FiqDisable = cpsr.FiqDisable;
-        ThumbMode = cpsr.ThumbMode;
-        Mode = cpsr.Mode;
+        
+        return (CPSRMode)(v & 0b1_1111);
     }
 
     public override string ToString() => 
         Get().ToString("X8") + 
         " " +
-        (SignFlag ? "S" : "-") +
+        (SignFlag ? "N" : "-") +
         (ZeroFlag ? "Z" : "-") +
         (CarryFlag ? "C" : "-") +
         (OverflowFlag ? "V" : "-") +
-        (AbortDisable ? "-" : "A") +
-        (IrqDisable ? "-" : "I") +
-        (FiqDisable ? "-" : "F") +
+        (AbortDisable ? "A" : "-") +
+        (IrqDisable ? "I" : "-") +
+        (FiqDisable ? "F" : "-") +
         (ThumbMode ? " Thm " : " Arm ") +
         Mode;
 }

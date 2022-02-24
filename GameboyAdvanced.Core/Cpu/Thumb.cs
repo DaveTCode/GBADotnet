@@ -462,7 +462,7 @@ internal unsafe static class Thumb
 
     public static void LDRB_Imm(Core core, ushort instruction)
     {
-        var offset = ((instruction >> 6) & 0b1_1111);
+        var offset = (instruction >> 6) & 0b1_1111;
         var rb = (instruction >> 3) & 0b111;
         LdrStrUtils.LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.Byte, instruction & 0b111, &LdrStrUtils.LDRB);
     }
@@ -532,7 +532,7 @@ internal unsafe static class Thumb
 
     public static void STRB_Imm(Core core, ushort instruction)
     {
-        var offset = ((instruction >> 6) & 0b1_1111);
+        var offset = (instruction >> 6) & 0b1_1111;
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 

@@ -37,6 +37,8 @@ internal static class ArmDisassembler
             var i when ((i >> 4) & 0b1111_1111_1111_1111_1111_1111) == 0b0001_0010_1111_1111_1111_0001 => DisassembleArmBranchEx(core, i),
             var i when ((i >> 25) & 0b111) == 0b000 && ((i >> 22) & 0b1) == 0 && ((i >> 7) & 0b1_1111) == 0b0_0001 && ((i >> 4) & 0b1) == 1 => DisassembleArmHalfWordRegOffset (core, i),
             var i when ((i >> 25) & 0b111) == 0b000 && ((i >> 22) & 0b1) == 1 && ((i >> 7) & 0b1) == 1 && ((i >> 4) & 0b1) == 1 => DisassembleArmHalfWordImmOffset(core, i),
+            var i when ((i >> 23) & 0b1_1111) == 0b0_0010 => DisassemblePsr(core, i),
+            var i when ((i >> 23) & 0b1_1111) == 0b0_0110 => DisassemblePsr(core, i),
             var i when ((i >> 26) & 0b11) == 0b00 => DisassembleArmDataOp(core, i),
             var i when ((i >> 26) & 0b11) == 0b01 => ((i >> 4) & 0b1) switch
             {
@@ -58,6 +60,43 @@ internal static class ArmDisassembler
         };
 
         return string.Format(instructionStr, condString);
+    }
+
+    private static string DisassemblePsr(Core core, uint instruction)
+    {
+        var isMsr = ((instruction >> 21) & 0b1) == 0b1;
+        var sourceSpsr = ((instruction >> 22) & 0b1) == 0b1;
+
+        var sourceStr = sourceSpsr
+            ? "spsr_" + core.Cpsr.Mode.ToString() 
+            : "cpsr";
+
+        if (isMsr)
+        {
+            if (((instruction >> 16) & 0b1) == 0b1)
+            {
+                sourceStr += "flgs";
+            }
+
+            if (((instruction >> 25) & 0b1) == 0b1)
+            {
+                var imm = instruction & 0xFF;
+                var rot = (instruction >> 8) & 0b1111;
+                var val = Shifter.RORNoFlagsIncRRX(imm, (byte)rot, ref core.Cpsr);
+
+                return $"MSR {sourceStr}, #{val:X8}";
+            }
+            else
+            {
+                var rm = instruction & 0b1111;
+                return $"MSR {sourceStr}, {RString(rm)}={core.R[rm]:X8}";
+            }
+        }
+        else
+        {
+            var rd = (instruction >> 12) & 0b1111;
+            return $"MRS {RString(rd)}, {sourceStr}";
+        }
     }
 
     private static string DisassembleArmBlockDataTransfer(Core _core, uint instruction)
@@ -246,7 +285,7 @@ internal static class ArmDisassembler
         {
             var i = op2 & 0b1111_1111;
             var r = (op2 >> 8) & 0b1111;
-            operand2 = $"#{Shifter.RORRegisterNoFlags(i, (byte)(r * 2)):X}";
+            operand2 = $"#{Shifter.RORNoFlagsIncRRX(i, (byte)(r * 2), ref core.Cpsr):X}";
         }
         else
         {

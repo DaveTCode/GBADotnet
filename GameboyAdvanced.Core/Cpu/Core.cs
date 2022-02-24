@@ -1,4 +1,5 @@
-﻿using GameboyAdvanced.Core.Cpu;
+﻿using GameboyAdvanced.Core.Bus;
+using GameboyAdvanced.Core.Cpu;
 using GameboyAdvanced.Core.Cpu.Disassembler;
 using GameboyAdvanced.Core.Debug;
 using System.Runtime.CompilerServices;
@@ -155,6 +156,46 @@ public unsafe class Core
         Reset(startVector);
     }
 
+    internal void Reset(uint startVector)
+    {
+        A = startVector;
+        D = 0x0;
+        MAS = BusWidth.Word;
+        nMREQ = false;
+        SEQ = false;
+        nOPC = false;
+        nRW = false;
+        WaitStates = 0;
+        Pipeline = new Pipeline
+        {
+            DecodedOpcode = null,
+            FetchedOpcode = null
+        };
+
+        Array.Clear(R, 0, R.Length);
+        R[15] = startVector;
+        R[13] = 0x03007F00; // TODO - Is this correct? It's probably set by bios but roms assume it's here
+        for (var ii = 0; ii < _spBanks.Length; ii++)
+        {
+            _spBanks[ii] = 0x03007F00;
+        }
+        ClearPipeline();
+        Pipeline.ClearedThisCycle = false; // Despite the pipeline being cleared this is part of RESET so don't skip address increments
+
+        // Attempting to match CPSR value from mgba of 0x1F = 0b1_1111
+        // which implies starting in System mode
+        // TODO - Seems odd that even if we're running from 0x0800_0000 it's system mode but mgba seems to think so
+        Cpsr.Mode = CPSRMode.System;
+
+
+        //if (startVector == 0x0800_0000)
+        //{
+        //    _spBanks[CPSRMode.Supervisor.Index()] = 0x0300_7FE0;
+        //}
+
+        MoveExecutePipelineToNextInstruction();
+    }
+
     /// <summary>
     /// This function steps the memory unit and is called on every mCLK cycle.
     /// 
@@ -189,8 +230,7 @@ public unsafe class Core
                         }
                         else
                         {
-                            (var ret, waitStates) = Bus.ReadHalfWord(A & 0xFFFF_FFFE);
-                            D = (D & 0xFFFF_0000) | ret;
+                            (D, waitStates) = Bus.ReadHalfWord(A & 0xFFFF_FFFE);
                         }
 
                         break;
@@ -203,10 +243,6 @@ public unsafe class Core
                     else
                     {
                         (D, waitStates) = Bus.ReadWord(A & 0xFFFF_FFFC);
-
-                        // TODO - I'm not really sure about this, misaligned reads to register rotate the value into the reg but is that all reads? Is it handled on the data bus or somewhere else?
-                        var rotate = 8 * (int)(A % 4);
-                        D = (D >> rotate) | (D << (32 - rotate));
                     }
                     break;
                 default:
@@ -215,36 +251,6 @@ public unsafe class Core
 
             WaitStates += waitStates;
         }
-    }
-
-    internal void Reset(uint startVector)
-    {
-        A = startVector;
-        D = 0x0;
-        MAS = BusWidth.Word;
-        nMREQ = false;
-        SEQ = false;
-        nOPC = false;
-        nRW = false;
-        WaitStates = 0;
-        Pipeline = new Pipeline
-        {
-            DecodedOpcode = null,
-            FetchedOpcode = null
-        };
-
-        Array.Clear(R, 0, R.Length);
-        R[15] = startVector;
-        R[13] = 0x03007F00; // TODO - Is this correct? It's probably set by bios but roms assume it's here
-        ClearPipeline();
-        Pipeline.ClearedThisCycle = false; // Despite the pipeline being cleared this is part of RESET so don't skip address increments
-
-        // TODO - What is the initial value of CPSR, do we start in supervisor?
-        Cpsr.FiqDisable = true;
-        Cpsr.IrqDisable = true;
-        Cpsr.Mode = CPSRMode.Supervisor;
-
-        MoveExecutePipelineToNextInstruction();
     }
 
 
@@ -459,6 +465,7 @@ public unsafe class Core
     internal uint GetUserModeRegister(int reg) => (reg, Cpsr.Mode) switch
     {
         (_, CPSRMode.User) => R[reg],
+        (_, CPSRMode.System) => R[reg], // User and system modes use the same register banks
         (13, _) => _spBanks[0],
         (14, _) => _lrBanks[0],
         (15, _) => R[15],
@@ -472,6 +479,7 @@ public unsafe class Core
         switch ((reg, Cpsr.Mode))
         {
             case (_, CPSRMode.User):
+            case (_, CPSRMode.System):
                 R[reg] = value;
                 break;
             case (13, _):
@@ -484,7 +492,7 @@ public unsafe class Core
 #if DEBUG
                 if (value == 0)
                 {
-                    Debugger.FireEvent(Debug.DebugEvent.BranchToZero, this);
+                    Debugger.FireEvent(DebugEvent.BranchToZero, this);
                 }
 #endif
                 R[15] = value;
@@ -501,7 +509,7 @@ public unsafe class Core
         }
     }
 
-    internal void HandleInterrupt(uint irqVector, uint retAddress, CPSRMode newMode)
+    internal void SwitchMode(CPSRMode newMode)
     {
         // First save off current bank of registers into mode specific bank
         _spBanks[Cpsr.Mode.Index()] = R[13];
@@ -513,23 +521,30 @@ public unsafe class Core
 
         // Then move banked registers into current
         R[13] = _spBanks[newMode.Index()];
-        R[14] = retAddress; // Don't care what was banked here as return address will overwrite it
+        R[14] = _lrBanks[newMode.Index()];
         if (newMode is CPSRMode.Fiq or CPSRMode.OldFiq)
         {
             throw new NotImplementedException("FIQ not implemented");
         }
 
         // Put the current CPSR into SPSR for the destination mode
-        Spsr[newMode.Index()].Set(Cpsr.Get());
+        _ = Spsr[newMode.Index()].Set(Cpsr.Get());
+        Spsr[newMode.Index()].Mode = newMode;
 
-        // Set up the interrupt vector and clear the pipeline
-        R[15] = irqVector;
-        ClearPipeline();
-        
         Cpsr.Mode = newMode;
+    }
+
+    internal void HandleInterrupt(uint irqVector, uint retAddress, CPSRMode newMode)
+    {
+        SwitchMode(newMode);
+
         Cpsr.ThumbMode = false;
         Cpsr.IrqDisable = true;
-        Cpsr.FiqDisable = true;
+
+        // Set up the interrupt vector, return vector and clear the pipeline
+        R[14] = retAddress;
+        R[15] = irqVector;
+        ClearPipeline();
     }
 
     /// <summary>

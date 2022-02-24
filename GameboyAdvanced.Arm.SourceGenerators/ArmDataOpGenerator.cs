@@ -117,6 +117,10 @@ internal static unsafe partial class Arm
                         (true, _) => "SetZeroSignFlags(ref core.Cpsr, core.R[rd]);",
                     };
 
+                    var immSecondOperand = s
+                        ? "var secondOperand = ROR(imm, (byte)rot, ref core.Cpsr);"
+                        : "var secondOperand = RORInternal(imm, (byte)rot);";
+
                     // First output the op_imm and ops_imm functions as those
                     // are sufficiently different.
                     var immSource = $@"
@@ -127,16 +131,12 @@ internal static unsafe partial class Arm
         var rd = (instruction >> 12) & 0b1111;
         var imm = instruction & 0b1111_1111;
         var rot = ((instruction >> 8) & 0b1111) * 2;
-        var secondOperand = RORRegisterNoFlags(imm, (byte)rot); // TODO - Does carry get set to output of ROR from ALU?
+        {immSecondOperand}
         
         {opFunction}
 
         {sStatement} 
 
-        // Writes to PC cause 2 extra cycles as the pipeline is flushed, note
-        // though that the 2 extra cycles aren't specific to the instruction
-        // they're an artifact of the flushed pipeline so don't get treated
-        // here as wait states
         if (rd == 15)
         {{
             core.ClearPipeline();
@@ -158,8 +158,8 @@ internal static unsafe partial class Arm
                             (true, OperandType.Lri) => "LSRImmediate(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
                             (false, OperandType.Ari) => "ASRImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
                             (true, OperandType.Ari) => "ASRImmediate(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
-                            (false, OperandType.Rri) => "RORImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
-                            (true, OperandType.Rri) => "RORImmediate(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (false, OperandType.Rri) => "RORNoFlagsIncRRX(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (true, OperandType.Rri) => "RORIncRRX(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
 
                             (false, OperandType.Llr) => "LSLNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
                             (true, OperandType.Llr) => "LSL(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
@@ -167,8 +167,8 @@ internal static unsafe partial class Arm
                             (true, OperandType.Lrr) => "LSRRegister(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
                             (false, OperandType.Arr) => "ASRRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
                             (true, OperandType.Arr) => "ASRRegister(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
-                            (false, OperandType.Rrr) => "RORRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
-                            (true, OperandType.Rrr) => "RORRegister(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
+                            (false, OperandType.Rrr) => "RORNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (true, OperandType.Rrr) => "ROR(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
                             _ => throw new Exception("Invalid data operation"),
                         };
 

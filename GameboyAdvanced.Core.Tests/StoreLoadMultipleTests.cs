@@ -1,4 +1,5 @@
-﻿using GameboyAdvanced.Core.Cpu.Interrupts;
+﻿using GameboyAdvanced.Core.Bus;
+using GameboyAdvanced.Core.Cpu.Interrupts;
 using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
@@ -16,7 +17,7 @@ public class StoreLoadMultipleTests
     private readonly static Ppu.Ppu _testPpu = new();
     private readonly static GamePak _testGamePak = new(new byte[0xFF_FFFF]);
     private readonly static Gamepad _testGamepad = new();
-    private readonly static DmaController _testDmaController = new();
+    private readonly static DmaDataUnit _testDmaDataUnit = new();
     private readonly static TimerController _testTimerController = new();
     private readonly static InterruptWaitStateAndPowerControlRegisters _interruptWaitStateAndPowerControlRegisters = new();
     private readonly static TestDebugger _testDebugger = new();
@@ -29,7 +30,7 @@ public class StoreLoadMultipleTests
         var instruction = 0b1100_0000_1111_1110; // STMIA R0!, [r1-r7]
         _bios[0] = (byte)(instruction & 0xFF);
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, 0, _testDebugger);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
@@ -38,7 +39,7 @@ public class StoreLoadMultipleTests
             cpu.R[r] = r;
         }
 
-        cpu.Clock(); // Fill decode stage of pipeline;
+        cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline;
         cpu.Clock(); // Fill execute stage of pipeline and perform address translation
         Assert.Equal(0x0300_1000u, cpu.A);
         Assert.Equal(1u, cpu.D); // First cycle should have set r[1] on the data bus
@@ -61,7 +62,7 @@ public class StoreLoadMultipleTests
         {
             Assert.Equal((r, 0), cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1))));
         }
-        Assert.Equal(1u + 2 + 6, cpu.Cycles); // 1 for pipeline + 2N + (1-n)S cycles
+        Assert.Equal(2u + 2 + 6, cpu.Cycles); // 2 for pipeline + 2N + (1-n)S cycles
     }
 
     [Fact]
@@ -74,7 +75,7 @@ public class StoreLoadMultipleTests
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
         _bios[2] = (byte)((instruction >> 16) & 0xFF);
         _bios[3] = (byte)((instruction >> 24) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, 0, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         for (var r = 1u; r < 8; r++)
@@ -82,7 +83,7 @@ public class StoreLoadMultipleTests
             cpu.R[r] = r;
         }
 
-        cpu.Clock(); // Fill decode stage of pipeline;
+        cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline;
         cpu.Clock(); // Fill execute stage of pipeline and perform address translation
         Assert.Equal(0x0300_1000u, cpu.A);
         Assert.Equal(1u, cpu.D); // First cycle should have set r[1] on the data bus
@@ -105,7 +106,7 @@ public class StoreLoadMultipleTests
         {
             Assert.Equal((r, 0), cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1))));
         }
-        Assert.Equal(1u + 2 + 6, cpu.Cycles); // 1 for pipeline + 2N + (1-n)S cycles
+        Assert.Equal(2u + 2 + 6, cpu.Cycles); // 2 for pipeline + 2N + (1-n)S cycles
     }
 
     [Fact]
@@ -114,7 +115,7 @@ public class StoreLoadMultipleTests
         var instruction = 0b1100_1000_1111_1110; // LDMIA R0!, [r1-r7]
         _bios[0] = (byte)(instruction & 0xFF);
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, 0, _testDebugger);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
@@ -123,7 +124,7 @@ public class StoreLoadMultipleTests
             _ = cpu.Bus.WriteWord(0x0300_1000u + (r * 4), r + 1);
         }
 
-        cpu.Clock(); // Fill decode stage of pipeline;
+        cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline;
         cpu.Clock(); // Fill execute stage of pipeline and perform address translation
         Assert.Equal(0x0300_1000u, cpu.A);
         cpu.Clock();
@@ -151,6 +152,6 @@ public class StoreLoadMultipleTests
         Assert.False(cpu.nMREQ);
         Assert.False(cpu.SEQ);
 
-        Assert.Equal(1u + 1 + 1 + 7, cpu.Cycles); // 1 for pipeline + 1I + 1N + nS
+        Assert.Equal(2u + 1 + 1 + 7, cpu.Cycles); // 2 for pipeline + 1I + 1N + nS
     }
 }

@@ -5,6 +5,7 @@ namespace GameboyAdvanced.Core;
 public static class IORegs
 {
     public const uint DISPCNT = 0x04000000;
+    public const uint GREENSWAP = 0x04000002;
     public const uint DISPSTAT = 0x04000004;
     public const uint VCOUNT = 0x04000006;
     public const uint BG0CNT = 0x04000008;
@@ -103,7 +104,7 @@ public static class IORegs
     public const uint POSTFLG = 0x04000300;
     public const uint HALTCNT = 0x04000301;
 
-    private static Dictionary<uint, string> _cachedNameMapping = new();
+    private readonly static Dictionary<uint, string> _cachedNameMapping = new();
 
     /// <summary>
     /// Used to provide better names for addresses whilst debugging.
@@ -121,11 +122,6 @@ public static class IORegs
             }
         }
 
-        if (_cachedNameMapping.TryGetValue(address, out var name))
-        {
-            return name;
-        }
-        
-        return null;
+        return _cachedNameMapping.TryGetValue(address, out var name) ? name : null;
     }
 }

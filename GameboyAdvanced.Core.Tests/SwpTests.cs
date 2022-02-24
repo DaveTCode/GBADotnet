@@ -1,4 +1,5 @@
-﻿using GameboyAdvanced.Core.Cpu.Interrupts;
+﻿using GameboyAdvanced.Core.Bus;
+using GameboyAdvanced.Core.Cpu.Interrupts;
 using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
@@ -16,7 +17,7 @@ public class SwpTests
     private readonly static Ppu.Ppu _testPpu = new();
     private readonly static GamePak _testGamePak = new(new byte[0xFF_FFFF]);
     private readonly static Gamepad _testGamepad = new();
-    private readonly static DmaController _testDmaController = new();
+    private readonly static DmaDataUnit _testDmaDataUnit = new();
     private readonly static TimerController _testTimerController = new();
     private readonly static InterruptWaitStateAndPowerControlRegisters _interruptWaitStateAndPowerControlRegisters = new();
     private readonly static TestDebugger _testDebugger = new();
@@ -28,14 +29,14 @@ public class SwpTests
         Array.Clear(_bios);
         var instruction = 0b1110_0001_0000_0000_0001_0000_1001_0010; // SWP R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, 0, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
         cpu.R[2] = 0xFEED_BEEFu; // This value should be overwritten
         _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFFu);
 
-        cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
+        cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
         cpu.Clock(); // Fill execute stage of pipeline and perform address translation
         Assert.Equal(0x0300_1000u, cpu.R[0]);
         Assert.Equal(0xBEEF_FEEDu, cpu.R[1]);
@@ -57,7 +58,7 @@ public class SwpTests
         Assert.Equal(0xFEED_BEEFu, cpu.R[2]);
         Assert.Equal(0xFEED_BEEFu, cpu.Bus.ReadWord(0x0300_1000).Item1);
 
-        Assert.Equal(1u + 4, cpu.Cycles); // 1 for pipeline + 1S + 2N + 1I cycles to execute
+        Assert.Equal(2u + 4, cpu.Cycles); // 2 for pipeline + 1S + 2N + 1I cycles to execute
     }
 
     [Fact]
@@ -66,14 +67,14 @@ public class SwpTests
         Array.Clear(_bios);
         var instruction = 0b1110_0001_0100_0000_0001_0000_1001_0010; // SWPB R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaController, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, 0, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
         cpu.R[2] = 0xFEED_BEEFu; // This value should be overwritten
         _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFEu);
 
-        cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
+        cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
         cpu.Clock(); // Fill execute stage of pipeline and perform address translation
         Assert.Equal(0x0300_1000u, cpu.R[0]);
         Assert.Equal(0xBEEF_FEEDu, cpu.R[1]);
@@ -95,6 +96,6 @@ public class SwpTests
         Assert.Equal(0xFEED_BEEFu, cpu.R[2]);
         Assert.Equal(0xABCD_EFEFu, cpu.Bus.ReadWord(0x0300_1000).Item1);
 
-        Assert.Equal(1u + 4, cpu.Cycles); // 1 for pipeline + 1S + 2N + 1I cycles to execute
+        Assert.Equal(2u + 4, cpu.Cycles); // 2 for pipeline + 1S + 2N + 1I cycles to execute
     }
 }

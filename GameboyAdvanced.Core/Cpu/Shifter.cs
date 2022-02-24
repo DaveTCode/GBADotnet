@@ -131,20 +131,20 @@ internal static class Shifter
     };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static uint RORRegister(uint op1, byte offset, ref CPSR cpsr)
+    internal static uint ROR(uint op1, byte offset, ref CPSR cpsr)
     {
-        if (offset == 0) 
+        if (offset > 32) offset = (byte)(offset & 31);
+        if (offset == 0)
         {
             SetZeroSignFlags(ref cpsr, op1);
             return op1;
         }
-        if (offset > 32) offset = (byte)(offset & 31);
 
         var (result, carry) = offset switch
         {
             _ when offset < 32 =>
             (
-                ((op1) >> (offset)) | ((op1) << (32 - offset)),
+                RORInternal(op1, offset),
                 ((op1 >> (offset - 1)) & 1) == 1
             ),
             32 => (op1, (op1 & 0x8000_0000) == 0x8000_0000),
@@ -158,7 +158,7 @@ internal static class Shifter
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static uint RORImmediate(uint op1, byte offset, ref CPSR cpsr)
+    internal static uint RORIncRRX(uint op1, byte offset, ref CPSR cpsr)
     {
         // ROR #0 is used to encode RRX instead
         if (offset == 0)
@@ -173,7 +173,7 @@ internal static class Shifter
         {
             _ when offset < 32 =>
             (
-                ((op1) >> (offset)) | ((op1) << (32 - offset)),
+                RORInternal(op1, offset),
                 ((op1 >> (offset - 1)) & 1) == 1
             ),
             32 => (op1, (op1 & 0x8000_0000) == 0x8000_0000),
@@ -187,22 +187,21 @@ internal static class Shifter
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static uint RORRegisterNoFlags(uint op1, byte offset)
+    internal static uint RORNoFlags(uint op1, byte offset)
     {
-        if (offset == 0) return op1;
         if (offset > 32) offset = (byte)(offset & 31);
 
         return offset switch
         {
             0 => op1,
-            _ when offset < 32 => ((op1) >> (offset)) | ((op1) << (32 - offset)),
+            _ when offset < 32 => RORInternal(op1, offset),
             32 => op1,
             _ => throw new Exception("Invalid value for ROR offset"),
         };
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static uint RORImmediateNoFlags(uint op1, byte offset, ref CPSR cpsr)
+    internal static uint RORNoFlagsIncRRX(uint op1, byte offset, ref CPSR cpsr)
     {
         // ROR #0 is used to encode RRX instead
         if (offset == 0)
@@ -210,7 +209,11 @@ internal static class Shifter
             var c = cpsr.CarryFlag ? 0x8000_0000 : 0;
             return (op1 >> 1) | c;
         }
+        if (offset > 32) offset = (byte)(offset & 31);
 
-        return ((op1) >> (offset)) | ((op1) << (32 - offset));
+        return RORInternal(op1, offset);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static uint RORInternal(uint op1, byte offset) => ((op1) >> (offset)) | ((op1) << (32 - offset));
 }
