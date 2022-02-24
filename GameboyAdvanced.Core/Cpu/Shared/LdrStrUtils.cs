@@ -28,7 +28,11 @@ internal static unsafe class LdrStrUtils
     }
     internal static uint LDRSHW(uint addressBus, uint dataBus)
     {
-        // TODO - Fails jsmolka thumb 219 which expects rotated data sign extended from the rotate?
+        if ((addressBus & 1) == 1)
+        {
+            return LDRSB(addressBus, dataBus >> 8);
+        }
+
         // TODO - Is there a more efficient way to sign extend in C# which doesn't branch?
         var bit15 = (dataBus >> 15) & 0b1;
         return bit15 == 1
