@@ -96,7 +96,7 @@ internal unsafe static class Thumb
             core.Debugger.FireEvent(Debug.DebugEvent.BranchToZero, core);
         }
         #endif
-        core.R[15] = (uint)(core.R[15] + offset);
+        core.R[15] = (uint)(core.R[15] + offset) & 0xFFFF_FFFE;
         core.ClearPipeline(); // Note that this will trigger two more cycles (both just fetches, with nothing to execute)
 
         core.MoveExecutePipelineToNextInstruction();
@@ -318,7 +318,7 @@ internal unsafe static class Thumb
                 core.R[rd] = SBC(core.R[rd], core.R[rs], ref core.Cpsr);
                 break;
             case 0x7: // ROR
-                core.R[rd] = RORRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.R[rd] = ROR(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
                 core.WaitStates++; // TODO - Treat as proper extra I cycle
                 break;
             case 0x8: // TST
@@ -379,6 +379,7 @@ internal unsafe static class Thumb
                 core.R[fullRd] = core.R[fullRd] + operand;
                 if (fullRd == 15)
                 {
+                    core.R[fullRd] &= 0xFFFF_FFFE;
                     core.ClearPipeline();
                 }
                 core.MoveExecutePipelineToNextInstruction();
@@ -393,6 +394,7 @@ internal unsafe static class Thumb
                 core.R[fullRd] = operand;
                 if (fullRd == 15)
                 {
+                    core.R[fullRd] &= 0xFFFF_FFFE;
                     core.ClearPipeline();
                 }
                 core.MoveExecutePipelineToNextInstruction();
@@ -420,7 +422,7 @@ internal unsafe static class Thumb
     public static void LDR_PC_Offset(Core core, ushort instruction)
     {
         var word = instruction & 0xFF;
-        LdrStrUtils.LDRCommon(core, (uint)((core.R[15] & ~3) + (word << 2)), BusWidth.Word, (instruction >> 8) & 0b111, &LdrStrUtils.LDRW);
+        LdrStrUtils.LDRCommon(core, (uint)((core.R[15] & 0xFFFF_FFFC) + (word << 2)), BusWidth.Word, (instruction >> 8) & 0b111, &LdrStrUtils.LDRW);
     }
 
     public static void LDR_Reg_Offset(Core core, ushort instruction)
@@ -460,7 +462,7 @@ internal unsafe static class Thumb
 
     public static void LDRB_Imm(Core core, ushort instruction)
     {
-        var offset = (instruction >> 6) & 0b1_1111;
+        var offset = ((instruction >> 6) & 0b1_1111);
         var rb = (instruction >> 3) & 0b111;
         LdrStrUtils.LDRCommon(core, (uint)(core.R[rb] + offset), BusWidth.Byte, instruction & 0b111, &LdrStrUtils.LDRB);
     }
@@ -530,7 +532,7 @@ internal unsafe static class Thumb
 
     public static void STRB_Imm(Core core, ushort instruction)
     {
-        var offset = (instruction >> 6) & 0b1_1111;
+        var offset = ((instruction >> 6) & 0b1_1111);
         var rb = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
 
@@ -562,7 +564,7 @@ internal unsafe static class Thumb
     {
         var rd = (instruction >> 8) & 0b111;
         var offset = (instruction & 0xFF) << 2;
-        core.R[rd] = (uint)((core.R[15] & ~2) + offset);
+        core.R[rd] = (uint)((core.R[15] & 0xFFFF_FFFC) + offset);
 
         core.MoveExecutePipelineToNextInstruction();
     }
@@ -578,7 +580,7 @@ internal unsafe static class Thumb
 
     public static void ADD_Offset_SP(Core core, ushort instruction)
     {
-        var sign = ((instruction >> 7) & 0b1) * -1;
+        var sign = (((instruction >> 7) & 0b1) * -2) + 1;
         var val = (instruction & 0b111_1111) << 2;
         core.R[13] = (uint)(core.R[13] + (sign * val));
 
