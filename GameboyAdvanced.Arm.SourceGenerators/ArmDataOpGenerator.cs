@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
+using System.Security.Cryptography;
 
 namespace GameboyAdvanced.Arm.SourceGenerators
 {
@@ -117,9 +118,22 @@ internal static unsafe partial class Arm
                         (true, _) => "SetZeroSignFlags(ref core.Cpsr, core.R[rd]);",
                     };
 
-                    var immSecondOperand = s
-                        ? "var secondOperand = ROR(imm, (byte)rot, ref core.Cpsr);"
-                        : "var secondOperand = RORInternal(imm, (byte)rot);";
+                    var immSecondOperand = (op, s) switch
+                    {
+                        (Operation.Adc, _) => "var secondOperand = RORInternal(imm, (byte)rot);",
+                        (Operation.Sbc, _) => "var secondOperand = RORInternal(imm, (byte)rot);",
+                        (Operation.Rsc, _) => "var secondOperand = RORInternal(imm, (byte)rot);",
+                        (_, false) => "var secondOperand = RORInternal(imm, (byte)rot);",
+                        (_, true) => "var secondOperand = ROR(imm, (byte)rot, ref core.Cpsr);"
+                    };
+
+                    var setCpsr = s
+                        ? @"var newMode = core.Cpsr.Set(core.CurrentSpsr().Get());
+        if (newMode != core.Cpsr.Mode)
+        {
+            core.SwitchMode(newMode);
+        }"
+                        : "";
 
                     // First output the op_imm and ops_imm functions as those
                     // are sufficiently different.
@@ -139,6 +153,7 @@ internal static unsafe partial class Arm
 
         if (rd == 15)
         {{
+            {setCpsr}
             core.ClearPipeline();
         }}
 
@@ -150,26 +165,45 @@ internal static unsafe partial class Arm
 
                     foreach (OperandType type in Enum.GetValues(typeof(OperandType)))
                     {
-                        var secondOperandStatement = (s, type) switch
+                        var secondOperandStatement = (op, s, type) switch
                         {
-                            (false, OperandType.Lli) => "LSLNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
-                            (true, OperandType.Lli) => "LSL(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
-                            (false, OperandType.Lri) => "LSRImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
-                            (true, OperandType.Lri) => "LSRImmediate(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
-                            (false, OperandType.Ari) => "ASRImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
-                            (true, OperandType.Ari) => "ASRImmediate(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
-                            (false, OperandType.Rri) => "RORNoFlagsIncRRX(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
-                            (true, OperandType.Rri) => "RORIncRRX(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (var o, _, OperandType.Lli) when o == Operation.Adc || o == Operation.Sbc || o == Operation.Rsc => "LSLNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
+                            (var o, _, OperandType.Lri) when o == Operation.Adc || o == Operation.Sbc || o == Operation.Rsc => "LSRImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
+                            (var o, _, OperandType.Ari) when o == Operation.Adc || o == Operation.Sbc || o == Operation.Rsc => "ASRImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
+                            (var o, _, OperandType.Rri) when o == Operation.Adc || o == Operation.Sbc || o == Operation.Rsc => "RORNoFlagsIncRRX(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (var o, _, OperandType.Llr) when o == Operation.Adc || o == Operation.Sbc || o == Operation.Rsc => "LSLNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
+                            (var o, _, OperandType.Lrr) when o == Operation.Adc || o == Operation.Sbc || o == Operation.Rsc => "LSRRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (var o, _, OperandType.Arr) when o == Operation.Adc || o == Operation.Sbc || o == Operation.Rsc => "ASRRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (var o, _, OperandType.Rrr) when o == Operation.Adc || o == Operation.Sbc || o == Operation.Rsc => "RORNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (_, false, OperandType.Lli) => "LSLNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
+                            (_, true, OperandType.Lli) => "LSL(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (_, false, OperandType.Lri) => "LSRImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
+                            (_, true, OperandType.Lri) => "LSRImmediate(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (_, false, OperandType.Ari) => "ASRImmediateNoFlags(core.R[rm], (byte)((instruction >> 7) & 0b1_1111));",
+                            (_, true, OperandType.Ari) => "ASRImmediate(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (_, false, OperandType.Rri) => "RORNoFlagsIncRRX(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
+                            (_, true, OperandType.Rri) => "RORIncRRX(core.R[rm], (byte)((instruction >> 7) & 0b1_1111), ref core.Cpsr);",
 
-                            (false, OperandType.Llr) => "LSLNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
-                            (true, OperandType.Llr) => "LSL(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
-                            (false, OperandType.Lrr) => "LSRRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
-                            (true, OperandType.Lrr) => "LSRRegister(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
-                            (false, OperandType.Arr) => "ASRRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
-                            (true, OperandType.Arr) => "ASRRegister(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
-                            (false, OperandType.Rrr) => "RORNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
-                            (true, OperandType.Rrr) => "ROR(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
+                            (_, false, OperandType.Llr) => "LSLNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (_, true, OperandType.Llr) => "LSL(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
+                            (_, false, OperandType.Lrr) => "LSRRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (_, true, OperandType.Lrr) => "LSRRegister(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
+                            (_, false, OperandType.Arr) => "ASRRegisterNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (_, true, OperandType.Arr) => "ASRRegister(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
+                            (_, false, OperandType.Rrr) => "RORNoFlags(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111]);",
+                            (_, true, OperandType.Rrr) => "ROR(core.R[rm], (byte)core.R[(instruction >> 8) & 0b1111], ref core.Cpsr);",
                             _ => throw new Exception("Invalid data operation"),
+                        };
+
+                        // CMP/TST/TEQ/CMN PC, PC does affect CPSR mode but doesn't write to R15 
+                        // so doesn't clear the pipeline.
+                        var clearPipeline = op switch
+                        {
+                            Operation.Tst => "",
+                            Operation.Teq => "",
+                            Operation.Cmp => "",
+                            Operation.Cmn => "",
+                            _ => "core.ClearPipeline();"
                         };
 
                         // Most data ops take 1S cycle to operate but operations which use a register shifted
@@ -193,7 +227,8 @@ static partial void {funcName + "_" + type.ToString().ToLowerInvariant()}_write(
         // here as wait states
         if (rd == 15)
         {{
-            core.ClearPipeline();
+            {setCpsr}
+            {clearPipeline}
         }}
 
         Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
