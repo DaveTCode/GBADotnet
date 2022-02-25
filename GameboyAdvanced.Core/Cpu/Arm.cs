@@ -935,14 +935,14 @@ internal static unsafe partial class Arm
     internal static void msr_rc(Core core, uint instruction)
     {
         var rm = instruction & 0b1111;
+        var val = core.R[rm];
+
         // "In User mode, the control bits of the CPSR are protected from change, so only
         // the condition code flags of the CPSR can be changed. In other(privileged)
         // modes the entire CPSR can be changed"
-        var val = core.Cpsr.Mode == CPSRMode.User ? core.R[rm] & 0xF000_0000 : core.R[rm];
-
         // Special format of msr which only affects condition flags, can't disambiguate
         // them in lookup table as bit 16 isn't included
-        if (((instruction >> 16) & 1) == 0) 
+        if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User) 
         {
             val &= 0xF000_0000;
         }
@@ -950,7 +950,6 @@ internal static unsafe partial class Arm
         var newMode = core.Cpsr.Set(val);
         if (newMode != core.Cpsr.Mode)
         {
-            // TODO - Not handling mode changes from CPSR writes at the moment
             core.SwitchMode(newMode);
         }
 
@@ -961,11 +960,16 @@ internal static unsafe partial class Arm
         // TODO - What does this do in user mode when there is no SPSR register?
         var rm = instruction & 0b1111;
         var val = core.R[rm];
-        if (((instruction >> 16) & 1) == 1)
+        // "In User mode, the control bits of the CPSR are protected from change, so only
+        // the condition code flags of the CPSR can be changed. In other(privileged)
+        // modes the entire CPSR can be changed"
+        // Special format of msr which only affects condition flags, can't disambiguate
+        // them in lookup table as bit 16 isn't included
+        if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User)
         {
             val &= 0xF000_0000;
         }
-        _ = core.CurrentSpsr().Set(val);
+        core.CurrentSpsr().Mode = core.CurrentSpsr().Set(val);
         core.MoveExecutePipelineToNextInstruction();
     }
     internal static void msr_imm_cpsr(Core core, uint instruction)
@@ -973,7 +977,21 @@ internal static unsafe partial class Arm
         var offset = instruction & 0xFF;
         var rot = ((instruction >> 8) & 0b1111) * 2;
         var val = Shifter.RORInternal(offset, (byte)rot);
-        _ = core.Cpsr.Set(val & 0xF000_0000); // Flag bits only
+
+        // "In User mode, the control bits of the CPSR are protected from change, so only
+        // the condition code flags of the CPSR can be changed. In other(privileged)
+        // modes the entire CPSR can be changed"
+        // Special format of msr which only affects condition flags, can't disambiguate
+        // them in lookup table as bit 16 isn't included
+        if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User)
+        {
+            val &= 0xF000_0000;
+        }
+        var newMode = core.Cpsr.Set(val);
+        if (newMode != core.Cpsr.Mode)
+        {
+            core.SwitchMode(newMode);
+        }
         core.MoveExecutePipelineToNextInstruction();
     }
     internal static void msr_imm_spsr(Core core, uint instruction)
@@ -981,7 +999,17 @@ internal static unsafe partial class Arm
         var offset = instruction & 0xFF;
         var rot = ((instruction >> 8) & 0b1111) * 2;
         var val = Shifter.RORInternal(offset, (byte)rot);
-        _ = core.CurrentSpsr().Set(val);
+
+        // "In User mode, the control bits of the CPSR are protected from change, so only
+        // the condition code flags of the CPSR can be changed. In other(privileged)
+        // modes the entire CPSR can be changed"
+        // Special format of msr which only affects condition flags, can't disambiguate
+        // them in lookup table as bit 16 isn't included
+        if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User)
+        {
+            val &= 0xF000_0000;
+        }
+        core.CurrentSpsr().Mode = core.CurrentSpsr().Set(val);
         core.MoveExecutePipelineToNextInstruction();
     }
     #endregion
