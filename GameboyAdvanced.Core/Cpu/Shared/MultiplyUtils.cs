@@ -1,4 +1,6 @@
-﻿namespace GameboyAdvanced.Core.Cpu.Shared;
+﻿using System.Security.Cryptography;
+
+namespace GameboyAdvanced.Core.Cpu.Shared;
 
 /// <summary>
 /// All the multiply operations across Arm/Thumb have aspects in common which 
@@ -78,8 +80,7 @@ internal static unsafe class MultiplyUtils
         _destinationReg = rd;
         _currentCycles = 0;
         _requiredCycles = CyclesForMultiplyA(core.R[rs]); // TODO - Suspect, is it really A not B? Data sheet says yes but they've been wrong before
-        _multiplyResult = core.R[rs] * core.R[rm];
-
+        _multiplyResult = (uint)((int)core.R[rs] * (int)core.R[rm]);
         core.NextExecuteAction = &MultiplyCycle;
     }
 

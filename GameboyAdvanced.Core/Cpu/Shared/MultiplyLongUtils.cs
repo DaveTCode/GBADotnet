@@ -44,7 +44,7 @@ internal static unsafe class MultiplyLongUtils
     {
         SetupForMultiplyLongCommon(core, rdHi, rdLo);
         _requiredCycles = MultiplyUtils.CyclesForMultiplyA(core.R[rs]) + 1;
-        _multiplyResult = (ulong)((long)core.R[rs] * core.R[rm]);
+        _multiplyResult = (ulong)((long)(int)core.R[rs] * (long)(int)core.R[rm]);
         core.NextExecuteAction = &MultiplyCycle;
     }
 
