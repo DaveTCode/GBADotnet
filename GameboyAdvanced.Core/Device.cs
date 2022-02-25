@@ -53,13 +53,11 @@ public unsafe class Device
     /// Only used when compiled with DEBUG set.
     /// </param>
     /// 
-    /// <param name="startVector">
-    /// The initial value of R[15], i.e. the first instruction that will be fetched.
-    /// 
-    /// Typically either 0x0000_0000 (RESET vector) in BIOS or 0x0800_0000 
-    /// (default start of ROM).
+    /// <param name="skipBios">
+    /// Determines whether to start operation at 0x0 (start of bios) or at 
+    /// 0x0800_0000 with registers/banks set up as if the bios had run.
     /// </param>
-    public Device(byte[] bios, GamePak rom, BaseDebugger debugger, uint startVector = 0x0000_0000)
+    public Device(byte[] bios, GamePak rom, BaseDebugger debugger, bool skipBios)
     {
         _gamepak = rom;
         _interruptController = new InterruptWaitStateAndPowerControlRegisters();
@@ -70,7 +68,7 @@ public unsafe class Device
         _serialController = new SerialController(debugger);
         Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dmaData, _timerController, _interruptController, _serialController, debugger);
         _dmaCtrl = new DmaController(Bus, debugger, _dmaData);
-        _cpu = new Core(Bus, startVector, debugger);
+        _cpu = new Core(Bus, skipBios, debugger);
         Debugger = debugger;
     }
 
@@ -90,9 +88,9 @@ public unsafe class Device
         _ppu.Step();
     }
 
-    public void Reset(uint startVector = 0x0000_0000)
+    public void Reset(bool skipBios)
     {
-        _cpu.Reset(startVector);
+        _cpu.Reset(skipBios);
         Bus.Reset();
         _ppu.Reset();
         _dmaCtrl.Reset();

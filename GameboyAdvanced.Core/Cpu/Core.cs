@@ -132,7 +132,7 @@ public unsafe class Core
     /// <summary>
     /// Contains the current state of the 3 stage pipeline
     /// </summary>
-    internal Pipeline Pipeline;
+    internal Pipeline Pipeline = new Pipeline();
 
     /// <summary>
     /// Whilst the memory and decode units will always execute the same logic
@@ -149,16 +149,16 @@ public unsafe class Core
     /// </summary>
     internal bool IsFirstInstructionCycle { private set; get; }
 
-    internal Core(MemoryBus bus, uint startVector, BaseDebugger debugger)
+    internal Core(MemoryBus bus, bool skipBios, BaseDebugger debugger)
     {
         Bus = bus;
         Debugger = debugger;
-        Reset(startVector);
+        Reset(skipBios);
     }
 
-    internal void Reset(uint startVector)
+    internal void Reset(bool skipBios)
     {
-        A = startVector;
+        A = 0x0;
         D = 0x0;
         MAS = BusWidth.Word;
         nMREQ = false;
@@ -166,32 +166,29 @@ public unsafe class Core
         nOPC = false;
         nRW = false;
         WaitStates = 0;
-        Pipeline = new Pipeline
-        {
-            DecodedOpcode = null,
-            FetchedOpcode = null
-        };
+        Pipeline.DecodedOpcode = null;
+        Pipeline.DecodedOpcodeAddress = null;
+        Pipeline.FetchedOpcode = null;
+        Pipeline.FetchedOpcodeAddress = null;
+        Pipeline.CurrentInstruction = null;
+        Pipeline.CurrentInstructionAddress = null;
 
         Array.Clear(R, 0, R.Length);
-        R[15] = startVector;
-        R[13] = 0x03007F00; // TODO - Is this correct? It's probably set by bios but roms assume it's here
-        for (var ii = 0; ii < _spBanks.Length; ii++)
+
+        if (skipBios)
         {
-            _spBanks[ii] = 0x03007F00;
+            A = 0x0800_0000;
+            R[0] = 0x0800_0000;
+            R[1] = 0x0000_00EA;
+            R[13] = 0x0300_7F00;
+            _spBanks[CPSRMode.Irq.Index()] = 0x0300_7FA0;
+            _spBanks[CPSRMode.Supervisor.Index()] = 0x0300_7FA0;
+            R[15] = 0x0800_0000;
+            Cpsr.Mode = Cpsr.Set(0x6000_001F);
         }
+
         ClearPipeline();
         Pipeline.ClearedThisCycle = false; // Despite the pipeline being cleared this is part of RESET so don't skip address increments
-
-        // Attempting to match CPSR value from mgba of 0x1F = 0b1_1111
-        // which implies starting in System mode
-        // TODO - Seems odd that even if we're running from 0x0800_0000 it's system mode but mgba seems to think so
-        Cpsr.Mode = CPSRMode.System;
-
-
-        //if (startVector == 0x0800_0000)
-        //{
-        //    _spBanks[CPSRMode.Supervisor.Index()] = 0x0300_7FE0;
-        //}
 
         MoveExecutePipelineToNextInstruction();
     }
@@ -360,7 +357,7 @@ public unsafe class Core
             Pipeline.FetchedOpcode = D;
             Pipeline.FetchedOpcodeAddress = A;
         }
-        
+
         // Actually execute anything that's in the right part of the pipeline
         NextExecuteAction(this, Pipeline.CurrentInstruction ?? 0u);
 
@@ -460,7 +457,7 @@ public unsafe class Core
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal CPSR CurrentSpsr() => Spsr[Cpsr.Mode.Index()];
+    internal ref CPSR CurrentSpsr() => ref Spsr[Cpsr.Mode.Index()];
 
     internal uint GetUserModeRegister(int reg) => (reg, Cpsr.Mode) switch
     {
@@ -470,7 +467,7 @@ public unsafe class Core
         (14, _) => _lrBanks[0],
         (15, _) => R[15],
         (_, _) when reg < 8 => R[reg],
-        (_, _) when reg < 13 => R[reg], // Would handle FIQ banking here but can't be bothered yet
+        (_, _) when reg < 13 => R[reg], // TODO - Would handle FIQ banking here but can't be bothered yet
         _ => throw new Exception("Invalid get user mode register request")
     };
 
@@ -516,7 +513,10 @@ public unsafe class Core
         _lrBanks[Cpsr.Mode.Index()] = R[14];
         if (Cpsr.Mode is CPSRMode.Fiq or CPSRMode.OldFiq)
         {
-            throw new NotImplementedException("FIQ not implemented");
+            for (var ii = 0; ii < 5; ii++)
+            {
+                (_fiqHiRegs[ii], R[8 + ii]) = (R[8 + ii], _fiqHiRegs[ii]);
+            }
         }
 
         // Then move banked registers into current
@@ -524,7 +524,10 @@ public unsafe class Core
         R[14] = _lrBanks[newMode.Index()];
         if (newMode is CPSRMode.Fiq or CPSRMode.OldFiq)
         {
-            throw new NotImplementedException("FIQ not implemented");
+            for (var ii = 0; ii < 5; ii++)
+            {
+                (_fiqHiRegs[ii], R[8 + ii]) = (R[8 + ii], _fiqHiRegs[ii]);
+            }
         }
 
         // Put the current CPSR into SPSR for the destination mode
