@@ -71,6 +71,7 @@ internal class InterruptWaitStateAndPowerControlRegisters
         IE => _interruptEnable.Get(),
         IF => _interruptRequest.Get(),
         IME => (ushort)(_interruptMasterEnable ? 1 : 0u),
+        POSTFLG => 1, // TODO - Implement read/write of this during bios
         _ => throw new NotImplementedException($"Invalid address {address:X8} for interrupt registers")
     };
 
@@ -96,6 +97,8 @@ internal class InterruptWaitStateAndPowerControlRegisters
                 break;
             case IME:
                 _interruptMasterEnable = (val & 0b1) == 0b1;
+                break;
+            case POSTFLG:
                 break;
             default:
                 throw new NotImplementedException($"Address {address:X8} not implemented in IO registers");
