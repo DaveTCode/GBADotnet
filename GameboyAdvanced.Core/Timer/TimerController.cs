@@ -1,4 +1,7 @@
-﻿namespace GameboyAdvanced.Core.Timer;
+﻿using static GameboyAdvanced.Core.IORegs;
+using GameboyAdvanced.Core.Debug;
+
+namespace GameboyAdvanced.Core.Timer;
 
 /// <summary>
 /// The timer controller subsystem ticks on each clock cycle and is responsible 
@@ -6,82 +9,106 @@
 /// </summary>
 internal class TimerController
 {
-    private readonly TimerRegister[] _timers = new TimerRegister[4] { new TimerRegister(), new TimerRegister(), new TimerRegister(), new TimerRegister() };
+    private readonly BaseDebugger _debugger;
+    private readonly TimerRegister[] _timers = new TimerRegister[4] { new TimerRegister(0), new TimerRegister(1), new TimerRegister(2), new TimerRegister(3) };
+    private readonly int[] _timerSteps = new int[4];
+    private readonly HashSet<int> _runningTimerIxs = new();
+
+    internal TimerController(BaseDebugger debugger)
+    {
+        _debugger = debugger;
+    }
 
     internal void Reset()
     {
-        for (var ii = 0; ii < _timers.Length; ii++)
+        foreach (var timer in _timers)
         {
-            _timers[ii] = new TimerRegister();
+            timer.Reset();
         }
     }
 
 
-    internal void Step(int cycles)
+    internal void Step()
     {
-        // TODO - Implement timers
+        foreach (var timerIx in _runningTimerIxs)
+        {
+            _timerSteps[timerIx]--;
+            if (_timerSteps[timerIx] == 0)
+            {
+                _timerSteps[timerIx] = _timers[timerIx].PrescalerSelection.Cycles();
+                _timers[timerIx].Counter++;
+
+                if (_timers[timerIx].Counter == 0)
+                {
+                    _timers[timerIx].Counter = _timers[timerIx].Reload;
+
+                    // TODO - Handle timer DMA
+
+                    // TODO - Handle count-up timing
+                }
+            }
+        }
     }
 
-    internal (byte, int) ReadByte(uint address) => throw new NotImplementedException("Read byte not implemented for timer registers");
+    internal byte ReadByte(uint address) => throw new NotImplementedException("Read byte not implemented for timer registers");
 
-    internal (ushort, int) ReadHalfWord(uint address) => address switch
+    internal ushort ReadHalfWord(uint address) => address switch
     {
-        0x0400_0100 => (_timers[0].Reload, 1),
-        0x0400_0102 => (_timers[0].ReadControl(), 1),
-        0x0400_0104 => (_timers[1].Reload, 1),
-        0x0400_0106 => (_timers[1].ReadControl(), 1),
-        0x0400_0108 => (_timers[2].Reload, 1),
-        0x0400_010A => (_timers[2].ReadControl(), 1),
-        0x0400_010C => (_timers[3].Reload, 1),
-        0x0400_010E => (_timers[3].ReadControl(), 1),
+        TM0CNT_L => _timers[0].Counter,
+        TM0CNT_H => _timers[0].ReadControl(),
+        TM1CNT_L => _timers[1].Counter,
+        TM1CNT_H => _timers[1].ReadControl(),
+        TM2CNT_L => _timers[2].Counter,
+        TM2CNT_H => _timers[2].ReadControl(),
+        TM3CNT_L => _timers[3].Counter,
+        TM3CNT_H => _timers[3].ReadControl(),
         _ => throw new ArgumentOutOfRangeException(nameof(address), "Address {address:X8} not mapped for timers"),
     };
 
-    internal (uint, int) ReadWord(uint address) => address switch
-    {
-        0x0400_0100 => ((uint)(_timers[0].Reload << 16) | _timers[0].ReadControl(), 1),
-        0x0400_0104 => ((uint)(_timers[1].Reload << 16) | _timers[1].ReadControl(), 1),
-        0x0400_0108 => ((uint)(_timers[2].Reload << 16) | _timers[2].ReadControl(), 1),
-        0x0400_010C => ((uint)(_timers[3].Reload << 16) | _timers[3].ReadControl(), 1),
-        _ => throw new ArgumentOutOfRangeException(nameof(address), "Address {address:X8} not mapped for timers"),
-    };
+    internal uint ReadWord(uint address) => (uint)(ReadHalfWord(address) | (ReadHalfWord(address + 2) << 16));
 
-    internal int WriteByte(uint _address, byte _value) => throw new NotImplementedException("Write byte not implemented for timer registers");
+    internal void WriteByte(uint _address, byte _value) => throw new NotImplementedException("Write byte not implemented for timer registers");
 
-    internal int WriteHalfWord(uint address, ushort value)
+    internal void WriteHalfWord(uint address, ushort value)
     {
         switch (address)
         {
-            case 0x0400_0100:
+            case TM0CNT_L:
                 _timers[0].Reload = value;
-                return 1;
-            case 0x0400_0102:
-                _timers[0].UpdateControl(value);
-                return 1;
-            case 0x0400_0104:
+                return;
+            case TM0CNT_H:
+                _timers[0].UpdateControl(value, _runningTimerIxs);
+                _timerSteps[0] = _timers[0].PrescalerSelection.Cycles();
+                return;
+            case TM1CNT_L:
                 _timers[1].Reload = value;
-                return 1;
-            case 0x0400_0106:
-                _timers[1].UpdateControl(value);
-                return 1;
-            case 0x0400_0108:
+                return;
+            case TM1CNT_H:
+                _timers[1].UpdateControl(value, _runningTimerIxs);
+                _timerSteps[1] = _timers[1].PrescalerSelection.Cycles();
+                return;
+            case TM2CNT_L:
                 _timers[2].Reload = value;
-                return 1;
-            case 0x0400_010A:
-                _timers[2].UpdateControl(value);
-                return 1;
-            case 0x0400_010C:
+                return;
+            case TM2CNT_H:
+                _timers[2].UpdateControl(value, _runningTimerIxs);
+                _timerSteps[2] = _timers[2].PrescalerSelection.Cycles();
+                return;
+            case TM3CNT_L:
                 _timers[3].Reload = value;
-                return 1;
-            case 0x0400_010E:
-                _timers[3].UpdateControl(value);
-                return 1;
+                return;
+            case TM3CNT_H:
+                _timers[3].UpdateControl(value, _runningTimerIxs);
+                _timerSteps[3] = _timers[3].PrescalerSelection.Cycles();
+                return;
             default:
                 throw new ArgumentOutOfRangeException(nameof(address), "Address {address:X8} not mapped for timers");
         }
     }
 
-    internal int WriteWord(uint address, uint value) =>
-        WriteHalfWord(address, (ushort)(value >> 16)) +
-        WriteHalfWord(address + 2, (ushort)value);
+    internal void WriteWord(uint address, uint value)
+    {
+        WriteHalfWord(address, (ushort)value);
+        WriteHalfWord(address + 2, (ushort)(value >> 16));
+    }
 }
