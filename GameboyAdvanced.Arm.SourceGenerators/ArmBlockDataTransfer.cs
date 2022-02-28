@@ -65,7 +65,7 @@ LdmStmUtils._writebackRegister = (int)rn;"
                                     (true, true) => "LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rn] + (4 * LdmStmUtils._storeLoadMultiplePopCount));",
                                     (false, true) => "LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rn] - (4 * LdmStmUtils._storeLoadMultiplePopCount));",
                                 };
-                                var nextAction = load ? "LdmStmUtils.ldm_registerReadCycle" : "LdmStmUtils.stm_registerWriteCycle";
+                                var nextAction = load ? "LdmStmUtils.LdmRegisterReadCycle" : "LdmStmUtils.StmRegisterWriteCycle";
                                 var immediateNextActionStatement = load ? "" : $"{nextAction}(core, instruction);";
                                 var userModeStr = userMode ? "LdmStmUtils._useBank0Regs = true;" : "";
                                 var func = $@"
@@ -86,7 +86,7 @@ static partial void {funcName}(Core core, uint instruction)
     }}
 
     core.nOPC = true;
-    core.SEQ = LdmStmUtils._storeLoadMultiplePopCount > 1;
+    core.SEQ = LdmStmUtils._storeLoadMultiplePopCount > 1 ? 1 : 0;
     core.MAS = BusWidth.Word;
     {nrwStr}
     core.NextExecuteAction = &{nextAction};
@@ -94,6 +94,7 @@ static partial void {funcName}(Core core, uint instruction)
     {writebackStr}
     {finalWritebackValue}
     core.A = {initialAddressValue}
+    core.AIncrement = 0;
 
     {immediateNextActionStatement};
 }}

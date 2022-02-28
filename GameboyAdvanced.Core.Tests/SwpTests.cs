@@ -18,9 +18,9 @@ public class SwpTests
     private readonly static GamePak _testGamePak = new(new byte[0xFF_FFFF]);
     private readonly static Gamepad _testGamepad = new();
     private readonly static DmaDataUnit _testDmaDataUnit = new();
-    private readonly static TimerController _testTimerController = new();
     private readonly static InterruptWaitStateAndPowerControlRegisters _interruptWaitStateAndPowerControlRegisters = new();
     private readonly static TestDebugger _testDebugger = new();
+    private readonly static TimerController _testTimerController = new(_testDebugger);
     private readonly static SerialController _serialController = new(_testDebugger);
 
     [Fact]
@@ -30,11 +30,11 @@ public class SwpTests
         var instruction = 0b1110_0001_0000_0000_0001_0000_1001_0010; // SWP R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
         var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
-        var cpu = new Core(bus, 0, _testDebugger);
+        var cpu = new Core(bus, false, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
         cpu.R[2] = 0xFEED_BEEFu; // This value should be overwritten
-        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFFu);
+        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFFu, 1);
 
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
         cpu.Clock(); // Fill execute stage of pipeline and perform address translation
@@ -46,17 +46,17 @@ public class SwpTests
         Assert.Equal(0x0300_1000u, cpu.R[0]);
         Assert.Equal(0xBEEF_FEEDu, cpu.R[1]);
         Assert.Equal(0xFEED_BEEFu, cpu.R[2]);
-        Assert.Equal(0xABCD_EFFFu, cpu.Bus.ReadWord(0x0300_1000).Item1);
+        Assert.Equal(0xABCD_EFFFu, cpu.Bus.ReadWord(0x0300_1000, 1).Item1);
         cpu.Clock(); // 3rd clock, memory has been written but registers all still show initial values
         Assert.Equal(0x0300_1000u, cpu.R[0]);
         Assert.Equal(0xBEEF_FEEDu, cpu.R[1]);
         Assert.Equal(0xFEED_BEEFu, cpu.R[2]);
-        Assert.Equal(0xFEED_BEEFu, cpu.Bus.ReadWord(0x0300_1000).Item1);
+        Assert.Equal(0xFEED_BEEFu, cpu.Bus.ReadWord(0x0300_1000, 1).Item1);
         cpu.Clock(); // 4th clock of instruction, register should now contain memory value
         Assert.Equal(0x0300_1000u, cpu.R[0]);
         Assert.Equal(0xABCD_EFFFu, cpu.R[1]);
         Assert.Equal(0xFEED_BEEFu, cpu.R[2]);
-        Assert.Equal(0xFEED_BEEFu, cpu.Bus.ReadWord(0x0300_1000).Item1);
+        Assert.Equal(0xFEED_BEEFu, cpu.Bus.ReadWord(0x0300_1000, 1).Item1);
 
         Assert.Equal(2u + 4, cpu.Cycles); // 2 for pipeline + 1S + 2N + 1I cycles to execute
     }
@@ -68,11 +68,11 @@ public class SwpTests
         var instruction = 0b1110_0001_0100_0000_0001_0000_1001_0010; // SWPB R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
         var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
-        var cpu = new Core(bus, 0, _testDebugger);
+        var cpu = new Core(bus, false, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
         cpu.R[2] = 0xFEED_BEEFu; // This value should be overwritten
-        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFEu);
+        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFEu, 1);
 
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
         cpu.Clock(); // Fill execute stage of pipeline and perform address translation
@@ -84,17 +84,17 @@ public class SwpTests
         Assert.Equal(0x0300_1000u, cpu.R[0]);
         Assert.Equal(0xBEEF_FEEDu, cpu.R[1]);
         Assert.Equal(0xFEED_BEEFu, cpu.R[2]);
-        Assert.Equal(0xABCD_EFFE, cpu.Bus.ReadWord(0x0300_1000).Item1);
+        Assert.Equal(0xABCD_EFFE, cpu.Bus.ReadWord(0x0300_1000, 1).Item1);
         cpu.Clock(); // 3rd clock, memory has been written but registers all still show initial values
         Assert.Equal(0x0300_1000u, cpu.R[0]);
         Assert.Equal(0xBEEF_FEEDu, cpu.R[1]);
         Assert.Equal(0xFEED_BEEFu, cpu.R[2]);
-        Assert.Equal(0xABCD_EFEFu, cpu.Bus.ReadWord(0x0300_1000).Item1);
+        Assert.Equal(0xABCD_EFEFu, cpu.Bus.ReadWord(0x0300_1000, 1).Item1);
         cpu.Clock(); // 4th clock of instruction, register should now contain memory value
         Assert.Equal(0x0300_1000u, cpu.R[0]);
         Assert.Equal(0x0000_00FEu, cpu.R[1]);
         Assert.Equal(0xFEED_BEEFu, cpu.R[2]);
-        Assert.Equal(0xABCD_EFEFu, cpu.Bus.ReadWord(0x0300_1000).Item1);
+        Assert.Equal(0xABCD_EFEFu, cpu.Bus.ReadWord(0x0300_1000, 1).Item1);
 
         Assert.Equal(2u + 4, cpu.Cycles); // 2 for pipeline + 1S + 2N + 1I cycles to execute
     }

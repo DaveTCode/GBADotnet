@@ -62,7 +62,7 @@ public unsafe class Device
         _gamepak = rom;
         _interruptController = new InterruptWaitStateAndPowerControlRegisters();
         _gamepad = new Gamepad();
-        _timerController = new TimerController();
+        _timerController = new TimerController(debugger);
         _ppu = new Ppu.Ppu();
         _dmaData = new DmaDataUnit();
         _serialController = new SerialController(debugger);
@@ -74,12 +74,13 @@ public unsafe class Device
 
     public void RunCycle(bool skipBreakpoints=false)
     {
-        #if DEBUG
+#if DEBUG
         if (!skipBreakpoints && Debugger.CheckBreakpoints(_cpu))
         {
             throw new BreakpointException();
         }
-        #endif
+#endif
+        _timerController.Step();
         if (!_dmaCtrl.Step())
         {
             // Only step the CPU unit if the DMA is inactive
@@ -113,11 +114,11 @@ public unsafe class Device
 
     public void ReleaseKey(Key key) => _gamepad.ReleaseKey(key);
 
-    public uint InspectWord(uint address) => Bus.ReadWord(address).Item1;
+    public uint InspectWord(uint address) => Bus.ReadWord(address, 1).Item1;
 
-    public ushort InspectHalfWord(uint address) => Bus.ReadHalfWord(address).Item1;
+    public ushort InspectHalfWord(uint address) => Bus.ReadHalfWord(address, 1).Item1;
 
-    public byte InspectByte(uint address) => Bus.ReadByte(address).Item1;
+    public byte InspectByte(uint address) => Bus.ReadByte(address, 1).Item1;
 
     public string LoadedRomName() => _gamepak.GameTitle;
 

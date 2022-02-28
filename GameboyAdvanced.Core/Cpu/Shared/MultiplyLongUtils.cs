@@ -84,9 +84,10 @@ internal static unsafe class MultiplyLongUtils
 
     private static void SetupForMultiplyLongCommon(Core core, uint rdHi, uint rdLo)
     {
-        core.SEQ = false;
+        core.SEQ = 0;
         core.nOPC = true;
         core.nMREQ = true;
+        core.AIncrement = 0;
         _destinationRegHi = rdHi;
         _destinationRegLo = rdLo;
         _currentCycles = 0;

@@ -70,7 +70,7 @@ internal static unsafe class LdrStrUtils
         core.A = core.R[15];
         core.nOPC = false;
         core.nRW = false;
-        core.SEQ = false;
+        core.SEQ = 0;
         core.nMREQ = true;
         core.MAS = core.Cpsr.ThumbMode ? BusWidth.HalfWord : BusWidth.Word;
 
@@ -109,6 +109,7 @@ internal static unsafe class LdrStrUtils
             core.ClearPipeline();
         }
         core.nMREQ = false;
+        core.AIncrement = (uint)core.MAS;
 
         core.MoveExecutePipelineToNextInstruction();
     }
@@ -120,10 +121,11 @@ internal static unsafe class LdrStrUtils
         _ldrCastFunc = castFunc;
         _ldrReg = destinationReg;
         core.A = address;
+        core.AIncrement = 0;
         core.MAS = busWidth;
         core.nRW = false;
         core.nOPC = true;
-        core.SEQ = false;
+        core.SEQ = 0;
         core.NextExecuteAction = &LDRCycle2;
     }
 
@@ -155,11 +157,12 @@ internal static unsafe class LdrStrUtils
     {
         _doWriteback = false;
         core.A = address;
+        core.AIncrement = 0;
         core.D = data;
         core.MAS = busWidth;
         core.nRW = true;
         core.nOPC = true;
-        core.SEQ = false;
+        core.SEQ = 0;
         core.NextExecuteAction = &STRCycle2;
     }
 

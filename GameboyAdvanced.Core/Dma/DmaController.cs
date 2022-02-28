@@ -57,7 +57,7 @@ internal class DmaController
             {
                 if (_dmaDataUnit.Channels[ii].ControlReg.StartTiming != StartTiming.Immediate)
                 {
-                    throw new NotImplementedException("Only immediate DMA implemented at the moment");
+                    continue; // TODO - Implement non-immediate mode DMA
                 }
 
                 // DMA takes 2 I cycles to start
@@ -70,11 +70,12 @@ internal class DmaController
                 }
 
                 // DMA takes 2S cycles per read (apart from the first which is a pair of N cycles)
+                // TODO - Pretending that all are S cycles at the moment
                 if (_dmaDataUnit.Channels[ii].IntCachedValue.HasValue)
                 {
                     _waitStates += (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
-                        ? _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value)
-                        : _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value);
+                        ? _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value, 1)
+                        : _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value, 1);
                     _dmaDataUnit.Channels[ii].IntDestinationAddress = (uint)(_dmaDataUnit.Channels[ii].IntDestinationAddress + _dmaDataUnit.Channels[ii].IntDestAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
                     _dmaDataUnit.Channels[ii].IntWordCount--;
                     _dmaDataUnit.Channels[ii].IntCachedValue = null;
@@ -92,8 +93,8 @@ internal class DmaController
                 else
                 {
                     (_dmaDataUnit.Channels[ii].IntCachedValue, var waitStates) = (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
-                        ? _bus.ReadWord(_dmaDataUnit.Channels[ii].IntSourceAddress)
-                        : _bus.ReadHalfWord(_dmaDataUnit.Channels[ii].IntSourceAddress);
+                        ? _bus.ReadWord(_dmaDataUnit.Channels[ii].IntSourceAddress, 1)
+                        : _bus.ReadHalfWord(_dmaDataUnit.Channels[ii].IntSourceAddress, 1);
                     _waitStates += waitStates;
                     _dmaDataUnit.Channels[ii].IntSourceAddress = (uint)(_dmaDataUnit.Channels[ii].IntSourceAddress + _dmaDataUnit.Channels[ii].IntSrcAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
                 }

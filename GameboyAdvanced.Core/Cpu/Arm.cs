@@ -945,12 +945,15 @@ internal static unsafe partial class Arm
         if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User) 
         {
             val &= 0xF000_0000;
+            _ = core.Cpsr.Set(val);
         }
-
-        var newMode = core.Cpsr.Set(val);
-        if (newMode != core.Cpsr.Mode)
+        else
         {
-            core.SwitchMode(newMode);
+            var newMode = core.Cpsr.Set(val);
+            if (newMode != core.Cpsr.Mode)
+            {
+                core.SwitchMode(newMode);
+            }
         }
 
         core.MoveExecutePipelineToNextInstruction();
@@ -968,8 +971,13 @@ internal static unsafe partial class Arm
         if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User)
         {
             val &= 0xF000_0000;
+            _ = core.CurrentSpsr().Set(val);
         }
-        core.CurrentSpsr().Mode = core.CurrentSpsr().Set(val);
+        else
+        {
+            core.CurrentSpsr().Mode = core.CurrentSpsr().Set(val);
+            core.CurrentSpsr().ThumbMode = (val & 0x20) == 0x20;
+        }
         core.MoveExecutePipelineToNextInstruction();
     }
     internal static void msr_imm_cpsr(Core core, uint instruction)
@@ -986,11 +994,15 @@ internal static unsafe partial class Arm
         if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User)
         {
             val &= 0xF000_0000;
+            _ = core.Cpsr.Set(val);
         }
-        var newMode = core.Cpsr.Set(val);
-        if (newMode != core.Cpsr.Mode)
+        else
         {
-            core.SwitchMode(newMode);
+            var newMode = core.Cpsr.Set(val);
+            if (newMode != core.Cpsr.Mode)
+            {
+                core.SwitchMode(newMode);
+            }
         }
         core.MoveExecutePipelineToNextInstruction();
     }
@@ -1008,8 +1020,12 @@ internal static unsafe partial class Arm
         if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User)
         {
             val &= 0xF000_0000;
+            _ = core.CurrentSpsr().Set(val);
         }
-        core.CurrentSpsr().Mode = core.CurrentSpsr().Set(val);
+        else
+        {
+            core.CurrentSpsr().Mode = core.CurrentSpsr().Set(val); 
+        }
         core.MoveExecutePipelineToNextInstruction();
     }
     #endregion
@@ -1041,6 +1057,7 @@ internal static unsafe partial class Arm
         Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
     }
 
+    // TODO - SWP doesn't handle mis-aligned addresses properly
     internal static void swp(Core core, uint instruction)
     {
         var rn = (instruction >> 16) & 0b1111;
@@ -1048,8 +1065,9 @@ internal static unsafe partial class Arm
         _swpSourceReg = instruction & 0b1111;
         _dataMask = 0xFFFF_FFFF;
         core.A = core.R[rn];
+        core.AIncrement = 0;
         core.MAS = BusWidth.Word;
-        core.SEQ = false;
+        core.SEQ = 0;
         core.nOPC = true;
         core.NextExecuteAction = &swpCycle2;
     }
@@ -1060,8 +1078,9 @@ internal static unsafe partial class Arm
         _swpSourceReg = instruction & 0b1111;
         _dataMask = 0xFF;
         core.A = core.R[rn];
+        core.AIncrement = 0;
         core.MAS = BusWidth.Byte;
-        core.SEQ = false;
+        core.SEQ = 0;
         core.nOPC = true;
         core.NextExecuteAction = &swpCycle2;
     }

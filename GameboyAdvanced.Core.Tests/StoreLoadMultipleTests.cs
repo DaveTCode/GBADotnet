@@ -18,9 +18,9 @@ public class StoreLoadMultipleTests
     private readonly static GamePak _testGamePak = new(new byte[0xFF_FFFF]);
     private readonly static Gamepad _testGamepad = new();
     private readonly static DmaDataUnit _testDmaDataUnit = new();
-    private readonly static TimerController _testTimerController = new();
     private readonly static InterruptWaitStateAndPowerControlRegisters _interruptWaitStateAndPowerControlRegisters = new();
     private readonly static TestDebugger _testDebugger = new();
+    private readonly static TimerController _testTimerController = new(_testDebugger);
     private readonly static SerialController _serialController = new(_testDebugger);
 
     [Fact]
@@ -31,7 +31,7 @@ public class StoreLoadMultipleTests
         _bios[0] = (byte)(instruction & 0xFF);
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
         var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
-        var cpu = new Core(bus, 0, _testDebugger);
+        var cpu = new Core(bus, false, _testDebugger);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         for (var r = 1u; r < 8; r++)
@@ -55,12 +55,12 @@ public class StoreLoadMultipleTests
         Assert.False(cpu.nRW);
         Assert.False(cpu.nOPC);
         Assert.False(cpu.nMREQ);
-        Assert.False(cpu.SEQ);
+        Assert.Equal(0, cpu.SEQ);
         Assert.Equal(0x0300_101Cu, cpu.R[0]);
 
         for (var r = 1u; r < 8; r++)
         {
-            Assert.Equal((r, 0), cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1))));
+            Assert.Equal((r, 0), cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0));
         }
         Assert.Equal(2u + 2 + 6, cpu.Cycles); // 2 for pipeline + 2N + (1-n)S cycles
     }
@@ -76,7 +76,7 @@ public class StoreLoadMultipleTests
         _bios[2] = (byte)((instruction >> 16) & 0xFF);
         _bios[3] = (byte)((instruction >> 24) & 0xFF);
         var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
-        var cpu = new Core(bus, 0, _testDebugger);
+        var cpu = new Core(bus, false, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         for (var r = 1u; r < 8; r++)
         {
@@ -99,12 +99,12 @@ public class StoreLoadMultipleTests
         Assert.False(cpu.nRW);
         Assert.False(cpu.nOPC);
         Assert.False(cpu.nMREQ);
-        Assert.False(cpu.SEQ);
+        Assert.Equal(0, cpu.SEQ);
         Assert.Equal(0x0300_101Cu, cpu.R[0]);
 
         for (var r = 1u; r < 8; r++)
         {
-            Assert.Equal((r, 0), cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1))));
+            Assert.Equal((r, 0), cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0));
         }
         Assert.Equal(2u + 2 + 6, cpu.Cycles); // 2 for pipeline + 2N + (1-n)S cycles
     }
@@ -116,12 +116,12 @@ public class StoreLoadMultipleTests
         _bios[0] = (byte)(instruction & 0xFF);
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
         var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
-        var cpu = new Core(bus, 0, _testDebugger);
+        var cpu = new Core(bus, false, _testDebugger);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         for (var r = 0u; r < 7; r++)
         {
-            _ = cpu.Bus.WriteWord(0x0300_1000u + (r * 4), r + 1);
+            _ = cpu.Bus.WriteWord(0x0300_1000u + (r * 4), r + 1, 0);
         }
 
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline;
@@ -150,7 +150,7 @@ public class StoreLoadMultipleTests
         Assert.False(cpu.nRW);
         Assert.False(cpu.nOPC);
         Assert.False(cpu.nMREQ);
-        Assert.False(cpu.SEQ);
+        Assert.Equal(0, cpu.SEQ);
 
         Assert.Equal(2u + 1 + 1 + 7, cpu.Cycles); // 2 for pipeline + 1I + 1N + nS
     }

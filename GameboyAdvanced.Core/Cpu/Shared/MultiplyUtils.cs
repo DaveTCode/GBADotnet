@@ -74,9 +74,10 @@ internal static unsafe class MultiplyUtils
 
     internal static void SetupForMultiply(Core core, int rd, int rs, int rm)
     {
-        core.SEQ = false;
+        core.SEQ = 0;
         core.nOPC = true;
         core.nMREQ = true;
+        core.AIncrement = 0;
         _destinationReg = rd;
         _currentCycles = 0;
         _requiredCycles = CyclesForMultiplyA(core.R[rs]); // TODO - Suspect, is it really A not B? Data sheet says yes but they've been wrong before

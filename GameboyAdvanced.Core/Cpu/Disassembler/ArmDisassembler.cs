@@ -237,10 +237,7 @@ internal static class ArmDisassembler
         throw new NotImplementedException();
     }
 
-    private static string DisassembleArmCoprocessorRegTransfer(Core core, uint instruction)
-    {
-        throw new NotImplementedException();
-    }
+    private static string DisassembleArmCoprocessorRegTransfer(Core core, uint instruction) => "Coprocessor Reg Transfer";
 
     private static string DisassembleArmCoprocessorDataOp(Core core, uint instruction)
     {

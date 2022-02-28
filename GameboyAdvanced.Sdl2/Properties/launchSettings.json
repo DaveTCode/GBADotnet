@@ -2,15 +2,31 @@
   "profiles": {
     "ARM Wrestler": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler-gba-fixed.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "ARM Wrestler - Thumb Only": {
+    "DenSinH - Thumb Any": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\THUMB_Any.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\DenSinH\\THUMB_Any.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "DenSinH - Thumb Data Processing": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\DenSinH\\THUMB_DataProcessing.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "DenSinH - Arm Any": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\DenSinH\\Arm_Any.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "DenSinH - Arm Data Processing": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\DenSinH\\Arm_DataProcessing.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "CPU Test": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\cpu_test\\CPUTest.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "mgba": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\mgba\\suite.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - First": {
       "commandName": "Project",
@@ -24,9 +40,57 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\hello.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - M3 Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m3_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Pageflip": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\pageflip.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - SWI Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\swi_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Panda": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\panda.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Peter Lemon - Hello World": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\GBA-master\\HelloWorld\\HelloWorld.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\HelloWorld\\HelloWorld.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - LCD - BGMode0": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\BG\\BGMode0\\BGMode0.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - Fast Line": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\FastLine\\FastLine.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - Fast Line Clip": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\FastLineClip\\FastLineClip.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - Cylinder Map": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\CylinderMap\\CylinderMap.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - Myst": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\Myst\\Myst.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - Bios - ArcTan": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\BIOS\\Arithmetic\\ARCTAN\\BIOSARCTAN.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - Bios - Div": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\BIOS\\Arithmetic\\DIV\\BIOSDIV.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - Bios - Sqrt": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\BIOS\\Arithmetic\\SQRT\\BIOSSQRT.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - Arm.gba": {
       "commandName": "Project",
@@ -35,6 +99,42 @@
     "JSMolka - Thumb.gba": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\thumb\\thumb.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - Memory": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\memory\\memory.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - NES": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\nes\\nes.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - PPU - Hello": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\ppu\\hello.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - PPU - Shades": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\ppu\\shades.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - PPU - Stripes": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\ppu\\stripes.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - Bios": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\bios\\bios.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - Unsafe": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\unsafe\\unsafe.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Doooooooom": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Doom (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Kirby & The Amazing Mirror (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Kirby & The Amazing Mirror (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     }
   }
 }

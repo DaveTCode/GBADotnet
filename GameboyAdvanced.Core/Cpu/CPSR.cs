@@ -78,7 +78,6 @@ internal struct CPSR
         AbortDisable = (v & 0x100) == 0x100;
         IrqDisable = (v & 0x80) == 0x80;
         FiqDisable = (v & 0x40) == 0x40;
-        ThumbMode = (v & 0x20) == 0x20;
         
         return (CPSRMode)(v & 0b1_1111);
     }

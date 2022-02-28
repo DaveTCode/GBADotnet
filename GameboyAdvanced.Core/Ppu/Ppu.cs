@@ -342,28 +342,29 @@ internal class Ppu
     internal byte ReadByte(uint address) => address switch
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
-        >= 0x0500_0000 and <= 0x0500_03FF => _paletteRam[address & 0b0011_1111_1111],
-        >= 0x0600_0000 and <= 0x0601_7FFF => _vram[address - 0x0600_0000],
-        >= 0x0700_0000 and <= 0x0700_03FF => _oam[address & 0b0011_1111_1111],
+        >= 0x0500_0000 and <= 0x05FF_FFFF => _paletteRam[address & 0x3FF],
+        >= 0x0600_0000 and <= 0x06FF_FFFF => _vram[address & 0x1_7FFF],
+        >= 0x0700_0000 and <= 0x07FF_FFFF => _oam[address & 0x3F],
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
 
     internal ushort ReadHalfWord(uint address) => address switch
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
-        >= 0x0500_0000 and <= 0x0500_03FF => Utils.ReadHalfWord(_paletteRam, address, 0b0011_1111_1111),
-        >= 0x0600_0000 and <= 0x0601_7FFF => Utils.ReadHalfWord(_vram, address - 0x0600_0000, 0xF_FFFF),
-        >= 0x0700_0000 and <= 0x0700_03FF => Utils.ReadHalfWord(_oam, address, 0b0011_1111_1111),
+        >= 0x0500_0000 and <= 0x05FF_FFFF => Utils.ReadHalfWord(_paletteRam, address, 0x3FF),
+        >= 0x0600_0000 and <= 0x06FF_FFFF => Utils.ReadHalfWord(_vram, address, 0x1_7FFF),
+        >= 0x0700_0000 and <= 0x07FF_FFFF => Utils.ReadHalfWord(_oam, address, 0x3FF),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
 
     /// <summary>
     /// The PPU has a 16 bit bus and any byte wide writes to it result in half 
-    /// word writes of the byte value to both bytes in the half word.
+    /// word writes of the byte value to both bytes in the half word or the 
+    /// write being ignored (depending on where exactly the write occurs)
     /// </summary>
     internal void WriteByte(uint address, byte value)
     {
-        var hwAddress = address & ~1u;
+        var hwAddress = address & 0xFFFF_FFFE;
         var hwValue = (ushort)((value << 8) | value);
         WriteHalfWord(hwAddress, hwValue);
     }
@@ -373,14 +374,14 @@ internal class Ppu
         // TODO - "VRAM and Palette RAM may be accessed during H-Blanking. OAM can accessed only if "H-Blank Interval Free" bit in DISPCNT register is set."
         switch (address)
         {
-            case uint _ when address is >= 0x0500_0000 and <= 0x0500_03FF:
-                Utils.WriteHalfWord(_paletteRam, 0x3FF, address & 0x3FF, value);
+            case uint _ when address is >= 0x0500_0000 and <= 0x05FF_FFFF:
+                Utils.WriteHalfWord(_paletteRam, 0x3FF, address, value);
                 break;
-            case uint _ when address is >= 0x0600_0000 and <= 0x0601_7FFF:
-                Utils.WriteHalfWord(_vram, 0x1_FFFF, address - 0x0600_0000, value);
+            case uint _ when address is >= 0x0600_0000 and <= 0x06FF_FFFF:
+                Utils.WriteHalfWord(_vram, 0x1_FFFF, address, value);
                 break;
-            case uint _ when address is >= 0x0700_0000 and <= 0x0700_03FF:
-                Utils.WriteHalfWord(_oam, 0x3FF, address & 0x3FF, value);
+            case uint _ when address is >= 0x0700_0000 and <= 0x07FF_FFFF:
+                Utils.WriteHalfWord(_oam, 0x3FF, address, value);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused"); // TODO - Handle unused addresses properly

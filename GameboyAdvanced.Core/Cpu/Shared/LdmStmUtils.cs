@@ -43,7 +43,7 @@ internal static class LdmStmUtils
     /// happened on the memory unit) the memory unit is reset for opcode 
     /// fetches.
     /// </summary>
-    internal static void stm_registerWriteCycle(Core core, uint _)
+    internal static void StmRegisterWriteCycle(Core core, uint _)
     {
         if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount)
         {
@@ -114,7 +114,7 @@ internal static class LdmStmUtils
     /// - Set R1 to cached value, set writeback value, reset memory unit for 
     ///   opcode fetch.
     /// </summary>
-    internal static void ldm_registerReadCycle(Core core, uint _)
+    internal static void LdmRegisterReadCycle(Core core, uint _)
     {
         // Writeback happens at the end of the second cycle (before any
         // registers are loaded)
@@ -159,7 +159,8 @@ internal static class LdmStmUtils
         if (_storeLoadMultiplePtr == _storeLoadMultiplePopCount - 1)
         {
             core.A = core.R[15];
-            core.SEQ = true;
+            core.AIncrement = 0;
+            core.SEQ = 1;
             core.MAS = core.Cpsr.ThumbMode ? BusWidth.HalfWord : BusWidth.Word;
             core.nMREQ = true;
         }

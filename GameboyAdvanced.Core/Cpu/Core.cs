@@ -81,6 +81,15 @@ public unsafe class Core
     internal uint A;
 
     /// <summary>
+    /// We track whether or not A/R[15] need incrementing at the end of the 
+    /// cycle with the increment amount in here.
+    /// 
+    /// It is set to MAS when nOPC is true on address read and set to 0
+    /// by instructions which then overwrite A (LDR/SWP).
+    /// </summary>
+    internal uint AIncrement;
+
+    /// <summary>
     /// The 32 bit data bus value (DIN/DOUT not split here), set by 
     /// the memory fetch unit at the start of a cycle.
     /// </summary>
@@ -102,8 +111,11 @@ public unsafe class Core
     /// SEQ is set high when a memory request will be sequential and low when
     /// it will not (e.g. during a branch operation when the branch address is 
     /// first fetched)
+    /// 
+    /// Note that an int is used (with 1 being SEQ and 0 being not SEQ) to provide
+    /// rapid wait state array indexing.
     /// </summary>
-    internal bool SEQ;
+    internal int SEQ;
 
     /// <summary>
     /// nOPC (not Opcode Fetch) is set low when a memory fetch is for an opcode
@@ -132,7 +144,7 @@ public unsafe class Core
     /// <summary>
     /// Contains the current state of the 3 stage pipeline
     /// </summary>
-    internal Pipeline Pipeline = new Pipeline();
+    internal Pipeline Pipeline = new();
 
     /// <summary>
     /// Whilst the memory and decode units will always execute the same logic
@@ -162,7 +174,7 @@ public unsafe class Core
         D = 0x0;
         MAS = BusWidth.Word;
         nMREQ = false;
-        SEQ = false;
+        SEQ = 0;
         nOPC = false;
         nRW = false;
         WaitStates = 0;
@@ -182,9 +194,10 @@ public unsafe class Core
             R[1] = 0x0000_00EA;
             R[13] = 0x0300_7F00;
             _spBanks[CPSRMode.Irq.Index()] = 0x0300_7FA0;
-            _spBanks[CPSRMode.Supervisor.Index()] = 0x0300_7FA0;
+            _spBanks[CPSRMode.Supervisor.Index()] = 0x0300_7FE0;
             R[15] = 0x0800_0000;
             Cpsr.Mode = Cpsr.Set(0x6000_001F);
+            Cpsr.ThumbMode = false;
         }
 
         ClearPipeline();
@@ -210,11 +223,11 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            waitStates = Bus.WriteByte(A, (byte)D);
+                            waitStates = Bus.WriteByte(A, (byte)D, SEQ);
                         }
                         else
                         {
-                            (var ret, waitStates) = Bus.ReadByte(A);
+                            (var ret, waitStates) = Bus.ReadByte(A, SEQ);
                             D = (D & 0xFFFF_FF00) | ret;
                         }
                         break;
@@ -223,11 +236,11 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            waitStates = Bus.WriteHalfWord(A & 0xFFFF_FFFE, (ushort)D);
+                            waitStates = Bus.WriteHalfWord(A & 0xFFFF_FFFE, (ushort)D, SEQ);
                         }
                         else
                         {
-                            (D, waitStates) = Bus.ReadHalfWord(A & 0xFFFF_FFFE);
+                            (D, waitStates) = Bus.ReadHalfWord(A & 0xFFFF_FFFE, SEQ);
                         }
 
                         break;
@@ -235,11 +248,11 @@ public unsafe class Core
                 case BusWidth.Word:
                     if (nRW)
                     {
-                        waitStates = Bus.WriteWord(A & 0xFFFF_FFFC, D);
+                        waitStates = Bus.WriteWord(A & 0xFFFF_FFFC, D, SEQ);
                     }
                     else
                     {
-                        (D, waitStates) = Bus.ReadWord(A & 0xFFFF_FFFC);
+                        (D, waitStates) = Bus.ReadWord(A & 0xFFFF_FFFC, SEQ);
                     }
                     break;
                 default:
@@ -274,7 +287,6 @@ public unsafe class Core
 #if DEBUG
         core.Debugger.Log(core.ToString());
 #endif
-
         var instruction = core.Pipeline.CurrentInstruction.Value;
 
         if (core.Cpsr.ThumbMode)
@@ -356,6 +368,7 @@ public unsafe class Core
             // change
             Pipeline.FetchedOpcode = D;
             Pipeline.FetchedOpcodeAddress = A;
+            AIncrement = (uint)MAS;
         }
 
         // Actually execute anything that's in the right part of the pipeline
@@ -367,9 +380,9 @@ public unsafe class Core
         {
             Pipeline.ClearedThisCycle = false;
         }
-        else if (A == Pipeline.FetchedOpcodeAddress)
+        else if (AIncrement > 0)
         {
-            A += (uint)MAS;
+            A += AIncrement;
             R[15] = A;
         }
     }
@@ -389,6 +402,7 @@ public unsafe class Core
         Pipeline.DecodedOpcode = Pipeline.DecodedOpcodeAddress = null;
         Pipeline.CurrentInstruction = Pipeline.CurrentInstructionAddress = null;
         A = R[15];
+        AIncrement = (uint)MAS;
         Pipeline.ClearedThisCycle = true;
     }
 
@@ -403,8 +417,9 @@ public unsafe class Core
         core.A = core.R[15];
         core.nOPC = false;
         core.nRW = false;
-        core.SEQ = false;
+        core.SEQ = 0;
         core.MAS = core.Cpsr.ThumbMode ? BusWidth.HalfWord : BusWidth.Word; // TODO - Could make this faster by making ThumbMode a BusWidth instead of a bool (or some bool -> int shenanigans)
+        core.AIncrement = (uint)core.MAS;
         core.nMREQ = false;
         core.MoveExecutePipelineToNextInstruction();
     }
@@ -532,7 +547,8 @@ public unsafe class Core
 
         // Put the current CPSR into SPSR for the destination mode
         _ = Spsr[newMode.Index()].Set(Cpsr.Get());
-        Spsr[newMode.Index()].Mode = newMode;
+        Spsr[newMode.Index()].Mode = Cpsr.Mode;
+        Spsr[newMode.Index()].ThumbMode = Cpsr.ThumbMode;
 
         Cpsr.Mode = newMode;
     }
@@ -541,7 +557,7 @@ public unsafe class Core
     {
         SwitchMode(newMode);
 
-        Cpsr.ThumbMode = false;
+        SwitchToArm();
         Cpsr.IrqDisable = true;
 
         // Set up the interrupt vector, return vector and clear the pipeline

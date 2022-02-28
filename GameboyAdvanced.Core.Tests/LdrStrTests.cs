@@ -18,9 +18,9 @@ public class LdrStrTests
     private readonly static GamePak _testGamePak = new(new byte[0xFF_FFFF]);
     private readonly static Gamepad _testGamepad = new();
     private readonly static DmaDataUnit _testDmaDataUnit = new();
-    private readonly static TimerController _testTimerController = new();
     private readonly static InterruptWaitStateAndPowerControlRegisters _interruptWaitStateAndPowerControlRegisters = new();
     private readonly static TestDebugger _testDebugger = new();
+    private readonly static TimerController _testTimerController = new(_testDebugger);
     private readonly static SerialController _serialController = new(_testDebugger);
 
     [Theory]
@@ -33,12 +33,12 @@ public class LdrStrTests
         if (byteWidth) instruction |= 0b0000_0100_0000_0000;
         Utils.WriteHalfWord(_bios, 0xFFFF, 0x0, (ushort)instruction);
         var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
-        var cpu = new Core(bus, 0, _testDebugger);
+        var cpu = new Core(bus, false, _testDebugger);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         cpu.R[1] = 0x0000_0004u; // Set up offset (so actual write will be to 0x0300_0001)
         cpu.R[2] = 0x1234_5678u;
-        _ = cpu.Bus.WriteWord(0x0300_1004, 0xBEEF_FEEDu);
+        _ = cpu.Bus.WriteWord(0x0300_1004, 0xBEEF_FEEDu, 0);
 
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
         cpu.Clock(); // Fill execute stage of pipeline and perform address translation
@@ -54,7 +54,7 @@ public class LdrStrTests
         Assert.False(cpu.nRW);
         Assert.False(cpu.nOPC);
         Assert.False(cpu.nMREQ);
-        Assert.False(cpu.SEQ);
+        Assert.Equal(0, cpu.SEQ);
         
         Assert.Equal(2u + 3, cpu.Cycles); // 1 for pipeline + 2N + 1S cycles
     }

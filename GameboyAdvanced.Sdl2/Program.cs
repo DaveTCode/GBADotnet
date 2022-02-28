@@ -2,7 +2,6 @@
 using GameboyAdvanced.Core;
 using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Rom;
-using Serilog;
 
 namespace GameboyAdvanced.Sdl2;
 
@@ -40,7 +39,7 @@ internal class Program
                 var rom = File.ReadAllBytes(o.Rom);
 
                 var gamepak = new GamePak(rom);
-                var device = new Device(bios, gamepak, new TestDebugger(), o.RunBios ? 0x0000_0000u : 0x0800_0000u);
+                var device = new Device(bios, gamepak, new TestDebugger(), !o.RunBios);
 
                 var application = new Sdl2Application(device, o.PixelSize);
                 application.Run();

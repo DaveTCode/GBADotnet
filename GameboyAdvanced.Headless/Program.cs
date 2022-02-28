@@ -41,7 +41,8 @@ internal class Program
     {
         var consoleLevelLoggingSwitch = new LoggingLevelSwitch(LogEventLevel.Debug);
         var logger = new LoggerConfiguration()
-            .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}").MinimumLevel.ControlledBy(consoleLevelLoggingSwitch)
+            .MinimumLevel.Debug()
+            .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}", levelSwitch: consoleLevelLoggingSwitch)
             .WriteTo.File("log.txt", outputTemplate: "{Message:lj}{NewLine}", rollOnFileSizeLimit: true, retainedFileCountLimit: 1)
             .CreateLogger();
 
@@ -52,7 +53,7 @@ internal class Program
                 var rom = File.ReadAllBytes(o.Rom);
 
                 var gamepak = new GamePak(rom);
-                var device = new Device(bios, gamepak, new Debugger(logger), o.RunBios ? 0x0000_0000u : 0x0800_0000u);
+                var device = new Device(bios, gamepak, new Debugger(logger), !o.RunBios);
 
                 while (true)
                 {
@@ -92,7 +93,7 @@ internal class Program
                             }
                             break;
                         case "r": // Reset execution
-                            device.Reset(o.RunBios ? 0x0000_0000u : 0x0800_0000u);
+                            device.Reset(!o.RunBios);
                             break;
                         case "logsoff": // Turn off logging
                             consoleLevelLoggingSwitch.MinimumLevel = LogEventLevel.Warning;

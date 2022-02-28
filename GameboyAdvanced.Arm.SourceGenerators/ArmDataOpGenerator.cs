@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
-using System.Security.Cryptography;
 
 namespace GameboyAdvanced.Arm.SourceGenerators
 {
@@ -127,8 +126,19 @@ internal static unsafe partial class Arm
                         (_, true) => "var secondOperand = ROR(imm, (byte)rot, ref core.Cpsr);"
                     };
 
+                    // TODO - Is this actually just MOVS not all S ops with rd=15?
                     var setCpsr = s
                         ? @"var newMode = core.Cpsr.Set(core.CurrentSpsr().Get());
+        if (core.CurrentSpsr().ThumbMode)
+        {
+            core.SwitchToThumb();
+            core.R[15] = core.R[15] & 0xFFFF_FFFE;
+        }
+        else
+        {
+            core.R[15] = core.R[15] & 0xFFFF_FFFC;
+        }
+
         if (newMode != core.Cpsr.Mode)
         {
             core.SwitchMode(newMode);
@@ -206,6 +216,10 @@ internal static unsafe partial class Arm
                             _ => "core.ClearPipeline();"
                         };
 
+                        var dontIncrementAOnICycle = type == OperandType.Llr || type == OperandType.Lrr || type == OperandType.Arr || type == OperandType.Rrr
+                            ? "core.AIncrement = 0;"
+                            : "";
+
                         // Most data ops take 1S cycle to operate but operations which use a register shifted
                         // value as the second operand take 1S + 1I cycle.
                         var secondCycleFunc = $@"
@@ -221,10 +235,6 @@ static partial void {funcName + "_" + type.ToString().ToLowerInvariant()}_write(
 
         {sStatement} 
 
-        // Writes to PC cause 2 extra cycles as the pipeline is flushed, note
-        // though that the 2 extra cycles aren't specific to the instruction
-        // they're an artifact of the flushed pipeline so don't get treated
-        // here as wait states
         if (rd == 15)
         {{
             {setCpsr}
@@ -232,6 +242,7 @@ static partial void {funcName + "_" + type.ToString().ToLowerInvariant()}_write(
         }}
 
         Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
+        {dontIncrementAOnICycle}
 }}
 ";
                         var nextActionStatement = type == OperandType.Llr || type == OperandType.Lrr || type == OperandType.Arr || type == OperandType.Rrr
