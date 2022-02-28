@@ -5,7 +5,7 @@ namespace GameboyAdvanced.Core.Rom;
 public class GamePak
 {
     private readonly byte[] _header = new byte[0xC0];
-    private readonly byte[] _data;
+    private readonly byte[] _data = new byte[0x200_0000];
     private readonly byte[] _sram = new byte[0x1_0000];
 
     public readonly uint RomEntryPoint;
@@ -28,8 +28,7 @@ public class GamePak
         if (bin == null) throw new ArgumentNullException(nameof(bin));
         if (bin.LongLength < 0xC0) throw new ArgumentException("Rom must be >= 0xC0 in size to fit cartridge header", nameof(bin));
         Array.Copy(bin, 0, _header, 0, _header.Length);
-
-        _data = (byte[])bin.Clone();
+        Array.Copy(bin, 0, _data, 0, Math.Min(bin.Length, _data.Length));
 
         RomEntryPoint = Utils.ReadWord(_header, 0, 0xFFFF_FFFF);
         Array.Copy(_header, 4, LogoCompressed, 0, LogoCompressed.Length);
@@ -45,72 +44,22 @@ public class GamePak
         Array.Copy(_header, 190, ReservedArea2, 0, ReservedArea2.Length);
     }
 
-    internal (byte, int) ReadByte(uint address)
+    /// <summary>
+    /// SRAM is only accessible over an 8 bit bus
+    /// </summary>
+    internal byte ReadSRam(uint address)
     {
-        if ((address & 0x0E00_0000) == 0x0E00_0000)
-        {
-            return (_sram[address & 0xFFFF], 4);
-        }
-        else
-        {
-            return (_data[address & 0x1FF_FFFF], 4); // TODO - Not really 4 waits, depends on N/S access and doesn't take into account the configured wait states
-        }
+        return _sram[address & 0xFFFF];
     }
 
-    internal (ushort, int) ReadHalfWord(uint address)
+    internal void WriteSRam(uint address, byte value)
     {
-        if ((address & 0x0E00_0000) == 0x0E00_0000)
-        {
-            return (_sram[address & 0xFFFF], 4); // TODO - data bus is 8 bit wide, suspect this means it returns a byte
-        }
-        else
-        {
-            return (Utils.ReadHalfWord(_data, address, 0x1FF_FFFF), 4); // TODO - Not really 4 waits, depends on N/S access and doesn't take into account the configured wait states
-        }
+        _sram[address & 0xFFFF] = value;
     }
 
-    internal (uint, int) ReadWord(uint address)
-    {
-        if ((address & 0x0E00_0000) == 0x0E00_0000)
-        {
-            return (_sram[address & 0xFFFF], 7); // TODO - data bus is 8 bit wide, suspect this means it returns a byte
-        }
-        else
-        {
-            return (Utils.ReadWord(_data, address, 0x1FF_FFFF), 7); // TODO - Not really 7 waits, depends on N/S access and doesn't take into account the configured wait states
-        }
-    }
+    internal byte ReadByte(uint address) => _data[address & 0x1FF_FFFF];
 
-    internal int WriteByte(uint address, byte value)
-    {
-        if ((address & 0x0E00_0000) == 0x0E00_0000)
-        {
-            _sram[address & 0xFFFF] = value;
-            return 4;
-        }
+    internal ushort ReadHalfWord(uint address) => Utils.ReadHalfWord(_data, address, 0x1FF_FFFF);
 
-        return 0; // TODO - Can't write to GamePak rom but how many wait states are injected?
-    }
-
-    internal int WriteHalfWord(uint address, ushort value)
-    {
-        if ((address & 0x0E00_0000) == 0x0E00_0000)
-        {
-            _sram[address & 0xFFFF] = (byte)value; // TODO - 8 bit bus to SRAM, presumably that means that only 8 bits are written from the half word
-            return 4;
-        }
-
-        return 0; // TODO - Can't write to GamePak rom but how many wait states are injected?
-    }
-
-    internal int WriteWord(uint address, uint value)
-    {
-        if ((address & 0x0E00_0000) == 0x0E00_0000)
-        {
-            _sram[address & 0xFFFF] = (byte)value; // TODO - 8 bit bus to SRAM, presumably that means that only 8 bits are written from the word
-            return 5;
-        }
-
-        return 1; // TODO - Can't write to GamePak rom but how many cycles are taken trying?
-    }
+    internal uint ReadWord(uint address) => Utils.ReadWord(_data, address, 0x1FF_FFFF);
 }
