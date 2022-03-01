@@ -482,7 +482,8 @@ public unsafe class Core
         (14, _) => _lrBanks[0],
         (15, _) => R[15],
         (_, _) when reg < 8 => R[reg],
-        (_, _) when reg < 13 => R[reg], // TODO - Would handle FIQ banking here but can't be bothered yet
+        (_, CPSRMode.Fiq) when reg < 13 => _fiqHiRegs[reg - 8], // FIQ registers get swapped into R8-13
+        (_, _) when reg < 13 => R[reg],
         _ => throw new Exception("Invalid get user mode register request")
     };
 
@@ -512,6 +513,9 @@ public unsafe class Core
                 break;
             case (_, _) when reg < 8:
                 R[reg] = value;
+                break;
+            case (_, CPSRMode.Fiq) when reg < 13:
+                _fiqHiRegs[reg - 8] = value;
                 break;
             case (_, _) when reg < 13:
                 R[reg] = value;
