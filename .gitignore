@@ -3,7 +3,9 @@
 **/obj/
 **/results/
 **/*.log
-
+*.user
 roms/real/*
 *.sav
 /GameboyAdvanced.Blazor
+/GameboyAdvanced.Web
+roms/
