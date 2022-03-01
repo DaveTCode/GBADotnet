@@ -146,7 +146,7 @@ internal static class LdmStmUtils
             {
                 core.R[_storeLoadMultipleState[_storeLoadMultiplePtr - 1]] = _cachedLdmValue;
             }
-            
+
             if (_storeLoadMultipleState[_storeLoadMultiplePtr - 1] == 15)
             {
                 core.ClearPipeline();

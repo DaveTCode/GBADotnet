@@ -92,7 +92,16 @@ static partial void {funcName}(Core core, uint instruction)
     core.NextExecuteAction = &{nextAction};
     
     {writebackStr}
-    {finalWritebackValue}
+    if (LdmStmUtils._storeLoadMultiplePopCount == 0)
+    {{
+        LdmStmUtils._storeLoadMutipleFinalWritebackValue = core.R[rn] + 0x40;
+        LdmStmUtils._storeLoadMultiplePopCount = 1;
+        LdmStmUtils._storeLoadMultipleState[0] = 15;
+    }}
+    else
+    {{
+        {finalWritebackValue}
+    }}
     core.A = {initialAddressValue}
     core.AIncrement = 0;
 
