@@ -103,6 +103,8 @@ public static class IORegs
     public const uint IME = 0x04000208;
     public const uint POSTFLG = 0x04000300;
     public const uint HALTCNT = 0x04000301;
+    public const uint UNDOCUMENTED_410 = 0x04000410;
+    public const uint INTMEMCTRL = 0x04000800;
 
     private readonly static Dictionary<uint, string> _cachedNameMapping = new();
 

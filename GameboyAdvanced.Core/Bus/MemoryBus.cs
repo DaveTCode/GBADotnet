@@ -1,11 +1,11 @@
 ﻿using static GameboyAdvanced.Core.IORegs;
-using GameboyAdvanced.Core.Cpu.Interrupts;
 using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
 using GameboyAdvanced.Core.Rom;
 using GameboyAdvanced.Core.Serial;
 using GameboyAdvanced.Core.Timer;
+using GameboyAdvanced.Core.Interrupts;
 
 namespace GameboyAdvanced.Core.Bus;
 
@@ -23,18 +23,20 @@ internal class MemoryBus
     private readonly GamePak _gamePak;
     private readonly DmaDataUnit _dma;
     private readonly TimerController _timerController;
-    private readonly InterruptWaitStateAndPowerControlRegisters _interruptController;
+    private readonly InterruptRegisters _interruptRegisters;
     private readonly SerialController _serialController;
     private readonly byte[] _bios = new byte[0x4000];
     private readonly byte[] _onBoardWRam = new byte[0x4_0000];
     private readonly byte[] _onChipWRam = new byte[0x8000];
     private WaitControl _waitControl;
+    private InternalMemoryControl _intMemoryControl;
 
     internal void Reset()
     {
         Array.Clear(_onBoardWRam);
         Array.Clear(_onChipWRam);
         _waitControl.Reset();
+        _intMemoryControl.Reset();
     }
 
     internal MemoryBus(
@@ -44,7 +46,7 @@ internal class MemoryBus
         Ppu.Ppu ppu,
         DmaDataUnit dma,
         TimerController timerController,
-        InterruptWaitStateAndPowerControlRegisters interruptController,
+        InterruptRegisters interruptRegisters,
         SerialController serialController,
         BaseDebugger debugger)
     {
@@ -57,10 +59,11 @@ internal class MemoryBus
         _gamePak = gamePak ?? throw new ArgumentNullException(nameof(gamePak));
         _dma = dma ?? throw new ArgumentNullException(nameof(dma));
         _timerController = timerController ?? throw new ArgumentNullException(nameof(timerController));
-        _interruptController = interruptController ?? throw new ArgumentNullException(nameof(interruptController));
+        _interruptRegisters = interruptRegisters ?? throw new ArgumentNullException(nameof(interruptRegisters));
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
         _serialController = serialController ?? throw new ArgumentNullException(nameof(serialController));
         _waitControl = new WaitControl();
+        _intMemoryControl = new InternalMemoryControl();
     }
 
     internal (byte, int) ReadByte(uint address, int seq)
@@ -68,7 +71,7 @@ internal class MemoryBus
         var (val, waitStates) = address switch
         {
             uint _ when address <= 0x0000_3FFF => (_bios[address], 0), // TODO - Can only read from bios when IP is located in BIOS region
-            uint _ when address is >= 0x0200_0000 and <= 0x02FF_FFFF => (_onBoardWRam[address & 0x3_FFFF], 2),
+            uint _ when address is >= 0x0200_0000 and <= 0x02FF_FFFF => (_onBoardWRam[address & 0x3_FFFF], _intMemoryControl.WaitControlWRAM),
             uint _ when address is >= 0x0300_0000 and <= 0x03FF_FFFF => (_onChipWRam[address & 0x7FFF], 0),
             uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE => address switch
             {
@@ -79,7 +82,12 @@ internal class MemoryBus
                 uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => (_serialController.ReadByte(address), 0),
                 uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => (_gamepad.ReadByte(address), 0),
                 uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => (_serialController.ReadByte(address), 0),
-                uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => (_interruptController.ReadByte(address), 0),
+                IE => (_interruptRegisters.ReadByte(address), 0),
+                IF => (_interruptRegisters.ReadByte(address), 0),
+                WAITCNT => ((byte)_waitControl.Get(), 0),
+                IME => (_interruptRegisters.ReadByte(address), 0),
+                POSTFLG => ((byte)1, 0), // TODO - Implement read/write of this during bios
+                uint _ when (address & 0xFF00FFFF) == INTMEMCTRL => ((byte)_intMemoryControl.Get(), 0), // TODO - Do we just cast to byte here?
                 _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
             },
             uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF => (_ppu.ReadByte(address), 0),
@@ -101,7 +109,7 @@ internal class MemoryBus
         var (val, waitStates) = address switch
         {
             uint a when a <= 0x0000_3FFF => (Utils.ReadHalfWord(_bios, address, 0x3FFF), 0), // TODO - Can only read from bios when IP is located in BIOS region
-            uint a when a is >= 0x0200_0000 and <= 0x02FF_FFFF => (Utils.ReadHalfWord(_onBoardWRam, address, 0x3_FFFF), 2),
+            uint a when a is >= 0x0200_0000 and <= 0x02FF_FFFF => (Utils.ReadHalfWord(_onBoardWRam, address, 0x3_FFFF), _intMemoryControl.WaitControlWRAM),
             uint a when a is >= 0x0300_0000 and <= 0x03FF_FFFF => (Utils.ReadHalfWord(_onChipWRam, address, 0x7FFF), 0),
             uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => address switch
             {
@@ -112,8 +120,12 @@ internal class MemoryBus
                 uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => (_serialController.ReadHalfWord(address), 0),
                 uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => (_gamepad.ReadHalfWord(address), 0),
                 uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => (_serialController.ReadHalfWord(address), 0),
+                IE => (_interruptRegisters.ReadHalfWord(address), 0),
+                IF => (_interruptRegisters.ReadHalfWord(address), 0),
                 WAITCNT => (_waitControl.Get(), 0),
-                uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => (_interruptController.ReadHalfWord(address), 0),
+                IME => (_interruptRegisters.ReadHalfWord(address), 0),
+                POSTFLG => ((ushort)1, 0), // TODO - Implement read/write of this during bios
+                uint _ when (address & 0xFF00FFFF) == INTMEMCTRL => ((ushort)_intMemoryControl.Get(), 0), // TODO - Do we just cast to ushort here?
                 _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
             },
             uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => (_ppu.ReadHalfWord(address), 0),
@@ -132,14 +144,10 @@ internal class MemoryBus
 
     internal (uint, int) ReadWord(uint address, int seq)
     {
-        if (address == 0x080004D0)
-        {
-            var a = 1;
-        }
         var (val, waitStates) = address switch
         {
             uint a when a <= 0x0000_3FFF => (Utils.ReadWord(_bios, address, 0x3FFF), 0), // TODO - Can only read from bios when IP is located in BIOS region
-            uint a when a is >= 0x0200_0000 and <= 0x02FF_FFFF => (Utils.ReadWord(_onBoardWRam, address, 0x3_FFFF), 5),
+            uint a when a is >= 0x0200_0000 and <= 0x02FF_FFFF => (Utils.ReadWord(_onBoardWRam, address, 0x3_FFFF), _intMemoryControl.WaitControlWRAM * 2),
             uint a when a is >= 0x0300_0000 and <= 0x03FF_FFFF => (Utils.ReadWord(_onChipWRam, address, 0x7FFF), 0),
             uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => address switch
             {
@@ -150,8 +158,11 @@ internal class MemoryBus
                 uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => (_serialController.ReadWord(address), 0),
                 uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => ((uint)(_gamepad.ReadHalfWord(address) | (_gamepad.ReadHalfWord(address + 2) << 16)), 0),
                 uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => (_serialController.ReadWord(address), 0),
+                IE => (_interruptRegisters.ReadWord(address), 0),
                 WAITCNT => (_waitControl.Get(), 0),
-                uint _ when address is >= 0x0400_0200 and <= 0x0470_0000 => (_interruptController.ReadWord(address), 0),
+                IME => (_interruptRegisters.ReadWord(address), 0),
+                POSTFLG => (1, 0), // TODO - Implement read/write of this during bios
+                uint _ when (address & 0xFF00FFFF) == INTMEMCTRL => (_intMemoryControl.Get(), 0),
                 _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
             },
             uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => ((uint)(_ppu.ReadHalfWord(address) | (_ppu.ReadHalfWord(address + 2) << 16)), 1),
@@ -179,7 +190,7 @@ internal class MemoryBus
                 return 0;
             case uint _ when address is >= 0x0200_0000 and <= 0x02FF_FFFF:
                 _onBoardWRam[address & 0x3_FFFF] = value;
-                return 2;
+                return _intMemoryControl.WaitControlWRAM;
             case uint _ when address is >= 0x0300_0000 and <= 0x03FF_FFFF:
                 _onChipWRam[address & 0x7FFF] = value;
                 return 0;
@@ -210,9 +221,17 @@ internal class MemoryBus
                     case WAITCNT:
                         _waitControl.Set(value); // TODO - Setting byte value into waitcontrol
                         return 0;
-                    case uint _ when address is >= 0x0400_0200 and <= 0x0470_0000:
-                        _interruptController.WriteByte(address, value);
+                    case IME:
+                    case IE:
+                    case IF:
+                        _interruptRegisters.WriteByte(address, value);
                         return 0;
+                    case POSTFLG:
+                        return 0; // TODO - Handle writing to POSTFLG during BIOS
+                    case UNDOCUMENTED_410: // "The BIOS writes the 8bit value 0FFh to this address. Purpose Unknown." - No$ GbaTek
+                        return 0;
+                    case uint _ when (address & 0xFF00FFFF) == INTMEMCTRL:
+                        throw new NotImplementedException("Can't set int memory control as byte or wait control for WRAM will get locked up at 15");
                     default:
                         throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped");
                 };
@@ -239,10 +258,10 @@ internal class MemoryBus
         {
             case uint _ when address <= 0x0000_3FFF:
                 return 0;
-            case uint _ when address is >= 0x0200_0000 and <= 0x03FF_FFFF:
+            case uint _ when address is >= 0x0200_0000 and <= 0x02FF_FFFF:
                 Utils.WriteHalfWord(_onBoardWRam, 0x3_FFFF, address, value);
-                return 2;
-            case uint _ when address is >= 0x0300_0000 and <= 0x04FF_FFFF:
+                return _intMemoryControl.WaitControlWRAM;
+            case uint _ when address is >= 0x0300_0000 and <= 0x03FF_FFFF:
                 Utils.WriteHalfWord(_onChipWRam, 0x7FFF, address, value);
                 return 0;
             case uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE:
@@ -271,12 +290,18 @@ internal class MemoryBus
                     case uint _ when address is >= 0x0400_0134 and <= 0x0400_015A:
                         _serialController.WriteHalfWord(address, value);
                         return 0;
+                    case POSTFLG:
+                        return 0; // TODO - Handle writing to POSTFLG during BIOS
                     case WAITCNT:
                         _waitControl.Set(value);
                         return 0;
-                    case uint _ when address is >= 0x0400_0200 and <= 0x0470_0000:
-                        _interruptController.WriteHalfWord(address, value);
+                    case IME:
+                    case IE:
+                    case IF:
+                        _interruptRegisters.WriteHalfWord(address, value);
                         return 0;
+                    case uint _ when (address & 0xFF00FFFF) == INTMEMCTRL:
+                        throw new NotImplementedException("Can't set int memory control as ushort or wait control for WRAM will get locked up at 15");
                     default:
                         throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped");
                 };
@@ -307,10 +332,10 @@ internal class MemoryBus
         {
             case uint _ when address <= 0x0000_3FFF:
                 return 0;
-            case uint _ when address is >= 0x0200_0000 and <= 0x03FF_FFFF:
+            case uint _ when address is >= 0x0200_0000 and <= 0x02FF_FFFF:
                 Utils.WriteWord(_onBoardWRam, 0x3_FFFF, address, value);
-                return 5; // TODO - 16 bit bus so this is a bit off
-            case uint _ when address is >= 0x0300_0000 and <= 0x04FF_FFFF:
+                return _intMemoryControl.WaitControlWRAM * 2;
+            case uint _ when address is >= 0x0300_0000 and <= 0x03FF_FFFF:
                 Utils.WriteWord(_onChipWRam, 0x7FFF, address, value);
                 return 0;
             case uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE:
@@ -339,12 +364,19 @@ internal class MemoryBus
                     case uint _ when address is >= 0x0400_0134 and <= 0x0400_015A:
                         _serialController.WriteWord(address, value);
                         return 0;
+                    case POSTFLG:
+                        return 0; // TODO - Handle writing to POSTFLG during BIOS
                     case WAITCNT:
                         _waitControl.Set((ushort)value);
                         // 206 is unused so no extra write here
                         return 0;
-                    case uint _ when address is >= 0x0400_0200 and <= 0x0470_0000:
-                        _interruptController.WriteWord(address, value);
+                    case IME:
+                    case IE:
+                    case IF:
+                        _interruptRegisters.WriteWord(address, value);
+                        return 0;
+                    case uint _ when (address & 0xFF00FFFF) == INTMEMCTRL:
+                        _intMemoryControl.Set(value);
                         return 0;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped");
