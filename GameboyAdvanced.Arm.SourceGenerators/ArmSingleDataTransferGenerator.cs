@@ -55,17 +55,11 @@ internal static unsafe partial class Arm
                                 // cycle - if R15 is picked as the value to store we will actually store R15+4
                                 // because it's going to get incremement in the next pipeline phase
                                 // TODO - Would be way better to store a ref to the register we're writing
-                                //var dataStr = (l, byteWide) switch
-                                //{
-                                //    (true, _) => "",
-                                //    (false, true) => "(((rd == 15) ? core.R[rd] + 4 : core.R[rd]) & 0xFF) | ((((rd == 15) ? core.R[rd] + 4 : core.R[rd]) & 0xFF) << 8) | ((((rd == 15) ? core.R[rd] + 4 : core.R[rd]) & 0xFF) << 16) | ((((rd == 15) ? core.R[rd] + 4 : core.R[rd]) & 0xFF) << 24)",
-                                //    (false, false) => "(rd == 15) ? core.R[rd] + 4 : core.R[rd]",
-                                //};
                                 var dataStr = (l, byteWide) switch
                                 {
                                     (true, _) => "",
-                                    (false, true) => "((core.R[rd]) & 0xFF) | (((core.R[rd]) & 0xFF) << 8) | (((core.R[rd]) & 0xFF) << 16) | (((core.R[rd]) & 0xFF) << 24)",
-                                    (false, false) => "core.R[rd]",
+                                    (false, true) => "(((rd == 15) ? core.R[rd] + 4 : core.R[rd]) & 0xFF) | ((((rd == 15) ? core.R[rd] + 4 : core.R[rd]) & 0xFF) << 8) | ((((rd == 15) ? core.R[rd] + 4 : core.R[rd]) & 0xFF) << 16) | ((((rd == 15) ? core.R[rd] + 4 : core.R[rd]) & 0xFF) << 24)",
+                                    (false, false) => "(rd == 15) ? core.R[rd] + 4 : core.R[rd]",
                                 };
 
                                 var addressStr = (pre, inc) switch
