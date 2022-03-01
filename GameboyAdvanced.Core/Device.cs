@@ -1,8 +1,8 @@
 ﻿using GameboyAdvanced.Core.Bus;
-using GameboyAdvanced.Core.Cpu.Interrupts;
 using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
+using GameboyAdvanced.Core.Interrupts;
 using GameboyAdvanced.Core.Rom;
 using GameboyAdvanced.Core.Serial;
 using GameboyAdvanced.Core.Timer;
@@ -29,7 +29,8 @@ public unsafe class Device
     private readonly Gamepad _gamepad;
     private readonly Ppu.Ppu _ppu;
     private readonly TimerController _timerController;
-    private readonly InterruptWaitStateAndPowerControlRegisters _interruptController;
+    private readonly InterruptRegisters _interruptRegisters;
+    private readonly InterruptInterconnect _interruptInterconnect;
     private readonly SerialController _serialController;
 
     /// <summary>
@@ -60,13 +61,14 @@ public unsafe class Device
     public Device(byte[] bios, GamePak rom, BaseDebugger debugger, bool skipBios)
     {
         _gamepak = rom;
-        _interruptController = new InterruptWaitStateAndPowerControlRegisters();
-        _gamepad = new Gamepad();
-        _timerController = new TimerController(debugger);
-        _ppu = new Ppu.Ppu();
+        _interruptRegisters = new InterruptRegisters();
+        _interruptInterconnect = new InterruptInterconnect(debugger, _interruptRegisters);
+        _gamepad = new Gamepad(debugger, _interruptInterconnect);
+        _timerController = new TimerController(debugger, _interruptInterconnect);
+        _ppu = new Ppu.Ppu(debugger, _interruptInterconnect);
         _dmaData = new DmaDataUnit();
-        _serialController = new SerialController(debugger);
-        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dmaData, _timerController, _interruptController, _serialController, debugger);
+        _serialController = new SerialController(debugger, _interruptInterconnect);
+        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dmaData, _timerController, _interruptRegisters, _serialController, debugger);
         _dmaCtrl = new DmaController(Bus, debugger, _dmaData);
         _cpu = new Core(Bus, skipBios, debugger);
         Debugger = debugger;

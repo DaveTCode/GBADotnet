@@ -1,4 +1,5 @@
 ﻿using GameboyAdvanced.Core.Debug;
+using GameboyAdvanced.Core.Interrupts;
 using static GameboyAdvanced.Core.IORegs;
 
 namespace GameboyAdvanced.Core.Serial;
@@ -9,10 +10,12 @@ namespace GameboyAdvanced.Core.Serial;
 internal class SerialController
 {
     private readonly BaseDebugger _debugger;
+    private readonly InterruptInterconnect _interruptInterconnect;
 
-    internal SerialController(BaseDebugger debugger)
+    internal SerialController(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
     {
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
+        _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
     }
 
 

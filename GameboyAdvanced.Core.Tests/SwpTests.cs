@@ -1,5 +1,5 @@
 ﻿using GameboyAdvanced.Core.Bus;
-using GameboyAdvanced.Core.Cpu.Interrupts;
+using GameboyAdvanced.Core.Interrupts;
 using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
@@ -14,14 +14,15 @@ namespace GameboyAdvanced.Core.Tests;
 public class SwpTests
 {
     private readonly static byte[] _bios = new byte[0x4000];
-    private readonly static Ppu.Ppu _testPpu = new();
     private readonly static GamePak _testGamePak = new(new byte[0xFF_FFFF]);
-    private readonly static Gamepad _testGamepad = new();
     private readonly static DmaDataUnit _testDmaDataUnit = new();
-    private readonly static InterruptWaitStateAndPowerControlRegisters _interruptWaitStateAndPowerControlRegisters = new();
+    private readonly static InterruptRegisters _interruptRegisters = new();
     private readonly static TestDebugger _testDebugger = new();
-    private readonly static TimerController _testTimerController = new(_testDebugger);
-    private readonly static SerialController _serialController = new(_testDebugger);
+    private readonly static InterruptInterconnect _interruptInterconnect = new(_testDebugger, _interruptRegisters);
+    private readonly static Gamepad _testGamepad = new(_testDebugger, _interruptInterconnect);
+    private readonly static Ppu.Ppu _testPpu = new(_testDebugger, _interruptInterconnect);
+    private readonly static TimerController _testTimerController = new(_testDebugger, _interruptInterconnect);
+    private readonly static SerialController _serialController = new(_testDebugger, _interruptInterconnect);
 
     [Fact]
     public void TestSwp()
@@ -29,7 +30,7 @@ public class SwpTests
         Array.Clear(_bios);
         var instruction = 0b1110_0001_0000_0000_0001_0000_1001_0010; // SWP R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, false, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
@@ -67,7 +68,7 @@ public class SwpTests
         Array.Clear(_bios);
         var instruction = 0b1110_0001_0100_0000_0001_0000_1001_0010; // SWPB R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, false, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory

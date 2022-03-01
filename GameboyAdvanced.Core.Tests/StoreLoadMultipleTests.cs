@@ -1,5 +1,5 @@
 ﻿using GameboyAdvanced.Core.Bus;
-using GameboyAdvanced.Core.Cpu.Interrupts;
+using GameboyAdvanced.Core.Interrupts;
 using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Input;
@@ -14,14 +14,15 @@ namespace GameboyAdvanced.Core.Tests;
 public class StoreLoadMultipleTests
 {
     private readonly static byte[] _bios = new byte[0x4000];
-    private readonly static Ppu.Ppu _testPpu = new();
     private readonly static GamePak _testGamePak = new(new byte[0xFF_FFFF]);
-    private readonly static Gamepad _testGamepad = new();
     private readonly static DmaDataUnit _testDmaDataUnit = new();
-    private readonly static InterruptWaitStateAndPowerControlRegisters _interruptWaitStateAndPowerControlRegisters = new();
+    private readonly static InterruptRegisters _interruptRegisters = new();
     private readonly static TestDebugger _testDebugger = new();
-    private readonly static TimerController _testTimerController = new(_testDebugger);
-    private readonly static SerialController _serialController = new(_testDebugger);
+    private readonly static InterruptInterconnect _interruptInterconnect = new(_testDebugger, _interruptRegisters);
+    private readonly static Gamepad _testGamepad = new(_testDebugger, _interruptInterconnect);
+    private readonly static Ppu.Ppu _testPpu = new(_testDebugger, _interruptInterconnect);
+    private readonly static TimerController _testTimerController = new(_testDebugger, _interruptInterconnect);
+    private readonly static SerialController _serialController = new(_testDebugger, _interruptInterconnect);
 
     [Fact]
     public void TestThumbStmia()
@@ -30,7 +31,7 @@ public class StoreLoadMultipleTests
         var instruction = 0b1100_0000_1111_1110; // STMIA R0!, [r1-r7]
         _bios[0] = (byte)(instruction & 0xFF);
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, false, _testDebugger);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
@@ -75,7 +76,7 @@ public class StoreLoadMultipleTests
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
         _bios[2] = (byte)((instruction >> 16) & 0xFF);
         _bios[3] = (byte)((instruction >> 24) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, false, _testDebugger);
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         for (var r = 1u; r < 8; r++)
@@ -115,7 +116,7 @@ public class StoreLoadMultipleTests
         var instruction = 0b1100_1000_1111_1110; // LDMIA R0!, [r1-r7]
         _bios[0] = (byte)(instruction & 0xFF);
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptWaitStateAndPowerControlRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
         var cpu = new Core(bus, false, _testDebugger);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to

@@ -1,12 +1,15 @@
 ﻿using static GameboyAdvanced.Core.IORegs;
 
-namespace GameboyAdvanced.Core.Cpu.Interrupts;
+namespace GameboyAdvanced.Core.Interrupts;
 
 /// <summary>
-/// This class encapsulates the various IO registers which are located between
-/// 0x0400_0200 and 0x0470_0000.
+/// This class contains the raw data constituting the ARM interrupt registers.
+/// 
+/// It's really a part of the core ARM model instead of being a separate 
+/// GBA component but is handled as one because the implementation are specific
+/// to the GBA.
 /// </summary>
-internal class InterruptWaitStateAndPowerControlRegisters
+internal class InterruptRegisters
 {
     private struct InterruptRegister
     {
@@ -71,11 +74,10 @@ internal class InterruptWaitStateAndPowerControlRegisters
         IE => _interruptEnable.Get(),
         IF => _interruptRequest.Get(),
         IME => (ushort)(_interruptMasterEnable ? 1 : 0u),
-        POSTFLG => 1, // TODO - Implement read/write of this during bios
         _ => throw new NotImplementedException($"Invalid address {address:X8} for interrupt registers")
     };
 
-    internal uint ReadWord(uint address) => 
+    internal uint ReadWord(uint address) =>
         (uint)(ReadHalfWord(address) | (ReadHalfWord(address + 2) << 8));
 
     internal void WriteByte(uint address, byte val)
@@ -93,12 +95,11 @@ internal class InterruptWaitStateAndPowerControlRegisters
                 _interruptEnable.Set(val);
                 break;
             case IF:
-                _interruptRequest.Set(val);
+                // Clearing bits in IF is handled by writing a 1 to the bit rather than a 0 (hence the ~)
+                _interruptRequest.Set((ushort)~val);
                 break;
             case IME:
                 _interruptMasterEnable = (val & 0b1) == 0b1;
-                break;
-            case POSTFLG:
                 break;
             default:
                 throw new NotImplementedException($"Address {address:X8} not implemented in IO registers");

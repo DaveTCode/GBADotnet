@@ -1,5 +1,6 @@
 ﻿using static GameboyAdvanced.Core.IORegs;
 using GameboyAdvanced.Core.Debug;
+using GameboyAdvanced.Core.Interrupts;
 
 namespace GameboyAdvanced.Core.Timer;
 
@@ -10,13 +11,15 @@ namespace GameboyAdvanced.Core.Timer;
 internal class TimerController
 {
     private readonly BaseDebugger _debugger;
+    private readonly InterruptInterconnect _interruptInterconnect;
     private readonly TimerRegister[] _timers = new TimerRegister[4] { new TimerRegister(0), new TimerRegister(1), new TimerRegister(2), new TimerRegister(3) };
     private readonly int[] _timerSteps = new int[4];
     private readonly HashSet<int> _runningTimerIxs = new();
 
-    internal TimerController(BaseDebugger debugger)
+    internal TimerController(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
     {
-        _debugger = debugger;
+        _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
+        _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
     }
 
     internal void Reset()

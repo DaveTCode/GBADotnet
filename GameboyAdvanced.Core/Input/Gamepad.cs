@@ -1,4 +1,8 @@
-﻿namespace GameboyAdvanced.Core.Input;
+﻿using static GameboyAdvanced.Core.IORegs;
+using GameboyAdvanced.Core.Debug;
+using GameboyAdvanced.Core.Interrupts;
+
+namespace GameboyAdvanced.Core.Input;
 
 internal class Gamepad
 {
@@ -30,9 +34,18 @@ internal class Gamepad
         { Key.R, false },
     };
 
+    private readonly BaseDebugger _debugger;
+    private readonly InterruptInterconnect _interruptInterconnect;
+
     // TODO - Actually do something with IRQs from input
     private bool _irqEnabled;
     private bool _irqConditionAnd;
+
+    internal Gamepad(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
+    {
+        _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
+        _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
+    }
 
     private ushort KeyStatusRegister() => (ushort)(
         (_keyPressed[Key.A] ? 0 : (1 << 0)) |
@@ -78,8 +91,8 @@ internal class Gamepad
 
     internal ushort ReadHalfWord(uint address) => address switch
     {
-        0x0400_0130 => KeyStatusRegister(),
-        0x0400_0132 => KeyInterruptControl(),
+        KEYINPUT => KeyStatusRegister(),
+        KEYCNT => KeyInterruptControl(),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped to Gamepad memory space"),
     };
 
@@ -87,7 +100,7 @@ internal class Gamepad
 
     internal void WriteHalfWord(uint address, ushort value)
     {
-        if (address == 0x0400_0132)
+        if (address == KEYCNT)
         {
             _keyIrq[Key.A] = (value & (1 << 0)) == (1 << 0);
             _keyIrq[Key.B] = (value & (1 << 1)) == (1 << 1);

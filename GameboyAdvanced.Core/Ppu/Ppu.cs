@@ -1,4 +1,6 @@
-﻿using static GameboyAdvanced.Core.IORegs;
+﻿using GameboyAdvanced.Core.Debug;
+using GameboyAdvanced.Core.Interrupts;
+using static GameboyAdvanced.Core.IORegs;
 
 namespace GameboyAdvanced.Core.Ppu;
 
@@ -18,6 +20,9 @@ internal class Ppu
     private const int VBlankCycles = VBlankLines * CyclesPerLine; // 83,776
     private const int FrameCycles = VisibleLineCycles + VBlankCycles; // 280,896
 
+    private readonly BaseDebugger _debugger;
+    private readonly InterruptInterconnect _interruptInterconnect;
+
     // TODO - Might be more efficient to store as ushorts given access is over 16 bit bus?
     private readonly byte[] _paletteRam = new byte[0x400]; // 1KB
     private readonly byte[] _vram = new byte[0x18000]; // 96KB
@@ -33,10 +38,15 @@ internal class Ppu
     private WindowControl _winIn = new();
     private WindowControl _winOut = new();
     private readonly Window[] _windows = new Window[2] { new Window(0), new Window(1) };
-
     private Mosaic _mosaic = new();
 
     private int _currentLineCycles;
+
+    internal Ppu(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
+    {
+        _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
+        _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
+    }
 
     internal void Reset()
     {
@@ -315,10 +325,7 @@ internal class Ppu
         }
     }
 
-    internal byte ReadRegisterByte(uint address) => address switch
-    {
-        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Can't read single bytes from PPU registers at {address:X8}") // TODO - Handle unused addresses properly
-    };
+    internal byte ReadRegisterByte(uint address) => (byte)ReadRegisterHalfWord(address); // TODO - Not 100% confident about this although beeg.gba does it and the result works in that specific case (read VCOUNT with high byte being 0)
 
     internal ushort ReadRegisterHalfWord(uint address) => address switch
     {
