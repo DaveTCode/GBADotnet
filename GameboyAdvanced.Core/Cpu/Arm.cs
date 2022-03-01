@@ -1035,12 +1035,13 @@ internal static unsafe partial class Arm
     private static uint _swpDestinationReg;
     private static uint _swpSourceReg;
     private static uint _dataMask;
+    private static delegate*<uint, uint, uint> _swapCastFunc;
 
     internal static void swpCycle2(Core core, uint _instruction)
     {
         _swpCachedVal = core.D;
         core.nRW = true;
-        core.D = core.R[_swpSourceReg] & _dataMask;
+        core.D = ((_swpSourceReg == 15) ? core.R[_swpSourceReg] + 4 : core.R[_swpSourceReg]) & _dataMask;
         core.NextExecuteAction = &swpCycle3;
     }
 
@@ -1053,7 +1054,7 @@ internal static unsafe partial class Arm
 
     internal static void swpCycle4(Core core, uint instruction)
     {
-        core.R[_swpDestinationReg] = _swpCachedVal & _dataMask;
+        core.R[_swpDestinationReg] = _swapCastFunc(core.A, _swpCachedVal);
         Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
     }
 
@@ -1064,6 +1065,7 @@ internal static unsafe partial class Arm
         _swpDestinationReg = (instruction >> 12) & 0b1111;
         _swpSourceReg = instruction & 0b1111;
         _dataMask = 0xFFFF_FFFF;
+        _swapCastFunc = &LdrStrUtils.LDRW;
         core.A = core.R[rn];
         core.AIncrement = 0;
         core.MAS = BusWidth.Word;
@@ -1077,6 +1079,7 @@ internal static unsafe partial class Arm
         _swpDestinationReg = (instruction >> 12) & 0b1111;
         _swpSourceReg = instruction & 0b1111;
         _dataMask = 0xFF;
+        _swapCastFunc = &LdrStrUtils.LDRB;
         core.A = core.R[rn];
         core.AIncrement = 0;
         core.MAS = BusWidth.Byte;
