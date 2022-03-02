@@ -1,5 +1,6 @@
 ﻿using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Interrupts;
+using System.Runtime.CompilerServices;
 using static GameboyAdvanced.Core.IORegs;
 
 namespace GameboyAdvanced.Core.Ppu;
@@ -387,7 +388,7 @@ internal class Ppu
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
         >= 0x0500_0000 and <= 0x05FF_FFFF => _paletteRam[address & 0x3FF],
-        >= 0x0600_0000 and <= 0x06FF_FFFF => _vram[address & 0x1_7FFF],
+        >= 0x0600_0000 and <= 0x06FF_FFFF => _vram[MaskVRamAddress(address)],
         >= 0x0700_0000 and <= 0x07FF_FFFF => _oam[address & 0x3F],
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
@@ -396,7 +397,7 @@ internal class Ppu
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
         >= 0x0500_0000 and <= 0x05FF_FFFF => Utils.ReadHalfWord(_paletteRam, address, 0x3FF),
-        >= 0x0600_0000 and <= 0x06FF_FFFF => Utils.ReadHalfWord(_vram, address, 0x1_7FFF),
+        >= 0x0600_0000 and <= 0x06FF_FFFF => Utils.ReadHalfWord(_vram, MaskVRamAddress(address), 0x1_FFFF),
         >= 0x0700_0000 and <= 0x07FF_FFFF => Utils.ReadHalfWord(_oam, address, 0x3FF),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
@@ -422,7 +423,7 @@ internal class Ppu
                 Utils.WriteHalfWord(_paletteRam, 0x3FF, address, value);
                 break;
             case uint _ when address is >= 0x0600_0000 and <= 0x06FF_FFFF:
-                Utils.WriteHalfWord(_vram, 0x1_FFFF, address, value);
+                Utils.WriteHalfWord(_vram, 0x1_FFFF, MaskVRamAddress(address), value);
                 break;
             case uint _ when address is >= 0x0700_0000 and <= 0x07FF_FFFF:
                 Utils.WriteHalfWord(_oam, 0x3FF, address, value);
@@ -432,5 +433,15 @@ internal class Ppu
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint MaskVRamAddress(uint address)
+    {
+        address &= 0x1_FFFF;
+        if (address >= 0x18000)
+        {
+            address = (uint)(address & ~0x8000);
+        }
+        return address;
+    }
     #endregion
 }
