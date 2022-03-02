@@ -99,7 +99,7 @@ internal class MemoryBus
         };
 
 #if DEBUG
-        _debugger.Log($"R {address:X8}={val:X2}");
+        _debugger.Log("R {0:X8}={1:X8}", address, val);
 #endif
         return (val, waitStates);
     }
@@ -137,7 +137,7 @@ internal class MemoryBus
         };
 
 #if DEBUG
-        _debugger.Log($"R {address:X8}={val:X4}");
+        _debugger.Log("R {0:X8}={1:X8}", address, val);
 #endif
         return (val, waitStates);
     }
@@ -174,7 +174,7 @@ internal class MemoryBus
         };
 
 #if DEBUG
-        _debugger.Log($"R {address:X8}={val:X8}");
+        _debugger.Log("R {0:X8}={1:X8}", address, val);
 #endif
         return (val, waitStates);
     }
@@ -182,7 +182,7 @@ internal class MemoryBus
     internal int WriteByte(uint address, byte value, int seq)
     {
 #if DEBUG
-        _debugger.Log($"W {address:X8}={value:X2}");
+        _debugger.Log("W {0:X8}={1:X8}", address, value);
 #endif
         switch (address)
         {
@@ -254,7 +254,7 @@ internal class MemoryBus
     internal int WriteHalfWord(uint address, ushort value, int seq)
     {
 #if DEBUG
-        _debugger.Log($"W {address:X8}={value:X4}");
+        _debugger.Log("W {0:X8}={1:X8}", address, value);
 #endif
         switch (address)
         {
@@ -327,7 +327,7 @@ internal class MemoryBus
     internal int WriteWord(uint address, uint value, int seq)
     {
 #if DEBUG
-        _debugger.Log($"W {address:X8}={value:X8}");
+        _debugger.Log("W {0:X8}={1:X8}", address, value);
 #endif
 
         switch (address)

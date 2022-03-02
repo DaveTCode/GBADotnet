@@ -2,14 +2,14 @@
 
 public class TestDebugger : BaseDebugger
 {
-    public override void Log(string contents)
+    public override void Log(string messageString, params object[] vars)
     {
     }
 }
 
 public abstract class BaseDebugger
 {
-    public abstract void Log(string contents);
+    public abstract void Log(string messageString, params object[] vars);
 
     private readonly HashSet<uint> _codeBreakpoints = new();
     private readonly HashSet<uint> _readBreakpoints = new();

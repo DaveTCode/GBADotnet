@@ -1,6 +1,8 @@
 ﻿using GameboyAdvanced.Core;
 using GameboyAdvanced.Core.Input;
 using SDL2;
+using Serilog.Core;
+using Serilog.Events;
 using System.Diagnostics;
 
 namespace GameboyAdvanced.Sdl2;
@@ -9,6 +11,7 @@ internal class Sdl2Application : IDisposable
 {
     private readonly Device _device;
     private readonly int _pixelSize;
+    private readonly LoggingLevelSwitch _consoleLevelLoggingSwitch;
     private IntPtr _window;
     private IntPtr _renderer;
     private IntPtr _texture;
@@ -30,10 +33,11 @@ internal class Sdl2Application : IDisposable
         { SDL.SDL_Keycode.SDLK_w, Key.Start },
     };
 
-    internal Sdl2Application(Device device, int pixelSize = 1)
+    internal Sdl2Application(Device device, int pixelSize, LoggingLevelSwitch consoleLevelLoggingSwitch)
     {
         _device = device;
         _pixelSize = pixelSize;
+        _consoleLevelLoggingSwitch = consoleLevelLoggingSwitch;
     }
 
     private void SetupSdl2()
@@ -94,11 +98,21 @@ internal class Sdl2Application : IDisposable
                         {
                             _device.PressKey(dKey);
                         }
+
+                        if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_SPACE)
+                        {
+                            _consoleLevelLoggingSwitch.MinimumLevel = LogEventLevel.Debug;
+                        }
                         break;
                     case SDL.SDL_EventType.SDL_KEYUP:
                         if (_keyMap.TryGetValue(e.key.keysym.sym, out var uKey))
                         {
                             _device.ReleaseKey(uKey);
+                        }
+
+                        if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_SPACE)
+                        {
+                            _consoleLevelLoggingSwitch.MinimumLevel = LogEventLevel.Warning;
                         }
                         break;
                 }
@@ -121,7 +135,7 @@ internal class Sdl2Application : IDisposable
             SDL.SDL_RenderPresent(_renderer);
 
             var msToSleep = _msPerFrame - (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency * 1000);
-            Console.WriteLine(msToSleep);
+            //Console.WriteLine(msToSleep);
             if (msToSleep > 0)
             {
                 SDL.SDL_Delay((uint)msToSleep);

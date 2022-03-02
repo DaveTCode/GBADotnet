@@ -1,7 +1,7 @@
 ﻿using GameboyAdvanced.Core.Debug;
 using Serilog;
 
-namespace GameboyAdvanced.Headless;
+namespace GameboyAdvanced.Sdl2;
 
 /// <summary>
 /// When the GameboyAdvanced.Core class library is built in debug mode a 
@@ -22,8 +22,8 @@ public class Debugger : BaseDebugger
         _logger = logger;
     }
 
-    public override void Log(string messageString, params object[] vars)
+    public override void Log(string message, params object[] vars)
     {
-        _logger.Debug(messageString, vars);
+        _logger.Debug(message, vars);
     }
 }

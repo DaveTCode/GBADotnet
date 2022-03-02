@@ -295,7 +295,7 @@ public unsafe class Core
         }
 
 #if DEBUG
-        core.Debugger.Log(core.ToString());
+        core.Debugger.Log("{}", core);
 #endif
         var instruction = core.Pipeline.CurrentInstruction.Value;
 
