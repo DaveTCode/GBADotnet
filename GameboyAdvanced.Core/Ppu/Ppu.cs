@@ -169,6 +169,11 @@ internal class Ppu
         return _frameBuffer;
     }
 
+    internal bool CanVBlankDma() => _dispstat.VBlankFlag;
+
+    // TODO - Not sure what the behaviour here is if accessing OAM while the bit on dispcnt isn't set, does it pause DMA or write nothing?
+    internal bool CanHBlankDma() => _dispstat.HBlankFlag;
+
     /// <summary>
     /// Step the PPU by a single master clock cycle
     /// </summary>
@@ -180,6 +185,10 @@ internal class Ppu
         if (_currentLineCycles == CyclesPerVisibleLine)
         {
             _dispstat.HBlankFlag = true;
+            if (_dispstat.HBlankIrqEnable)
+            {
+                _interruptInterconnect.RaiseInterrupt(Interrupt.LCDHBlank);
+            }
         }
         else if (_currentLineCycles == CyclesPerLine)
         {
@@ -187,9 +196,22 @@ internal class Ppu
             _currentLine++;
             _currentLineCycles = 0;
 
+            if (_currentLine == _dispstat.VCountSetting)
+            {
+                _dispstat.VCounterFlag = true;
+                if (_dispstat.VCounterIrqEnable)
+                {
+                    _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVCounter);
+                }
+            }
+
             if (_currentLine == Device.HEIGHT)
             {
                 _dispstat.VBlankFlag = true;
+                if (_dispstat.VBlankIrqEnable)
+                {
+                    _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVBlank);
+                }
             }
             else if (_currentLine == VBlankLines + Device.HEIGHT)
             {
@@ -263,12 +285,19 @@ internal class Ppu
             case BG2PD:
                 _backgrounds[2].Dmy = value;
                 break;
-            case BG2X:
+            case BG2X_L:
                 _backgrounds[2].RefPointX = (int)((_backgrounds[2].RefPointX & 0xFFFF_0000) | value);
                 break;
-            case BG2Y:
-                _backgrounds[2].RefPointX = (_backgrounds[2].RefPointX & 0x0000_FFFF) | (value << 16);
+            case BG2X_H:
+                _backgrounds[2].RefPointX = (int)((_backgrounds[2].RefPointX & 0x0000_FFFF) | (value << 16)); // TODO - Mask to 12 bits?
                 _backgrounds[2].RefPointX = (_backgrounds[2].RefPointX << 4) >> 4;
+                break;
+            case BG2Y_L:
+                _backgrounds[2].RefPointY = (int)((_backgrounds[2].RefPointY & 0xFFFF_0000) | value);
+                break;
+            case BG2Y_H:
+                _backgrounds[2].RefPointY = (int)((_backgrounds[2].RefPointY & 0x0000_FFFF) | (value << 16)); // TODO - Mask to 12 bits?
+                _backgrounds[2].RefPointY = (_backgrounds[2].RefPointY << 4) >> 4;
                 break;
             case BG3PA:
                 _backgrounds[3].Dx = value;
@@ -282,12 +311,19 @@ internal class Ppu
             case BG3PD:
                 _backgrounds[3].Dmy = value;
                 break;
-            case BG3X:
+            case BG3X_L:
                 _backgrounds[3].RefPointX = (int)((_backgrounds[3].RefPointX & 0xFFFF_0000) | value);
                 break;
-            case BG3Y:
-                _backgrounds[3].RefPointX = (_backgrounds[3].RefPointX & 0x0000_FFFF) | (value << 16);
+            case BG3X_H:
+                _backgrounds[3].RefPointX = (int)((_backgrounds[3].RefPointX & 0x0000_FFFF) | (value << 16)); // TODO - Mask to 12 bits?
                 _backgrounds[3].RefPointX = (_backgrounds[3].RefPointX << 4) >> 4;
+                break;
+            case BG3Y_L:
+                _backgrounds[3].RefPointY = (int)((_backgrounds[3].RefPointY & 0xFFFF_0000) | value);
+                break;
+            case BG3Y_H:
+                _backgrounds[3].RefPointY = (int)((_backgrounds[3].RefPointY & 0x0000_FFFF) | (value << 16)); // TODO - Mask to 12 bits?
+                _backgrounds[3].RefPointY = (_backgrounds[3].RefPointY << 4) >> 4;
                 break;
             case WIN0H:
                 _windows[0].X1 = value >> 8;
@@ -321,6 +357,7 @@ internal class Ppu
             case BLDY:
                 throw new NotImplementedException("BLDY not yet implemented");
             default:
+                return;
                 throw new NotImplementedException($"Unregistered half word write to PPU registers {address:X8}={value:X4}");
         }
     }

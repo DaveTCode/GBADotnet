@@ -178,7 +178,7 @@ internal static class ArmDisassembler
         return "MUL"; // TODO
     }
 
-    private static string DisassembleArmSwi(Core _core, uint instruction)
+    internal static string DisassembleArmSwi(Core _core, uint instruction)
     {
         var biosFunctionIx = (instruction & 0xFF_FFFF) >> 16;
         var biosFunctionName = biosFunctionIx switch

@@ -45,7 +45,17 @@ internal class TimerController
                 {
                     _timers[timerIx].Counter = _timers[timerIx].Reload;
 
-                    // TODO - Handle timer DMA
+                    if (_timers[timerIx].IrqEnabled)
+                    {
+                        _interruptInterconnect.RaiseInterrupt(timerIx switch 
+                        {
+                            0 => Interrupt.Timer0Overflow,
+                            1 => Interrupt.Timer1Overflow,
+                            2 => Interrupt.Timer2Overflow,
+                            3 => Interrupt.Timer3Overflow,
+                            _ => throw new Exception("Invalid timer ix"),
+                        });
+                    }
 
                     // TODO - Handle count-up timing
                 }
@@ -53,7 +63,11 @@ internal class TimerController
         }
     }
 
-    internal byte ReadByte(uint address) => throw new NotImplementedException("Read byte not implemented for timer registers");
+    internal byte ReadByte(uint address)
+    {
+        var halfWord = ReadHalfWord(address & 0xFFFF_FFFE);
+        return (byte)(halfWord >> (ushort)(8 * (address & 1)));
+    }
 
     internal ushort ReadHalfWord(uint address) => address switch
     {

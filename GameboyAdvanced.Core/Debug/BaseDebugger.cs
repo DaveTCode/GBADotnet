@@ -34,7 +34,7 @@ public abstract class BaseDebugger
     internal void FireEvent(DebugEvent e, Core core)
     {
         // TODO - Better way to register events
-        Console.WriteLine($"Event {e}\n{core}");
+        //Console.WriteLine($"Event {e}\n{core}");
     }
 
     internal bool CheckBreakpoints(Core core)

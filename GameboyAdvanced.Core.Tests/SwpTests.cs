@@ -31,7 +31,7 @@ public class SwpTests
         var instruction = 0b1110_0001_0000_0000_0001_0000_1001_0010; // SWP R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
         var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
-        var cpu = new Core(bus, false, _testDebugger);
+        var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
         cpu.R[2] = 0xFEED_BEEFu; // This value should be overwritten
@@ -69,7 +69,7 @@ public class SwpTests
         var instruction = 0b1110_0001_0100_0000_0001_0000_1001_0010; // SWPB R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
         var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
-        var cpu = new Core(bus, false, _testDebugger);
+        var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
         cpu.R[2] = 0xFEED_BEEFu; // This value should be overwritten

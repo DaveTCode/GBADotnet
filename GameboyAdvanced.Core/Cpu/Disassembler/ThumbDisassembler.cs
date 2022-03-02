@@ -82,7 +82,7 @@ internal static class ThumbDisassembler
         };
     }
 
-    private static string DisassembleSwi(Core core, uint instruction)
+    internal static string DisassembleSwi(Core core, uint instruction)
     {
         var biosFunctionIx = instruction & 0xFF;
         var biosFunctionName = biosFunctionIx switch

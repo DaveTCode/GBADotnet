@@ -46,26 +46,101 @@ internal class InterruptRegisters
 
         internal void Set(ushort val)
         {
-            _lcdVBlank = (val & 0b1) == 0b1;
-            _lcdHBlank = (val & 0b10) == 0b10;
-            _lcdVCounterMatch = (val & 0b100) == 0b100;
-            _timer0Overflow = (val & 0b1000) == 0b1000;
-            _timer1Overflow = (val & 0b1_0000) == 0b1_0000;
-            _timer2Overflow = (val & 0b10_0000) == 0b10_0000;
-            _timer3Overflow = (val & 0b100_0000) == 0b100_0000;
-            _serialComms = (val & 0b1000_0000) == 0b1000_0000;
-            _dma0 = (val & 0b1_0000_0000) == 0b1_0000_0000;
-            _dma1 = (val & 0b10_0000_0000) == 0b10_0000_0000;
-            _dma2 = (val & 0b100_0000_0000) == 0b100_0000_0000;
-            _dma3 = (val & 0b1000_0000_0000) == 0b1000_0000_0000;
-            _keypad = (val & 0b1_0000_0000_0000) == 0b1_0000_0000_0000;
-            _gamepak = (val & 0b10_0000_0000_0000) == 0b10_0000_0000_0000;
+            _lcdVBlank = ((val & (1u << 0)) == 1u << 0);
+            _lcdHBlank = ((val & (1u << 1)) == 1u << 1);
+            _lcdVCounterMatch = ((val & (1u << 2)) == 1u << 2);
+            _timer0Overflow = ((val & (1u << 3)) == 1u << 3);
+            _timer1Overflow = ((val & (1u << 4)) == 1u << 4);
+            _timer2Overflow = ((val & (1u << 5)) == 1u << 5);
+            _timer3Overflow = ((val & (1u << 6)) == 1u << 6);
+            _serialComms = ((val & (1u << 7)) == 1u << 7);
+            _dma0 = ((val & (1u << 8)) == 1u << 8);
+            _dma1 = ((val & (1u << 9)) == 1u << 9);
+            _dma2 = ((val & (1u << 10)) == 1u << 10);
+            _dma3 = ((val & (1u << 11)) == 1u << 11);
+            _keypad = ((val & (1u << 12)) == 1u << 12);
+            _gamepak = ((val & (1u << 13)) == 1u << 13);
+
+            if (_serialComms)
+            {
+                var a= 1;
+            }
+        }
+
+        internal void Set(Interrupt interrupt)
+        {
+            switch (interrupt)
+            {
+                case Interrupt.LCDVBlank:
+                    _lcdVBlank = true;
+                    break;
+                case Interrupt.LCDHBlank:
+                    _lcdHBlank = true;
+                    break;
+                case Interrupt.LCDVCounter:
+                    _lcdVCounterMatch = true;
+                    break;
+                case Interrupt.Timer0Overflow:
+                    _timer0Overflow = true;
+                    break;
+                case Interrupt.Timer1Overflow:
+                    _timer1Overflow = true;
+                    break;
+                case Interrupt.Timer2Overflow:
+                    _timer2Overflow = true;
+                    break;
+                case Interrupt.Timer3Overflow:
+                    _timer3Overflow = true;
+                    break;
+                case Interrupt.SerialCommunication:
+                    _serialComms = true;
+                    break;
+                case Interrupt.DMA0:
+                    _dma0 = true;
+                    break;
+                case Interrupt.DMA1:
+                    _dma1 = true;
+                    break;
+                case Interrupt.DMA2:
+                    _dma2 = true;
+                    break;
+                case Interrupt.DMA3:
+                    _dma3 = true;
+                    break;
+                case Interrupt.Keypad:
+                    _keypad = true;
+                    break;
+                case Interrupt.GamePak:
+                    _gamepak = true;
+                    break;
+            }
         }
     }
 
     private bool _interruptMasterEnable;
     private InterruptRegister _interruptEnable;
     private InterruptRegister _interruptRequest;
+    internal bool CpuShouldIrq;
+
+    internal void Reset()
+    {
+        CpuShouldIrq = false;
+        _interruptMasterEnable = false;
+        _interruptEnable.Set((ushort)0);
+        _interruptRequest.Set(0xFFFF);
+    }
+
+    internal void RaiseInterrupt(Interrupt interrupt)
+    {
+        var newVal = (ushort)(_interruptRequest.Get() | (ushort)interrupt);
+        _interruptRequest.Set(newVal);
+        UpdateCpuShouldIrq();
+    }
+
+    private void UpdateCpuShouldIrq()
+    {
+        CpuShouldIrq = _interruptMasterEnable && (_interruptEnable.Get() & _interruptRequest.Get()) != 0;
+    }
 
     internal byte ReadByte(uint _) => throw new NotImplementedException("Byte reads from interrupt registers not implemented");
 
@@ -74,11 +149,12 @@ internal class InterruptRegisters
         IE => _interruptEnable.Get(),
         IF => _interruptRequest.Get(),
         IME => (ushort)(_interruptMasterEnable ? 1 : 0u),
+        0x400020A => 0, // TODO - mgba suite reads from this as part of word read but it's unused
         _ => throw new NotImplementedException($"Invalid address {address:X8} for interrupt registers")
     };
 
     internal uint ReadWord(uint address) =>
-        (uint)(ReadHalfWord(address) | (ReadHalfWord(address + 2) << 8));
+        (uint)(ReadHalfWord(address) | (ReadHalfWord(address + 2) << 16));
 
     internal void WriteByte(uint address, byte val)
     {
@@ -95,8 +171,8 @@ internal class InterruptRegisters
                 _interruptEnable.Set(val);
                 break;
             case IF:
-                // Clearing bits in IF is handled by writing a 1 to the bit rather than a 0 (hence the ~)
-                _interruptRequest.Set((ushort)~val);
+                var newVal = (ushort)(_interruptRequest.Get() & ~val);
+                _interruptRequest.Set(newVal);
                 break;
             case IME:
                 _interruptMasterEnable = (val & 0b1) == 0b1;
@@ -104,11 +180,13 @@ internal class InterruptRegisters
             default:
                 throw new NotImplementedException($"Address {address:X8} not implemented in IO registers");
         }
+
+        UpdateCpuShouldIrq();
     }
 
     internal void WriteWord(uint address, uint val)
     {
         WriteHalfWord(address, (ushort)val);
-        WriteHalfWord(address, (ushort)(val >> 8));
+        WriteHalfWord(address, (ushort)(val >> 16));
     }
 }

@@ -1,5 +1,6 @@
 ﻿using GameboyAdvanced.Core.Bus;
 using GameboyAdvanced.Core.Debug;
+using GameboyAdvanced.Core.Interrupts;
 
 namespace GameboyAdvanced.Core.Dma;
 
@@ -8,6 +9,8 @@ internal class DmaController
     private readonly MemoryBus _bus;
     private readonly BaseDebugger _debugger;
     private readonly DmaDataUnit _dmaDataUnit;
+    private readonly InterruptInterconnect _interruptInterconnect;
+    private readonly Ppu.Ppu _ppu;
 
     /// <summary>
     /// Like the CPU, when DMA accesses memory addresses it can stretch out N/S
@@ -17,11 +20,13 @@ internal class DmaController
     /// </summary>
     private int _waitStates = 0;
 
-    internal DmaController(MemoryBus bus, BaseDebugger debugger, DmaDataUnit dmaDataUnit)
+    internal DmaController(MemoryBus bus, BaseDebugger debugger, DmaDataUnit dmaDataUnit, InterruptInterconnect interruptInterconnect, Ppu.Ppu ppu)
     {
         _bus = bus ?? throw new ArgumentNullException(nameof(bus));
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
         _dmaDataUnit = dmaDataUnit ?? throw new ArgumentNullException(nameof(dmaDataUnit));
+        _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
+        _ppu = ppu ?? throw new ArgumentNullException(nameof(ppu));
     }
 
     internal void Reset()
@@ -55,6 +60,27 @@ internal class DmaController
         {
             if (_dmaDataUnit.Channels[ii].ControlReg.DmaEnable)
             {
+                switch (_dmaDataUnit.Channels[ii].ControlReg.StartTiming)
+                {
+                    case StartTiming.Immediate:
+                        break;
+                    case StartTiming.VBlank:
+                        if (!_ppu.CanVBlankDma())
+                        {
+                            continue;
+                        }
+                        break;
+                    case StartTiming.HBlank:
+                        if (!_ppu.CanHBlankDma())
+                        {
+                            continue;
+                        }
+                        break;
+                    case StartTiming.Special:
+                        throw new NotImplementedException("Special DMA not implemented");
+                    default:
+                        throw new Exception($"Invalid DMA start timing {_dmaDataUnit.Channels[ii].ControlReg.StartTiming}");
+                }
                 if (_dmaDataUnit.Channels[ii].ControlReg.StartTiming != StartTiming.Immediate)
                 {
                     continue; // TODO - Implement non-immediate mode DMA
@@ -82,11 +108,19 @@ internal class DmaController
 
                     if (_dmaDataUnit.Channels[ii].IntWordCount == 0)
                     {
+                        Console.WriteLine($"DMA{ii} ({_dmaDataUnit.Channels[ii].ControlReg.Is32Bit}) {_dmaDataUnit.Channels[ii].SourceAddress:X8} -> {_dmaDataUnit.Channels[ii].DestinationAddress:X8} - {_dmaDataUnit.Channels[ii].WordCount:X8} complete");
                         _dmaDataUnit.Channels[ii].ControlReg.DmaEnable = false;
 
                         if (_dmaDataUnit.Channels[ii].ControlReg.IrqOnEnd)
                         {
-                            throw new NotImplementedException("No IRQ on DMA implemented yet");
+                            _interruptInterconnect.RaiseInterrupt(ii switch
+                            {
+                                0 => Interrupt.DMA0,
+                                1 => Interrupt.DMA1,
+                                2 => Interrupt.DMA2,
+                                3 => Interrupt.DMA3,
+                                _ => throw new Exception($"Invalid state, no DMA channel with index {ii}")
+                            });
                         }
                     }
                 }

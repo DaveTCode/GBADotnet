@@ -69,8 +69,8 @@ public unsafe class Device
         _dmaData = new DmaDataUnit();
         _serialController = new SerialController(debugger, _interruptInterconnect);
         Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dmaData, _timerController, _interruptRegisters, _serialController, debugger);
-        _dmaCtrl = new DmaController(Bus, debugger, _dmaData);
-        _cpu = new Core(Bus, skipBios, debugger);
+        _dmaCtrl = new DmaController(Bus, debugger, _dmaData, _interruptInterconnect, _ppu);
+        _cpu = new Core(Bus, skipBios, debugger, _interruptRegisters);
         Debugger = debugger;
     }
 

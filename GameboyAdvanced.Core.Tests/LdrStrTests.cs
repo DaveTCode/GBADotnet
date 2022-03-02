@@ -34,7 +34,7 @@ public class LdrStrTests
         if (byteWidth) instruction |= 0b0000_0100_0000_0000;
         Utils.WriteHalfWord(_bios, 0xFFFF, 0x0, (ushort)instruction);
         var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
-        var cpu = new Core(bus, false, _testDebugger);
+        var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         cpu.R[1] = 0x0000_0004u; // Set up offset (so actual write will be to 0x0300_0001)

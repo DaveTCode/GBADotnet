@@ -39,9 +39,7 @@ internal class InterruptInterconnect
         _registers = registers ?? throw new ArgumentNullException(nameof(registers));
     }
 
-    internal void RaiseInterrupt(Interrupt interrupt)
-    {
-        var newIFVal = _registers.ReadWord(IF) | (ushort)interrupt;
-        _registers.WriteWord(IF, newIFVal);
-    }
+    internal void RaiseInterrupt(Interrupt interrupt) => _registers.RaiseInterrupt(interrupt);
+
+    internal bool CpuShouldIrq() => _registers.CpuShouldIrq;
 }

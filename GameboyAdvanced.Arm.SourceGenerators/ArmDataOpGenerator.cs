@@ -126,7 +126,6 @@ internal static unsafe partial class Arm
                         (_, true) => "var secondOperand = ROR(imm, (byte)rot, ref core.Cpsr);"
                     };
 
-                    // TODO - Is this actually just MOVS not all S ops with rd=15?
                     var setCpsr = s
                         ? @"var newMode = core.Cpsr.Set(core.CurrentSpsr().Get());
         if (core.CurrentSpsr().ThumbMode)

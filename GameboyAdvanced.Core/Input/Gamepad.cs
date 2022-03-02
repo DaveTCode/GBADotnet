@@ -122,6 +122,11 @@ internal class Gamepad
     internal void PressKey(Key key)
     {
         _keyPressed[key] = true;
+
+        if (_irqEnabled && _keyIrq[key])
+        {
+            _interruptInterconnect.RaiseInterrupt(Interrupt.Keypad);
+        }
     }
 
     internal void ReleaseKey(Key key)

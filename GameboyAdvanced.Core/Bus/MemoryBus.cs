@@ -228,6 +228,8 @@ internal class MemoryBus
                         return 0;
                     case POSTFLG:
                         return 0; // TODO - Handle writing to POSTFLG during BIOS
+                    case HALTCNT:
+                        return 0; // TODO - Ignoring writes to HALTCNT as it's only so far used in mgba suite
                     case UNDOCUMENTED_410: // "The BIOS writes the 8bit value 0FFh to this address. Purpose Unknown." - No$ GbaTek
                         return 0;
                     case uint _ when (address & 0xFF00FFFF) == INTMEMCTRL:
@@ -379,6 +381,7 @@ internal class MemoryBus
                         _intMemoryControl.Set(value);
                         return 0;
                     default:
+                        return 0;
                         throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped");
                 };
             case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:

@@ -2,6 +2,7 @@
 using GameboyAdvanced.Core.Cpu;
 using GameboyAdvanced.Core.Cpu.Disassembler;
 using GameboyAdvanced.Core.Debug;
+using GameboyAdvanced.Core.Interrupts;
 using System.Runtime.CompilerServices;
 
 namespace GameboyAdvanced.Core;
@@ -63,6 +64,7 @@ internal struct Pipeline
 public unsafe class Core
 {
     internal readonly BaseDebugger Debugger;
+    private readonly InterruptRegisters _interruptRegisters;
     internal ulong Cycles;
     internal readonly MemoryBus Bus;
     internal CPSR Cpsr;
@@ -161,10 +163,11 @@ public unsafe class Core
     /// </summary>
     internal bool IsFirstInstructionCycle { private set; get; }
 
-    internal Core(MemoryBus bus, bool skipBios, BaseDebugger debugger)
+    internal Core(MemoryBus bus, bool skipBios, BaseDebugger debugger, InterruptRegisters interruptRegisters)
     {
         Bus = bus;
         Debugger = debugger;
+        _interruptRegisters = interruptRegisters;
         Reset(skipBios);
     }
 
@@ -281,6 +284,13 @@ public unsafe class Core
         if (!core.Pipeline.CurrentInstruction.HasValue || !core.Pipeline.CurrentInstructionAddress.HasValue)
         {
             // Nothing in the execute unit of the pipeline, skip this cycle
+            return;
+        }
+
+        if (core._interruptRegisters.CpuShouldIrq && !core.Cpsr.IrqDisable)
+        {
+            var retAddress = core.Pipeline.CurrentInstructionAddress.Value + 4;
+            core.HandleInterrupt(0x0000_0018, retAddress, CPSRMode.Irq);
             return;
         }
 
