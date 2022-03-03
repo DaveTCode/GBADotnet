@@ -239,11 +239,11 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            waitStates = Bus.WriteHalfWord(A & 0xFFFF_FFFE, (ushort)D, SEQ);
+                            waitStates = Bus.WriteHalfWord(A, (ushort)D, SEQ);
                         }
                         else
                         {
-                            (D, waitStates) = Bus.ReadHalfWord(A & 0xFFFF_FFFE, SEQ);
+                            (D, waitStates) = Bus.ReadHalfWord(A, SEQ);
                         }
 
                         break;
@@ -251,11 +251,11 @@ public unsafe class Core
                 case BusWidth.Word:
                     if (nRW)
                     {
-                        waitStates = Bus.WriteWord(A & 0xFFFF_FFFC, D, SEQ);
+                        waitStates = Bus.WriteWord(A, D, SEQ);
                     }
                     else
                     {
-                        (D, waitStates) = Bus.ReadWord(A & 0xFFFF_FFFC, SEQ);
+                        (D, waitStates) = Bus.ReadWord(A, SEQ);
                     }
                     break;
                 default:

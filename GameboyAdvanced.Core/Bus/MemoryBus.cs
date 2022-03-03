@@ -91,9 +91,9 @@ internal class MemoryBus
                 _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
             },
             uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF => (_ppu.ReadByte(address), 0),
-            uint _ when address is >= 0x0800_0000 and <= 0x09FF_FFFF => (_gamePak.ReadByte(address), _waitControl.WaitState0[seq]),
-            uint _ when address is >= 0x0A00_0000 and <= 0x0BFF_FFFF => (_gamePak.ReadByte(address), _waitControl.WaitState1[seq]),
-            uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF => (_gamePak.ReadByte(address), _waitControl.WaitState2[seq]),
+            uint _ when address is >= 0x0800_0000 and <= 0x09FF_FFFF => (_gamePak.ReadByte(address & 0x1FF_FFFF), _waitControl.WaitState0[seq]),
+            uint _ when address is >= 0x0A00_0000 and <= 0x0BFF_FFFF => (_gamePak.ReadByte(address & 0x1FF_FFFF), _waitControl.WaitState1[seq]),
+            uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF => (_gamePak.ReadByte(address & 0x1FF_FFFF), _waitControl.WaitState2[seq]),
             uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF => (_gamePak.ReadSRam(address), _waitControl.SRAMWaitControl),
             _ => ((byte)0, 0), // TODO - Hacking for mgba test suite throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not memory mapped")
         };
@@ -104,35 +104,37 @@ internal class MemoryBus
         return (val, waitStates);
     }
 
-    internal (ushort, int) ReadHalfWord(uint address, int seq)
+    internal (ushort, int) ReadHalfWord(uint unalignedAddress, int seq)
     {
-        var (val, waitStates) = address switch
+        var alignedAddress = unalignedAddress & 0xFFFF_FFFE;
+
+        var (val, waitStates) = alignedAddress switch
         {
-            uint a when a <= 0x0000_3FFF => (Utils.ReadHalfWord(_bios, address, 0x3FFF), 0), // TODO - Can only read from bios when IP is located in BIOS region
-            uint a when a is >= 0x0200_0000 and <= 0x02FF_FFFF => (Utils.ReadHalfWord(_onBoardWRam, address, 0x3_FFFF), _intMemoryControl.WaitControlWRAM),
-            uint a when a is >= 0x0300_0000 and <= 0x03FF_FFFF => (Utils.ReadHalfWord(_onChipWRam, address, 0x7FFF), 0),
-            uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => address switch
+            uint a when a <= 0x0000_3FFF => (Utils.ReadHalfWord(_bios, alignedAddress, 0x3FFF), 0), // TODO - Can only read from bios when IP is located in BIOS region
+            uint a when a is >= 0x0200_0000 and <= 0x02FF_FFFF => (Utils.ReadHalfWord(_onBoardWRam, alignedAddress, 0x3_FFFF), _intMemoryControl.WaitControlWRAM),
+            uint a when a is >= 0x0300_0000 and <= 0x03FF_FFFF => (Utils.ReadHalfWord(_onChipWRam, alignedAddress, 0x7FFF), 0),
+            uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => alignedAddress switch
             {
-                uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => (_ppu.ReadRegisterHalfWord(address), 0),
-                uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => ((ushort)0, 0), // TODO - Sound registers,
-                uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => (_dma.ReadHalfWord(address), 0),
-                uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => (_timerController.ReadHalfWord(address), 0),
-                uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => (_serialController.ReadHalfWord(address), 0),
-                uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => (_gamepad.ReadHalfWord(address), 0),
-                uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => (_serialController.ReadHalfWord(address), 0),
-                IE => (_interruptRegisters.ReadHalfWord(address), 0),
-                IF => (_interruptRegisters.ReadHalfWord(address), 0),
+                uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_0056 => (_ppu.ReadRegisterHalfWord(alignedAddress), 0),
+                uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8 => ((ushort)0, 0), // TODO - Sound registers,
+                uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE => (_dma.ReadHalfWord(alignedAddress), 0),
+                uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0110 => (_timerController.ReadHalfWord(alignedAddress), 0),
+                uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C => (_serialController.ReadHalfWord(alignedAddress), 0),
+                uint _ when alignedAddress is >= 0x0400_0130 and <= 0x0400_0132 => (_gamepad.ReadHalfWord(alignedAddress), 0),
+                uint _ when alignedAddress is >= 0x0400_0134 and <= 0x0400_015A => (_serialController.ReadHalfWord(alignedAddress), 0),
+                IE => (_interruptRegisters.ReadHalfWord(alignedAddress), 0),
+                IF => (_interruptRegisters.ReadHalfWord(alignedAddress), 0),
                 WAITCNT => (_waitControl.Get(), 0),
-                IME => (_interruptRegisters.ReadHalfWord(address), 0),
+                IME => (_interruptRegisters.ReadHalfWord(alignedAddress), 0),
                 POSTFLG => ((ushort)1, 0), // TODO - Implement read/write of this during bios
-                uint _ when (address & 0xFF00FFFF) == INTMEMCTRL => ((ushort)_intMemoryControl.Get(), 0), // TODO - Do we just cast to ushort here?
-                _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
+                uint _ when (alignedAddress & 0xFF00FFFF) == INTMEMCTRL => ((ushort)_intMemoryControl.Get(), 0), // TODO - Do we just cast to ushort here?
+                _ => throw new ArgumentOutOfRangeException(nameof(alignedAddress), $"IO registers at {alignedAddress:X8} not mapped"),
             },
-            uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => (_ppu.ReadHalfWord(address), 0),
-            uint _ when address is >= 0x0800_0000 and <= 0x09FF_FFFF => (_gamePak.ReadHalfWord(address), _waitControl.WaitState0[seq]),
-            uint _ when address is >= 0x0A00_0000 and <= 0x0BFF_FFFF => (_gamePak.ReadHalfWord(address), _waitControl.WaitState1[seq]),
-            uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF => (_gamePak.ReadHalfWord(address), _waitControl.WaitState2[seq]),
-            uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF => ((ushort)(_gamePak.ReadSRam(address) * 0x0101), _waitControl.SRAMWaitControl),
+            uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => (_ppu.ReadHalfWord(alignedAddress), 0),
+            uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF => (_gamePak.ReadHalfWord(alignedAddress & 0x1FF_FFFF), _waitControl.WaitState0[seq]),
+            uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF => (_gamePak.ReadHalfWord(alignedAddress & 0x1FF_FFFF), _waitControl.WaitState1[seq]),
+            uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF => (_gamePak.ReadHalfWord(alignedAddress & 0x1FF_FFFF), _waitControl.WaitState2[seq]),
+            uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF => ((ushort)(_gamePak.ReadSRam(unalignedAddress) * 0x0101), _waitControl.SRAMWaitControl),
             _ => ((ushort)0, 0), // TODO - Hacking for mgba test suite throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not memory mapped")
         };
 
@@ -142,34 +144,36 @@ internal class MemoryBus
         return (val, waitStates);
     }
 
-    internal (uint, int) ReadWord(uint address, int seq)
+    internal (uint, int) ReadWord(uint unalignedAddress, int seq)
     {
-        var (val, waitStates) = address switch
+        var alignedAddress = unalignedAddress & 0xFFFF_FFFC;
+
+        var (val, waitStates) = alignedAddress switch
         {
-            uint a when a <= 0x0000_3FFF => (Utils.ReadWord(_bios, address, 0x3FFF), 0), // TODO - Can only read from bios when IP is located in BIOS region
-            uint a when a is >= 0x0200_0000 and <= 0x02FF_FFFF => (Utils.ReadWord(_onBoardWRam, address, 0x3_FFFF), _intMemoryControl.WaitControlWRAM * 2),
-            uint a when a is >= 0x0300_0000 and <= 0x03FF_FFFF => (Utils.ReadWord(_onChipWRam, address, 0x7FFF), 0),
-            uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => address switch
+            uint a when a <= 0x0000_3FFF => (Utils.ReadWord(_bios, alignedAddress, 0x3FFF), 0), // TODO - Can only read from bios when IP is located in BIOS region
+            uint a when a is >= 0x0200_0000 and <= 0x02FF_FFFF => (Utils.ReadWord(_onBoardWRam, alignedAddress, 0x3_FFFF), _intMemoryControl.WaitControlWRAM * 2),
+            uint a when a is >= 0x0300_0000 and <= 0x03FF_FFFF => (Utils.ReadWord(_onChipWRam, alignedAddress, 0x7FFF), 0),
+            uint a when a is >= 0x0400_0000 and <= 0x0400_03FE => alignedAddress switch
             {
-                uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => ((uint)(_ppu.ReadRegisterHalfWord(address) | (_ppu.ReadRegisterHalfWord(address + 2) << 16)), 0),
-                uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => throw new NotImplementedException("Sound registers not yet implemented"),
-                uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => (_dma.ReadWord(address), 0),
-                uint _ when address is >= 0x0400_0100 and <= 0x0400_0110 => (_timerController.ReadWord(address), 0),
-                uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => (_serialController.ReadWord(address), 0),
-                uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => ((uint)(_gamepad.ReadHalfWord(address) | (_gamepad.ReadHalfWord(address + 2) << 16)), 0),
-                uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => (_serialController.ReadWord(address), 0),
-                IE => (_interruptRegisters.ReadWord(address), 0),
+                uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_0056 => ((uint)(_ppu.ReadRegisterHalfWord(alignedAddress) | (_ppu.ReadRegisterHalfWord(alignedAddress + 2) << 16)), 0),
+                uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8 => throw new NotImplementedException("Sound registers not yet implemented"),
+                uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE => (_dma.ReadWord(alignedAddress), 0),
+                uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0110 => (_timerController.ReadWord(alignedAddress), 0),
+                uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C => (_serialController.ReadWord(alignedAddress), 0),
+                uint _ when alignedAddress is >= 0x0400_0130 and <= 0x0400_0132 => ((uint)(_gamepad.ReadHalfWord(alignedAddress) | (_gamepad.ReadHalfWord(alignedAddress + 2) << 16)), 0),
+                uint _ when alignedAddress is >= 0x0400_0134 and <= 0x0400_015A => (_serialController.ReadWord(alignedAddress), 0),
+                IE => (_interruptRegisters.ReadWord(alignedAddress), 0),
                 WAITCNT => (_waitControl.Get(), 0),
-                IME => (_interruptRegisters.ReadWord(address), 0),
+                IME => (_interruptRegisters.ReadWord(alignedAddress), 0),
                 POSTFLG => (1, 0), // TODO - Implement read/write of this during bios
-                uint _ when (address & 0xFF00FFFF) == INTMEMCTRL => (_intMemoryControl.Get(), 0),
-                _ => throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at {address:X8} not mapped"),
+                uint _ when (alignedAddress & 0xFF00FFFF) == INTMEMCTRL => (_intMemoryControl.Get(), 0),
+                _ => throw new ArgumentOutOfRangeException(nameof(alignedAddress), $"IO registers at {alignedAddress:X8} not mapped"),
             },
-            uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => ((uint)(_ppu.ReadHalfWord(address) | (_ppu.ReadHalfWord(address + 2) << 16)), 1),
-            uint _ when address is >= 0x0800_0000 and <= 0x09FF_FFFF => (_gamePak.ReadWord(address), _waitControl.WaitState0[seq] + _waitControl.WaitState0[1]),
-            uint _ when address is >= 0x0A00_0000 and <= 0x0BFF_FFFF => (_gamePak.ReadWord(address), _waitControl.WaitState1[seq] + _waitControl.WaitState1[1]),
-            uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF => (_gamePak.ReadWord(address), _waitControl.WaitState2[seq] + _waitControl.WaitState2[1]),
-            uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF => (_gamePak.ReadSRam(address) * 0x01010101u, _waitControl.SRAMWaitControl),
+            uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF => ((uint)(_ppu.ReadHalfWord(alignedAddress) | (_ppu.ReadHalfWord(alignedAddress + 2) << 16)), 1),
+            uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF => (_gamePak.ReadWord(alignedAddress & 0x1FF_FFFF), _waitControl.WaitState0[seq] + _waitControl.WaitState0[1]),
+            uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF => (_gamePak.ReadWord(alignedAddress & 0x1FF_FFFF), _waitControl.WaitState1[seq] + _waitControl.WaitState1[1]),
+            uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF => (_gamePak.ReadWord(alignedAddress & 0x1FF_FFFF), _waitControl.WaitState2[seq] + _waitControl.WaitState2[1]),
+            uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF => (_gamePak.ReadSRam(unalignedAddress) * 0x01010101u, _waitControl.SRAMWaitControl),
             _ => (0u, 0), // TODO - Hacking for mgba test suite throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not memory mapped")
         };
 
@@ -251,46 +255,47 @@ internal class MemoryBus
         }
     }
 
-    internal int WriteHalfWord(uint address, ushort value, int seq)
+    internal int WriteHalfWord(uint unalignedAddress, ushort value, int seq)
     {
+        var alignedAddress = unalignedAddress & 0xFFFF_FFFE;
 #if DEBUG
         _debugger.Log("W {0:X8}={1:X8}", address, value);
 #endif
-        switch (address)
+        switch (alignedAddress)
         {
-            case uint _ when address <= 0x0000_3FFF:
+            case uint _ when alignedAddress <= 0x0000_3FFF:
                 return 0;
-            case uint _ when address is >= 0x0200_0000 and <= 0x02FF_FFFF:
-                Utils.WriteHalfWord(_onBoardWRam, 0x3_FFFF, address, value);
+            case uint _ when alignedAddress is >= 0x0200_0000 and <= 0x02FF_FFFF:
+                Utils.WriteHalfWord(_onBoardWRam, 0x3_FFFF, alignedAddress, value);
                 return _intMemoryControl.WaitControlWRAM;
-            case uint _ when address is >= 0x0300_0000 and <= 0x03FF_FFFF:
-                Utils.WriteHalfWord(_onChipWRam, 0x7FFF, address, value);
+            case uint _ when alignedAddress is >= 0x0300_0000 and <= 0x03FF_FFFF:
+                Utils.WriteHalfWord(_onChipWRam, 0x7FFF, alignedAddress, value);
                 return 0;
-            case uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE:
-                switch (address)
+            case uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_03FE:
+                switch (alignedAddress)
                 {
-                    case uint _ when address is >= 0x0400_0000 and <= 0x0400_0056:
-                        _ppu.WriteRegisterHalfWord(address, value);
+                    case uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_0056:
+                        _ppu.WriteRegisterHalfWord(alignedAddress, value);
                         return 0;
-                    case uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8:
+                    case uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8:
                         // TODO - No APU or sound registers yet
                         return 0;
-                    case uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE:
-                        _dma.WriteHalfWord(address, value);
+                    case uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE:
+                        _dma.WriteHalfWord(alignedAddress, value);
                         return 0;
-                    case uint _ when address is >= 0x0400_0100 and <= 0x0400_0110:
-                        _timerController.WriteHalfWord(address, value);
+                    case uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0110:
+                        _timerController.WriteHalfWord(alignedAddress, value);
                         return 0;
                     case 0x0400_0114: // BIOS bug writes to this
                         return 0;
-                    case uint _ when address is >= 0x0400_0120 and <= 0x0400_012C:
-                        _serialController.WriteHalfWord(address, value);
+                    case uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C:
+                        _serialController.WriteHalfWord(alignedAddress, value);
                         return 0;
-                    case uint _ when address is >= 0x0400_0130 and <= 0x0400_0132:
-                        _gamepad.WriteHalfWord(address, value);
+                    case uint _ when alignedAddress is >= 0x0400_0130 and <= 0x0400_0132:
+                        _gamepad.WriteHalfWord(alignedAddress, value);
                         return 0;
-                    case uint _ when address is >= 0x0400_0134 and <= 0x0400_015A:
-                        _serialController.WriteHalfWord(address, value);
+                    case uint _ when alignedAddress is >= 0x0400_0134 and <= 0x0400_015A:
+                        _serialController.WriteHalfWord(alignedAddress, value);
                         return 0;
                     case POSTFLG:
                         return 0; // TODO - Handle writing to POSTFLG during BIOS
@@ -300,23 +305,21 @@ internal class MemoryBus
                     case IME:
                     case IE:
                     case IF:
-                        _interruptRegisters.WriteHalfWord(address, value);
+                        _interruptRegisters.WriteHalfWord(alignedAddress, value);
                         return 0;
-                    case uint _ when (address & 0xFF00FFFF) == INTMEMCTRL:
+                    case uint _ when (alignedAddress & 0xFF00FFFF) == INTMEMCTRL:
                         throw new NotImplementedException("Can't set int memory control as ushort or wait control for WRAM will get locked up at 15");
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped");
+                        throw new ArgumentOutOfRangeException(nameof(alignedAddress), $"IO registers at address {alignedAddress:X8} not mapped");
                 };
-            case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
-                _ppu.WriteHalfWord(address, value);
+            case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF:
+                _ppu.WriteHalfWord(alignedAddress, value);
                 return 0;
-            case uint _ when address is >= 0x0800_0000 and <= 0x0DFF_FFFF:
+            case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x0DFF_FFFF:
                 return 0; // TODO - Is it right that no wait states occur on attempted writes to Gamepak?
-            case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
-                // SRAM bus is 8 bit, we take the rotated value of the HW to store (same as LDRH
-                var rotate = 8 * (int)(address % 2);
-                var rotatedVal = (value >> rotate) | (value << (32 - rotate));
-                _gamePak.WriteSRam(address, (byte)rotatedVal);
+            case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
+                var shift = (ushort)(unalignedAddress & 1) << 3;
+                _gamePak.WriteSRam(unalignedAddress, (byte)(value >> shift));
                 return _waitControl.SRAMWaitControl;
             default:
                 return 0; // TODO - Just hacking this in for now because mgba test suite writes to 0x04FFF780 during startup
@@ -324,47 +327,48 @@ internal class MemoryBus
         }
     }
 
-    internal int WriteWord(uint address, uint value, int seq)
+    internal int WriteWord(uint unalignedAddress, uint value, int seq)
     {
+        var alignedAddress = unalignedAddress & 0xFFFF_FFFC;
 #if DEBUG
         _debugger.Log("W {0:X8}={1:X8}", address, value);
 #endif
 
-        switch (address)
+        switch (alignedAddress)
         {
-            case uint _ when address <= 0x0000_3FFF:
+            case uint _ when alignedAddress <= 0x0000_3FFF:
                 return 0;
-            case uint _ when address is >= 0x0200_0000 and <= 0x02FF_FFFF:
-                Utils.WriteWord(_onBoardWRam, 0x3_FFFF, address, value);
+            case uint _ when alignedAddress is >= 0x0200_0000 and <= 0x02FF_FFFF:
+                Utils.WriteWord(_onBoardWRam, 0x3_FFFF, alignedAddress, value);
                 return _intMemoryControl.WaitControlWRAM * 2;
-            case uint _ when address is >= 0x0300_0000 and <= 0x03FF_FFFF:
-                Utils.WriteWord(_onChipWRam, 0x7FFF, address, value);
+            case uint _ when alignedAddress is >= 0x0300_0000 and <= 0x03FF_FFFF:
+                Utils.WriteWord(_onChipWRam, 0x7FFF, alignedAddress, value);
                 return 0;
-            case uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE:
-                switch (address)
+            case uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_03FE:
+                switch (alignedAddress)
                 {
-                    case uint _ when address is >= 0x0400_0000 and <= 0x0400_0056:
-                        _ppu.WriteRegisterHalfWord(address, (ushort)value);
-                        _ppu.WriteRegisterHalfWord(address + 2, (ushort)(value >> 16));
+                    case uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_0056:
+                        _ppu.WriteRegisterHalfWord(alignedAddress, (ushort)value);
+                        _ppu.WriteRegisterHalfWord(alignedAddress + 2, (ushort)(value >> 16));
                         return 0;
-                    case uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8:
+                    case uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8:
                         // TODO - No APU or sound registers yet
                         return 0;
-                    case uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE:
-                        _dma.WriteWord(address, value);
+                    case uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE:
+                        _dma.WriteWord(alignedAddress, value);
                         return 0;
-                    case uint _ when address is >= 0x0400_0100 and <= 0x0400_0110:
-                        _timerController.WriteWord(address, value);
+                    case uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0110:
+                        _timerController.WriteWord(alignedAddress, value);
                         return 0;
-                    case uint _ when address is >= 0x0400_0120 and <= 0x0400_012C:
-                        _serialController.WriteWord(address, value);
+                    case uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C:
+                        _serialController.WriteWord(alignedAddress, value);
                         return 0;
-                    case uint _ when address is >= 0x0400_0130 and <= 0x0400_0132:
-                        _gamepad.WriteHalfWord(address, (ushort)value);
-                        _gamepad.WriteHalfWord(address + 2, (ushort)(value >> 16));
+                    case uint _ when alignedAddress is >= 0x0400_0130 and <= 0x0400_0132:
+                        _gamepad.WriteHalfWord(alignedAddress, (ushort)value);
+                        _gamepad.WriteHalfWord(alignedAddress + 2, (ushort)(value >> 16));
                         return 0;
-                    case uint _ when address is >= 0x0400_0134 and <= 0x0400_015A:
-                        _serialController.WriteWord(address, value);
+                    case uint _ when alignedAddress is >= 0x0400_0134 and <= 0x0400_015A:
+                        _serialController.WriteWord(alignedAddress, value);
                         return 0;
                     case POSTFLG:
                         return 0; // TODO - Handle writing to POSTFLG during BIOS
@@ -375,30 +379,28 @@ internal class MemoryBus
                     case IME:
                     case IE:
                     case IF:
-                        _interruptRegisters.WriteWord(address, value);
+                        _interruptRegisters.WriteWord(alignedAddress, value);
                         return 0;
-                    case uint _ when (address & 0xFF00FFFF) == INTMEMCTRL:
+                    case uint _ when (alignedAddress & 0xFF00FFFF) == INTMEMCTRL:
                         _intMemoryControl.Set(value);
                         return 0;
                     default:
                         return 0;
-                        throw new ArgumentOutOfRangeException(nameof(address), $"IO registers at address {address:X8} not mapped");
+                        throw new ArgumentOutOfRangeException(nameof(alignedAddress), $"IO registers at address {alignedAddress:X8} not mapped");
                 };
-            case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
-                _ppu.WriteHalfWord(address, (ushort)value);
-                _ppu.WriteHalfWord(address + 2, (ushort)(value >> 16));
+            case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF:
+                _ppu.WriteHalfWord(alignedAddress, (ushort)value);
+                _ppu.WriteHalfWord(alignedAddress + 2, (ushort)(value >> 16));
                 return 1;
-            case uint _ when address is >= 0x0800_0000 and <= 0x0DFF_FFFF:
+            case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x0DFF_FFFF:
                 return 0; // TODO - Is it right that no wait states occur on attempted writes to Gamepak?
-            case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
-                // SRAM bus is 8 bit, we take the rotated value of the W to store (same as LDR)
-                var rotate = 8 * (int)(address % 4);
-                var rotatedVal = (value >> rotate) | (value << (32 - rotate));
-                _gamePak.WriteSRam(address, (byte)rotatedVal);
+            case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
+                var shift = (int)(unalignedAddress & 0b11) << 3;
+                _gamePak.WriteSRam(unalignedAddress, (byte)(value >> shift));
                 return _waitControl.SRAMWaitControl;
             default:
                 return 0; // TODO - Just hacking this in for now because mgba test suite writes to 0x04FFF780 during startup
-                // throw new ArgumentOutOfRangeException(nameof(address));
+                // throw new ArgumentOutOfRangeException(nameof(unalignedAddress));
         }
     }
 }
