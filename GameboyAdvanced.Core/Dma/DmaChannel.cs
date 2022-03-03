@@ -43,8 +43,8 @@ internal struct DmaChannel
             ClocksToStart = 2; // 2 clock cycles after setting before DMA starts
 
             // Both source and destination addresses are forcibly aligned to halfword/word boundaries
-            IntSourceAddress = SourceAddress & (ControlReg.Is32Bit ? 0xFFFF_FFFF : 0xFFFF_FFFF);
-            IntDestinationAddress = DestinationAddress & (ControlReg.Is32Bit ? 0xFFFF_FFFF : 0xFFFF_FFFF);
+            IntSourceAddress = SourceAddress & (ControlReg.Is32Bit ? 0xFFFF_FFFC : 0xFFFF_FFFE);
+            IntDestinationAddress = DestinationAddress & (ControlReg.Is32Bit ? 0xFFFF_FFFC : 0xFFFF_FFFE);
             IntCachedValue = null;
             IntWordCount = (WordCount == 0) ? MaxWordCounts[Id] : WordCount; // 0 is a special case that means copy MAX bytes
             IntDestAddressIncrement = (ControlReg.Is32Bit, ControlReg.DestAddressCtrl) switch

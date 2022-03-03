@@ -5,7 +5,7 @@ namespace GameboyAdvanced.Core.Rom;
 public class GamePak
 {
     private readonly byte[] _header = new byte[0xC0];
-    private readonly byte[] _data = new byte[0x200_0000];
+    private readonly byte[] _data;
     private readonly byte[] _sram = new byte[0x1_0000];
 
     public readonly uint RomEntryPoint;
@@ -28,7 +28,7 @@ public class GamePak
         if (bin == null) throw new ArgumentNullException(nameof(bin));
         if (bin.LongLength < 0xC0) throw new ArgumentException("Rom must be >= 0xC0 in size to fit cartridge header", nameof(bin));
         Array.Copy(bin, 0, _header, 0, _header.Length);
-        Array.Copy(bin, 0, _data, 0, Math.Min(bin.Length, _data.Length));
+        _data = (byte[])bin.Clone();
 
         RomEntryPoint = Utils.ReadWord(_header, 0, 0xFFFF_FFFF);
         Array.Copy(_header, 4, LogoCompressed, 0, LogoCompressed.Length);
@@ -49,17 +49,19 @@ public class GamePak
     /// </summary>
     internal byte ReadSRam(uint address)
     {
-        return _sram[address & 0xFFFF];
+        return _sram[address & 0x0EFF_FFFF & 0x7FFF];
     }
 
     internal void WriteSRam(uint address, byte value)
     {
-        _sram[address & 0xFFFF] = value;
+        _sram[address & 0x0EFF_FFFF & 0x7FFF] = value;
     }
 
-    internal byte ReadByte(uint address) => _data[address & 0x1FF_FFFF];
+    internal byte ReadByte(uint address) => address < _data.Length ? _data[address] : (byte)(address >> 1 >> (int)((address & 1) * 8));
 
-    internal ushort ReadHalfWord(uint address) => Utils.ReadHalfWord(_data, address, 0x1FF_FFFF);
+    internal ushort ReadHalfWord(uint address) => address < _data.Length ? Utils.ReadHalfWord(_data, address, 0x1FF_FFFF) : (ushort)(address >> 1);
 
-    internal uint ReadWord(uint address) => Utils.ReadWord(_data, address, 0x1FF_FFFF);
+    internal uint ReadWord(uint address) => address < _data.Length 
+        ? Utils.ReadWord(_data, address, 0x1FF_FFFF) 
+        : (((address & 0xFFFF_FFFC) >> 1) & 0xFFFF) | (((((address & 0xFFFF_FFFC) + 2) >> 1) & 0xFFFF) << 16);
 }

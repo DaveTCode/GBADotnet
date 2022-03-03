@@ -20,6 +20,8 @@ internal class DmaController
     /// </summary>
     private int _waitStates = 0;
 
+    private uint _internalDmaLatch;
+
     internal DmaController(MemoryBus bus, BaseDebugger debugger, DmaDataUnit dmaDataUnit, InterruptInterconnect interruptInterconnect, Ppu.Ppu ppu)
     {
         _bus = bus ?? throw new ArgumentNullException(nameof(bus));
@@ -81,10 +83,6 @@ internal class DmaController
                     default:
                         throw new Exception($"Invalid DMA start timing {_dmaDataUnit.Channels[ii].ControlReg.StartTiming}");
                 }
-                if (_dmaDataUnit.Channels[ii].ControlReg.StartTiming != StartTiming.Immediate)
-                {
-                    continue; // TODO - Implement non-immediate mode DMA
-                }
 
                 // DMA takes 2 I cycles to start
                 // TODO - Lots about this I'm not sure about, No$ docs say 4I cycles if both src/dest in gamepak but I bet that's not at the start
@@ -126,9 +124,25 @@ internal class DmaController
                 }
                 else
                 {
-                    (_dmaDataUnit.Channels[ii].IntCachedValue, var waitStates) = (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
-                        ? _bus.ReadWord(_dmaDataUnit.Channels[ii].IntSourceAddress, 1)
-                        : _bus.ReadHalfWord(_dmaDataUnit.Channels[ii].IntSourceAddress, 1);
+                    // After masking the internal source address if it falls
+                    // inside the BIOS region then we don't read anything and
+                    // instead rely on the dmas internal latch register
+                    var waitStates = 0;
+                    if (_dmaDataUnit.Channels[ii].IntSourceAddress >= 0x0200_0000)
+                    {
+                        if (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
+                        {
+                            // TODO - Handle non-seq access for first read/write
+                            (_internalDmaLatch, waitStates) = _bus.ReadWord(_dmaDataUnit.Channels[ii].IntSourceAddress, 1);
+                        }
+                        else
+                        {
+                            // TODO - Handle non-seq access for first read/write
+                            (_internalDmaLatch, waitStates) = _bus.ReadHalfWord(_dmaDataUnit.Channels[ii].IntSourceAddress, 1);
+                        }
+                    }
+                    
+                    _dmaDataUnit.Channels[ii].IntCachedValue = _internalDmaLatch;
                     _waitStates += waitStates;
                     _dmaDataUnit.Channels[ii].IntSourceAddress = (uint)(_dmaDataUnit.Channels[ii].IntSourceAddress + _dmaDataUnit.Channels[ii].IntSrcAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
                 }

@@ -88,10 +88,10 @@ internal class DmaDataUnit
         switch (address)
         {
             case DMA0SAD:
-                Channels[0].SourceAddress = value & 0x0FFF_FFFF; // TODO - when is this mask 0x07FF_FFFF instead of 0x0FFF_FFFF?
+                Channels[0].SourceAddress = value & 0x07FF_FFFF;
                 break;
             case DMA0DAD:
-                Channels[0].DestinationAddress = value & 0x0FFF_FFFF; // TODO - when is this mask 0x07FF_FFFF instead of 0x0FFF_FFFF?
+                Channels[0].DestinationAddress = value & 0x07FF_FFFF;
                 break;
             case DMA0CNT_L:
                 Channels[0].WordCount = (ushort)(value & 0x3FFF);
@@ -101,7 +101,7 @@ internal class DmaDataUnit
                 Channels[1].SourceAddress = value & 0x0FFF_FFFF;
                 break;
             case DMA1DAD:
-                Channels[1].DestinationAddress = value & 0x0FFF_FFFF; // TODO - when is this mask 0x07FF_FFFF instead of 0x0FFF_FFFF?
+                Channels[1].DestinationAddress = value & 0x07FF_FFFF;
                 break;
             case DMA1CNT_L:
                 Channels[1].WordCount = (ushort)(value & 0x3FFF);
@@ -111,7 +111,7 @@ internal class DmaDataUnit
                 Channels[2].SourceAddress = value & 0x0FFF_FFFF;
                 break;
             case DMA2DAD:
-                Channels[2].DestinationAddress = value & 0x0FFF_FFFF; // TODO - when is this mask 0x07FF_FFFF instead of 0x0FFF_FFFF?
+                Channels[2].DestinationAddress = value & 0x07FF_FFFF;
                 break;
             case DMA2CNT_L:
                 Channels[2].WordCount = (ushort)(value & 0x3FFF);
@@ -121,7 +121,7 @@ internal class DmaDataUnit
                 Channels[3].SourceAddress = value & 0x0FFF_FFFF;
                 break;
             case DMA3DAD:
-                Channels[3].DestinationAddress = value & 0x0FFF_FFFF; // TODO - when is this mask 0x07FF_FFFF instead of 0x0FFF_FFFF?
+                Channels[3].DestinationAddress = value & 0x0FFF_FFFF;
                 break;
             case DMA3CNT_L:
                 Channels[3].WordCount = (ushort)value;
