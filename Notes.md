@@ -99,3 +99,21 @@ message which you can't click through to because VS has decided it doesn't want 
 ## Surprising things
 
 ### Writes to odd registers during BIOS
+
+## mgba test notes
+
+Memory tests are now up to 1508/1552 with various things like unbanked rom area properly filled in. Remaining failures on memory tests are:
+1. OAM R/W 8 bits
+2. DMA0 load from SRAM mirror
+3. BIOS load & BIOS out of bounds load (non-dma which is fine and non-swi which is fine) - this is because I'm not implementing the bios read lock based on where PC is
+4. Out of bounds load in non-DMA/non-SWI mode
+
+Multiply long tests are failing on one flag, probs overflow which the manual says is unstable
+
+DMA tests are 1128/1256
+
+Timer IRQ tests are 1/90
+
+Timer Count up tests won't work because it's not implemented
+
+Timing Tests are 442/2020 but not sure whether to trust since timer irq tests are failing across the board so maybe my timers are screwed
