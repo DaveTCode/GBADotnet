@@ -389,7 +389,7 @@ internal class Ppu
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
         >= 0x0500_0000 and <= 0x05FF_FFFF => _paletteRam[address & 0x3FF],
         >= 0x0600_0000 and <= 0x06FF_FFFF => _vram[MaskVRamAddress(address)],
-        >= 0x0700_0000 and <= 0x07FF_FFFF => _oam[address & 0x3F],
+        >= 0x0700_0000 and <= 0x07FF_FFFF => _oam[address & 0x3FF],
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
 
@@ -397,7 +397,7 @@ internal class Ppu
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
         >= 0x0500_0000 and <= 0x05FF_FFFF => Utils.ReadHalfWord(_paletteRam, address, 0x3FF),
-        >= 0x0600_0000 and <= 0x06FF_FFFF => Utils.ReadHalfWord(_vram, MaskVRamAddress(address), 0x1_FFFF),
+        >= 0x0600_0000 and <= 0x06FF_FFFF => Utils.ReadHalfWord(_vram, MaskVRamAddress(address), 0xF_FFFF),
         >= 0x0700_0000 and <= 0x07FF_FFFF => Utils.ReadHalfWord(_oam, address, 0x3FF),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
@@ -409,9 +409,41 @@ internal class Ppu
     /// </summary>
     internal void WriteByte(uint address, byte value)
     {
-        var hwAddress = address & 0xFFFF_FFFE;
-        var hwValue = (ushort)((value << 8) | value);
-        WriteHalfWord(hwAddress, hwValue);
+        switch (address)
+        {
+            case uint _ when address is >= 0x0500_0000 and <= 0x05FF_FFFF:
+                {
+                    var hwAddress = address & 0xFFFF_FFFE;
+                    var hwValue = (ushort)((value << 8) | value);
+                    Utils.WriteHalfWord(_paletteRam, 0x3FF, hwAddress, hwValue);
+                    break;
+                }
+            case uint _ when address is >= 0x0600_0000 and <= 0x06FF_FFFF:
+                {
+                    var hwAddress = address & 0xFFFF_FFFE;
+                    var maskedAddress = MaskVRamAddress(hwAddress);
+                    // 8 bit writes to OBJ are ignored
+                    if ((int)_dispcnt.BgMode >= 3 && maskedAddress >= 0x0001_4000)
+                    {
+                        break;
+                    }
+                    else if (maskedAddress >= 0x0001_0000)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        var hwValue = (ushort)((value << 8) | value);
+                        Utils.WriteHalfWord(_vram, 0xF_FFFF, maskedAddress, hwValue);
+                        break;
+                    }
+                }
+            case uint _ when address is >= 0x0700_0000 and <= 0x07FF_FFFF:
+                // 8 bit writes to OAM are ignored
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused");
+        }
     }
 
     internal void WriteHalfWord(uint address, ushort value)
