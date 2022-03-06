@@ -68,7 +68,7 @@ public unsafe class Core
     internal ulong Cycles;
     internal readonly MemoryBus Bus;
     internal CPSR Cpsr;
-    internal readonly CPSR[] Spsr = new CPSR[5];
+    internal readonly CPSR[] Spsr = new CPSR[6];
 
     // Current registers (irrespective of mode)
     internal readonly uint[] R = new uint[16];
@@ -219,19 +219,17 @@ public unsafe class Core
     {
         if (!nMREQ)
         {
-            int waitStates;
             switch (MAS)
             {
                 case BusWidth.Byte:
                     {
                         if (nRW)
                         {
-                            waitStates = Bus.WriteByte(A, (byte)D, SEQ);
+                            WaitStates += Bus.WriteByte(A, (byte)D, SEQ);
                         }
                         else
                         {
-                            (var ret, waitStates) = Bus.ReadByte(A, SEQ);
-                            D = (D & 0xFFFF_FF00) | ret;
+                            D = Bus.ReadByte(A, SEQ, R[15], D, ref WaitStates);
                         }
                         break;
                     }
@@ -239,11 +237,11 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            waitStates = Bus.WriteHalfWord(A, (ushort)D, SEQ);
+                            WaitStates += Bus.WriteHalfWord(A, (ushort)D, SEQ);
                         }
                         else
                         {
-                            (D, waitStates) = Bus.ReadHalfWord(A, SEQ);
+                            D = Bus.ReadHalfWord(A, SEQ, R[15], D, ref WaitStates);
                         }
 
                         break;
@@ -251,18 +249,16 @@ public unsafe class Core
                 case BusWidth.Word:
                     if (nRW)
                     {
-                        waitStates = Bus.WriteWord(A, D, SEQ);
+                        WaitStates += Bus.WriteWord(A, D, SEQ);
                     }
                     else
                     {
-                        (D, waitStates) = Bus.ReadWord(A, SEQ);
+                        D = Bus.ReadWord(A, SEQ, R[15], D, ref WaitStates);
                     }
                     break;
                 default:
                     throw new Exception($"Invalid value for MAS {MAS}");
             }
-
-            WaitStates += waitStates;
         }
     }
 
@@ -295,7 +291,7 @@ public unsafe class Core
         }
 
 #if DEBUG
-        core.Debugger.Log("{}", core);
+        core.Debugger.Log("{0}", core);
 #endif
         var instruction = core.Pipeline.CurrentInstruction.Value;
 
