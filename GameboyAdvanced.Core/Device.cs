@@ -68,7 +68,7 @@ public unsafe class Device
         _ppu = new Ppu.Ppu(debugger, _interruptInterconnect);
         _dmaData = new DmaDataUnit();
         _serialController = new SerialController(debugger, _interruptInterconnect);
-        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dmaData, _timerController, _interruptRegisters, _serialController, debugger);
+        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dmaData, _timerController, _interruptRegisters, _serialController, debugger, skipBios);
         _dmaCtrl = new DmaController(Bus, debugger, _dmaData, _interruptInterconnect, _ppu);
         _cpu = new Core(Bus, skipBios, debugger, _interruptRegisters);
         Debugger = debugger;
@@ -94,7 +94,7 @@ public unsafe class Device
     public void Reset(bool skipBios)
     {
         _cpu.Reset(skipBios);
-        Bus.Reset();
+        Bus.Reset(skipBios);
         _ppu.Reset();
         _dmaCtrl.Reset();
         _dmaData.Reset();
@@ -116,11 +116,23 @@ public unsafe class Device
 
     public void ReleaseKey(Key key) => _gamepad.ReleaseKey(key);
 
-    public uint InspectWord(uint address) => Bus.ReadWord(address, 1).Item1;
+    public uint InspectWord(uint address)
+    {
+        var waitStates = 0;
+        return Bus.ReadWord(address, 1, 0, 0, ref waitStates);
+    }
 
-    public ushort InspectHalfWord(uint address) => Bus.ReadHalfWord(address, 1).Item1;
+    public ushort InspectHalfWord(uint address)
+    {
+        var waitStates = 0;
+        return Bus.ReadHalfWord(address, 1, 0, 0, ref waitStates);
+    }
 
-    public byte InspectByte(uint address) => Bus.ReadByte(address, 1).Item1;
+    public byte InspectByte(uint address)
+    {
+        var waitStates = 0;
+        return Bus.ReadByte(address, 1, 0, 0, ref waitStates);
+    }
 
     public string LoadedRomName() => _gamepak.GameTitle;
 

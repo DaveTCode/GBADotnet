@@ -33,7 +33,7 @@ public class LdrStrTests
         var instruction = 0b0101_1000_0100_0010; // LDR R2, [R0, R1]
         if (byteWidth) instruction |= 0b0000_0100_0000_0000;
         Utils.WriteHalfWord(_bios, 0xFFFF, 0x0, (ushort)instruction);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to

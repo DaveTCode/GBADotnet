@@ -31,7 +31,7 @@ public class StoreLoadMultipleTests
         var instruction = 0b1100_0000_1111_1110; // STMIA R0!, [r1-r7]
         _bios[0] = (byte)(instruction & 0xFF);
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
@@ -59,9 +59,10 @@ public class StoreLoadMultipleTests
         Assert.Equal(0, cpu.SEQ);
         Assert.Equal(0x0300_101Cu, cpu.R[0]);
 
+        var waitStates = 0;
         for (var r = 1u; r < 8; r++)
         {
-            Assert.Equal((r, 0), cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0));
+            Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, ref waitStates));
         }
         Assert.Equal(2u + 2 + 6, cpu.Cycles); // 2 for pipeline + 2N + (1-n)S cycles
     }
@@ -76,7 +77,7 @@ public class StoreLoadMultipleTests
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
         _bios[2] = (byte)((instruction >> 16) & 0xFF);
         _bios[3] = (byte)((instruction >> 24) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         for (var r = 1u; r < 8; r++)
@@ -103,9 +104,10 @@ public class StoreLoadMultipleTests
         Assert.Equal(0, cpu.SEQ);
         Assert.Equal(0x0300_101Cu, cpu.R[0]);
 
+        var waitStates = 0;
         for (var r = 1u; r < 8; r++)
         {
-            Assert.Equal((r, 0), cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0));
+            Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, ref waitStates));
         }
         Assert.Equal(2u + 2 + 6, cpu.Cycles); // 2 for pipeline + 2N + (1-n)S cycles
     }
@@ -116,7 +118,7 @@ public class StoreLoadMultipleTests
         var instruction = 0b1100_1000_1111_1110; // LDMIA R0!, [r1-r7]
         _bios[0] = (byte)(instruction & 0xFF);
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
