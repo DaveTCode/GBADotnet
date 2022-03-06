@@ -2,7 +2,7 @@
 
 internal struct DmaChannel
 {
-    private readonly static int[] MaxWordCounts = new int[] { 0x4000, 0x4000, 0x4000, 0x10000 };
+    internal readonly static int[] MaxWordCounts = new int[] { 0x4000, 0x4000, 0x4000, 0x10000 };
 
     internal int Id;
     internal uint SourceAddress;
@@ -15,6 +15,8 @@ internal struct DmaChannel
     internal int IntWordCount;
     internal int IntDestAddressIncrement;
     internal int IntSrcAddressIncrement;
+    internal uint InternalLatch;
+    internal int SequentialAccess;
 
     internal DmaControlRegister ControlReg;
 
@@ -30,8 +32,10 @@ internal struct DmaChannel
         IntWordCount = 0;
         IntDestAddressIncrement = 0;
         IntSrcAddressIncrement = 0;
-        ControlReg = new DmaControlRegister();
+        ControlReg = new DmaControlRegister(id);
         ClocksToStart = 0;
+        InternalLatch = 0;
+        SequentialAccess = 0;
     }
 
     internal void UpdateControlRegister(ushort value)
@@ -41,6 +45,7 @@ internal struct DmaChannel
         if (enableBitFlip)
         {
             ClocksToStart = 2; // 2 clock cycles after setting before DMA starts
+            SequentialAccess = 0; // 1st read/write pair are non-sequential
 
             // Both source and destination addresses are forcibly aligned to halfword/word boundaries
             IntSourceAddress = SourceAddress & (ControlReg.Is32Bit ? 0xFFFF_FFFC : 0xFFFF_FFFE);
@@ -65,6 +70,7 @@ internal struct DmaChannel
                 (true, SrcAddressCtrl.Decrement) => -4,
                 (false, SrcAddressCtrl.Increment) => 2,
                 (false, SrcAddressCtrl.Decrement) => -2,
+                (_, SrcAddressCtrl.Prohibited) => 0,
                 _ => throw new Exception("Invalid source address control")
             };
         }

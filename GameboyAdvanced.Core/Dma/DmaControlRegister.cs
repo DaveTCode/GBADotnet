@@ -26,6 +26,7 @@ internal enum StartTiming
 
 internal struct DmaControlRegister
 {
+    private readonly int _dmaChannelId;
     internal DestAddressCtrl DestAddressCtrl;
     internal SrcAddressCtrl SrcAddressCtrl;
     internal bool Repeat;
@@ -35,13 +36,26 @@ internal struct DmaControlRegister
     internal bool IrqOnEnd;
     internal bool DmaEnable;
 
+    internal DmaControlRegister(int id)
+    {
+        _dmaChannelId = id;
+        DestAddressCtrl = DestAddressCtrl.Increment;
+        SrcAddressCtrl = SrcAddressCtrl.Increment;
+        Repeat = false;
+        Is32Bit = false;
+        GamePakDRQ = false;
+        StartTiming = StartTiming.Immediate;
+        IrqOnEnd = false;
+        DmaEnable = false;
+    }
+
     internal bool Update(uint val)
     {
         DestAddressCtrl = (DestAddressCtrl)((val >> 5) & 0b11);
         SrcAddressCtrl = (SrcAddressCtrl)((val >> 7) & 0b11);
         Repeat = ((val >> 9) & 0b1) == 0b1;
         Is32Bit = ((val >> 10) & 0b1) == 0b1;
-        GamePakDRQ = ((val >> 11) & 0b1) == 0b1;
+        GamePakDRQ = (_dmaChannelId == 3) && ((val >> 11) & 0b1) == 0b1;
         StartTiming = (StartTiming)((val >> 12) & 0b11);
         IrqOnEnd = ((val >> 14) & 0b1) == 0b1;
 

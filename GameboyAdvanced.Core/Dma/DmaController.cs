@@ -20,8 +20,6 @@ internal class DmaController
     /// </summary>
     private int _waitStates = 0;
 
-    private uint _internalDmaLatch;
-
     internal DmaController(MemoryBus bus, BaseDebugger debugger, DmaDataUnit dmaDataUnit, InterruptInterconnect interruptInterconnect, Ppu.Ppu ppu)
     {
         _bus = bus ?? throw new ArgumentNullException(nameof(bus));
@@ -79,7 +77,7 @@ internal class DmaController
                         }
                         break;
                     case StartTiming.Special:
-                        throw new NotImplementedException("Special DMA not implemented");
+                        continue; // TODO - Implement special DMA
                     default:
                         throw new Exception($"Invalid DMA start timing {_dmaDataUnit.Channels[ii].ControlReg.StartTiming}");
                 }
@@ -94,12 +92,11 @@ internal class DmaController
                 }
 
                 // DMA takes 2S cycles per read (apart from the first which is a pair of N cycles)
-                // TODO - Pretending that all are S cycles at the moment
                 if (_dmaDataUnit.Channels[ii].IntCachedValue.HasValue)
                 {
                     _waitStates += (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
-                        ? _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value, 1)
-                        : _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value, 1);
+                        ? _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].SequentialAccess)
+                        : _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].SequentialAccess);
                     _dmaDataUnit.Channels[ii].IntDestinationAddress = (uint)(_dmaDataUnit.Channels[ii].IntDestinationAddress + _dmaDataUnit.Channels[ii].IntDestAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
                     _dmaDataUnit.Channels[ii].IntWordCount--;
                     _dmaDataUnit.Channels[ii].IntCachedValue = null;
@@ -107,7 +104,24 @@ internal class DmaController
                     if (_dmaDataUnit.Channels[ii].IntWordCount == 0)
                     {
                         Console.WriteLine($"DMA{ii} ({_dmaDataUnit.Channels[ii].ControlReg.Is32Bit}) {_dmaDataUnit.Channels[ii].SourceAddress:X8} -> {_dmaDataUnit.Channels[ii].DestinationAddress:X8} - {_dmaDataUnit.Channels[ii].WordCount:X8} complete");
-                        _dmaDataUnit.Channels[ii].ControlReg.DmaEnable = false;
+                        _dmaDataUnit.Channels[ii].IntCachedValue = null;
+
+                        if (_dmaDataUnit.Channels[ii].ControlReg.Repeat && _dmaDataUnit.Channels[ii].ControlReg.StartTiming != StartTiming.Immediate)
+                        {
+                            Console.WriteLine($"Repeating DMA {ii}");
+                            _dmaDataUnit.Channels[ii].IntWordCount = (_dmaDataUnit.Channels[ii].WordCount == 0) 
+                                ? DmaChannel.MaxWordCounts[ii]
+                                : _dmaDataUnit.Channels[ii].WordCount;
+
+                            if (_dmaDataUnit.Channels[ii].ControlReg.DestAddressCtrl == DestAddressCtrl.IncrementReload)
+                            {
+                                _dmaDataUnit.Channels[ii].IntDestinationAddress = _dmaDataUnit.Channels[ii].DestinationAddress;
+                            }
+                        }
+                        else
+                        {
+                            _dmaDataUnit.Channels[ii].ControlReg.DmaEnable = false;
+                        }
 
                         if (_dmaDataUnit.Channels[ii].ControlReg.IrqOnEnd)
                         {
@@ -121,6 +135,8 @@ internal class DmaController
                             });
                         }
                     }
+
+                    _dmaDataUnit.Channels[ii].SequentialAccess |= 1;
                 }
                 else
                 {
@@ -132,17 +148,27 @@ internal class DmaController
                     {
                         if (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
                         {
-                            // TODO - Handle non-seq access for first read/write
-                            (_internalDmaLatch, waitStates) = _bus.ReadWord(_dmaDataUnit.Channels[ii].IntSourceAddress, 1);
+                            _dmaDataUnit.Channels[ii].InternalLatch = _bus.ReadWord(_dmaDataUnit.Channels[ii].IntSourceAddress, _dmaDataUnit.Channels[ii].SequentialAccess, 0xFFFF_FFFF, _dmaDataUnit.Channels[ii].InternalLatch, ref waitStates);
                         }
                         else
                         {
-                            // TODO - Handle non-seq access for first read/write
-                            (_internalDmaLatch, waitStates) = _bus.ReadHalfWord(_dmaDataUnit.Channels[ii].IntSourceAddress, 1);
+                            _dmaDataUnit.Channels[ii].InternalLatch = _bus.ReadHalfWord(_dmaDataUnit.Channels[ii].IntSourceAddress, _dmaDataUnit.Channels[ii].SequentialAccess, 0xFFFF_FFFF, _dmaDataUnit.Channels[ii].InternalLatch, ref waitStates);
+                            _dmaDataUnit.Channels[ii].InternalLatch |= (_dmaDataUnit.Channels[ii].InternalLatch << 16);
+                        }
+                        _dmaDataUnit.Channels[ii].IntCachedValue = _dmaDataUnit.Channels[ii].InternalLatch;
+                    }
+                    else
+                    {
+                        if ((_dmaDataUnit.Channels[ii].IntDestinationAddress & 0b10) != 0)
+                        {
+                            _dmaDataUnit.Channels[ii].IntCachedValue = _dmaDataUnit.Channels[ii].InternalLatch >> 16;
+                        }
+                        else
+                        {
+                            _dmaDataUnit.Channels[ii].IntCachedValue = _dmaDataUnit.Channels[ii].InternalLatch;
                         }
                     }
                     
-                    _dmaDataUnit.Channels[ii].IntCachedValue = _internalDmaLatch;
                     _waitStates += waitStates;
                     _dmaDataUnit.Channels[ii].IntSourceAddress = (uint)(_dmaDataUnit.Channels[ii].IntSourceAddress + _dmaDataUnit.Channels[ii].IntSrcAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
                 }

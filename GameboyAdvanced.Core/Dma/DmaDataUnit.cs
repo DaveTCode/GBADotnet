@@ -30,20 +30,20 @@ internal class DmaDataUnit
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA read byte") // TODO - Handle unused addresses properly
     };
 
-    internal ushort ReadHalfWord(uint address) => address switch
+    internal ushort ReadHalfWord(uint address, uint openbus) => address switch
     {
-        DMA0CNT_L => Channels[0].WordCount,
+        DMA0CNT_L => 0,
         DMA0CNT_H => Channels[0].ControlReg.Read(),
-        DMA1CNT_L => Channels[1].WordCount,
+        DMA1CNT_L => 0,
         DMA1CNT_H => Channels[1].ControlReg.Read(),
-        DMA2CNT_L => Channels[2].WordCount,
+        DMA2CNT_L => 0,
         DMA2CNT_H => Channels[2].ControlReg.Read(),
-        DMA3CNT_L => Channels[3].WordCount,
+        DMA3CNT_L => 0,
         DMA3CNT_H => Channels[3].ControlReg.Read(),
-        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA read") // TODO - Handle unused addresses properly
+        _ => (ushort)openbus,
     };
 
-    internal uint ReadWord(uint address) => ReadHalfWord(address);
+    internal uint ReadWord(uint address, uint openbus) => ReadHalfWord(address, openbus);
 
     internal void WriteByte(uint address, byte value)
     {
@@ -79,7 +79,7 @@ internal class DmaDataUnit
                 Channels[3].UpdateControlRegister(value);
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA half word write"); // TODO - Handle unused addresses properly
+                break;
         }
     }
 
@@ -128,7 +128,7 @@ internal class DmaDataUnit
                 Channels[3].UpdateControlRegister((ushort)(value >> 16));
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA word write"); // TODO - Handle unused addresses properly
+                break;
         }
     }
 }
