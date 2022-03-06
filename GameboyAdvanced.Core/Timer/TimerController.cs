@@ -33,31 +33,34 @@ internal class TimerController
 
     internal void Step()
     {
-        foreach (var timerIx in _runningTimerIxs)
+        for (var ix = 0; ix < _timers.Length; ix++)
         {
-            _timerSteps[timerIx]--;
-            if (_timerSteps[timerIx] == 0)
+            if (_timers[ix].Start)
             {
-                _timerSteps[timerIx] = _timers[timerIx].PrescalerSelection.Cycles();
-                _timers[timerIx].Counter++;
-
-                if (_timers[timerIx].Counter == 0)
+                _timerSteps[ix]--;
+                if (_timerSteps[ix] == 0)
                 {
-                    _timers[timerIx].Counter = _timers[timerIx].Reload;
+                    _timerSteps[ix] = _timers[ix].PrescalerSelection.Cycles();
+                    _timers[ix].Counter++;
 
-                    if (_timers[timerIx].IrqEnabled)
+                    if (_timers[ix].Counter == 0)
                     {
-                        _interruptInterconnect.RaiseInterrupt(timerIx switch 
-                        {
-                            0 => Interrupt.Timer0Overflow,
-                            1 => Interrupt.Timer1Overflow,
-                            2 => Interrupt.Timer2Overflow,
-                            3 => Interrupt.Timer3Overflow,
-                            _ => throw new Exception("Invalid timer ix"),
-                        });
-                    }
+                        _timers[ix].Counter = _timers[ix].Reload;
 
-                    // TODO - Handle count-up timing
+                        if (_timers[ix].IrqEnabled)
+                        {
+                            _interruptInterconnect.RaiseInterrupt(ix switch
+                            {
+                                0 => Interrupt.Timer0Overflow,
+                                1 => Interrupt.Timer1Overflow,
+                                2 => Interrupt.Timer2Overflow,
+                                3 => Interrupt.Timer3Overflow,
+                                _ => throw new Exception("Invalid timer ix"),
+                            });
+                        }
+
+                        // TODO - Handle count-up timing
+                    }
                 }
             }
         }
@@ -79,7 +82,7 @@ internal class TimerController
         TM2CNT_H => _timers[2].ReadControl(),
         TM3CNT_L => _timers[3].Counter,
         TM3CNT_H => _timers[3].ReadControl(),
-        _ => throw new ArgumentOutOfRangeException(nameof(address), "Address {address:X8} not mapped for timers"),
+        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not mapped for timers"),
     };
 
     internal uint ReadWord(uint address) => (uint)(ReadHalfWord(address) | (ReadHalfWord(address + 2) << 16));
@@ -119,7 +122,7 @@ internal class TimerController
                 _timerSteps[3] = _timers[3].PrescalerSelection.Cycles();
                 return;
             default:
-                throw new ArgumentOutOfRangeException(nameof(address), "Address {address:X8} not mapped for timers");
+                throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not mapped for timers");
         }
     }
 
