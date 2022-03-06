@@ -1,5 +1,6 @@
 ﻿using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Interrupts;
+using GameboyAdvanced.Core.Ppu.Registers;
 using System.Runtime.CompilerServices;
 using static GameboyAdvanced.Core.IORegs;
 
@@ -40,6 +41,8 @@ internal class Ppu
     private WindowControl _winOut = new();
     private readonly Window[] _windows = new Window[2] { new Window(0), new Window(1) };
     private Mosaic _mosaic = new();
+    private Bldcnt _bldcnt = new();
+    private BldAlpha _bldalpha = new();
 
     private int _currentLineCycles;
 
@@ -63,6 +66,8 @@ internal class Ppu
         _winIn = new WindowControl();
         _winOut = new WindowControl();
         _mosaic = new Mosaic();
+        _bldcnt.Reset();
+        _bldalpha.Reset();
         foreach (var bg in _backgrounds)
         {
             bg.Reset();
@@ -352,34 +357,35 @@ internal class Ppu
                 _mosaic.Set(value);
                 break;
             case BLDCNT:
-                throw new NotImplementedException("BLDCNT not yet implemented");
+                _bldcnt.Set(value);
+                break;
             case BLDALPHA:
-                throw new NotImplementedException("BLDALPHA not yet implemented");
+                _bldalpha.Set(value);
+                break;
             case BLDY:
-                throw new NotImplementedException("BLDY not yet implemented");
+                break; // TODO - Implement BLDY
             default:
-                return;
-                throw new NotImplementedException($"Unregistered half word write to PPU registers {address:X8}={value:X4}");
+                return; // TODO - Make sure behaviour on unknown writes is ok
         }
     }
 
-    internal byte ReadRegisterByte(uint address) => (byte)ReadRegisterHalfWord(address); // TODO - Not 100% confident about this although beeg.gba does it and the result works in that specific case (read VCOUNT with high byte being 0)
+    internal byte ReadRegisterByte(uint address, uint openbus) => (byte)ReadRegisterHalfWord(address, openbus); // TODO - Not 100% confident about this although beeg.gba does it and the result works in that specific case (read VCOUNT with high byte being 0)
 
-    internal ushort ReadRegisterHalfWord(uint address) => address switch
+    internal ushort ReadRegisterHalfWord(uint address, uint openbus) => address switch
     {
         DISPCNT => _dispcnt.Read(),
         GREENSWAP => _greenSwap,
         DISPSTAT => _dispstat.Read(),
         VCOUNT => _currentLine,
-        BG0CNT => _backgrounds[0].Control.Read(),
-        BG1CNT => _backgrounds[1].Control.Read(),
+        BG0CNT => (ushort)(_backgrounds[0].Control.Read() & 0xDFFF),
+        BG1CNT => (ushort)(_backgrounds[1].Control.Read() & 0xDFFF),
         BG2CNT => _backgrounds[2].Control.Read(),
         BG3CNT => _backgrounds[3].Control.Read(),
         WININ => _winIn.Get(),
         WINOUT => _winOut.Get(),
-        BLDCNT => throw new NotImplementedException("BLDCNT register not implemented"),
-        BLDALPHA => throw new NotImplementedException("BLDALPHA register not implemented"),
-        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Unmapped PPU register read at {address:X8}") // TODO - Handle unused addresses properly
+        BLDCNT => _bldcnt.Get(),
+        BLDALPHA => _bldalpha.Get(),
+        _ => (ushort)openbus,
     };
 
     #region Memory Read Write

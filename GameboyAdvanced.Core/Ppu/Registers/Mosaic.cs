@@ -1,4 +1,4 @@
-﻿namespace GameboyAdvanced.Core.Ppu;
+﻿namespace GameboyAdvanced.Core.Ppu.Registers;
 
 /// <summary>
 /// The mosiac register provides configuration of the mosaic function on any 
@@ -18,14 +18,14 @@ internal struct Mosaic
     internal int ObjVSize;
 
     internal ushort Get() =>
-        (ushort)(BGHSize | (BGVSize << 4) | (ObjHSize << 8) | (ObjVSize << 12));
+        (ushort)(BGHSize | BGVSize << 4 | ObjHSize << 8 | ObjVSize << 12);
 
     internal void Set(ushort value)
     {
         BGHSize = value & 0b1111;
-        BGVSize = (value >> 4) & 0b1111;
-        ObjHSize = (value >> 8) & 0b1111;
-        ObjVSize = (value >> 12) & 0b1111;
+        BGVSize = value >> 4 & 0b1111;
+        ObjHSize = value >> 8 & 0b1111;
+        ObjVSize = value >> 12 & 0b1111;
     }
 
     internal void Reset()

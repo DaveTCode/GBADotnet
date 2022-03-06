@@ -1,5 +1,4 @@
-﻿namespace GameboyAdvanced.Core.Ppu;
-
+﻿namespace GameboyAdvanced.Core.Ppu.Registers;
 
 internal enum BgMode
 {
@@ -50,17 +49,17 @@ internal struct DisplayCtrl
 
     internal ushort Read() => (ushort)
         ((ushort)BgMode |
-        (IsCGB ? (1 << 3) : 0) |
-        (Frame1Select ? (1 << 4) : 0) |
-        (AllowOamDuringHblank ? (1 << 5) : 0) |
-        (OneDimObjCharVramMapping ? (1 << 6) : 0) |
-        (ForcedBlank ? (1 << 7) : 0) |
-        (ScreenDisplayBg0 ? (1 << 8) : 0) |
-        (ScreenDisplayBg1 ? (1 << 9) : 0) |
-        (ScreenDisplayBg2 ? (1 << 10) : 0) |
-        (ScreenDisplayBg3 ? (1 << 11) : 0) |
-        (ScreenDisplayObj ? (1 << 12) : 0) |
-        (Window0Display ? (1 << 13) : 0) |
-        (Window1Display ? (1 << 14) : 0) |
-        (ObjWindowDisplay ? (1 << 15) : 0));
+        (IsCGB ? 1 << 3 : 0) |
+        (Frame1Select ? 1 << 4 : 0) |
+        (AllowOamDuringHblank ? 1 << 5 : 0) |
+        (OneDimObjCharVramMapping ? 1 << 6 : 0) |
+        (ForcedBlank ? 1 << 7 : 0) |
+        (ScreenDisplayBg0 ? 1 << 8 : 0) |
+        (ScreenDisplayBg1 ? 1 << 9 : 0) |
+        (ScreenDisplayBg2 ? 1 << 10 : 0) |
+        (ScreenDisplayBg3 ? 1 << 11 : 0) |
+        (ScreenDisplayObj ? 1 << 12 : 0) |
+        (Window0Display ? 1 << 13 : 0) |
+        (Window1Display ? 1 << 14 : 0) |
+        (ObjWindowDisplay ? 1 << 15 : 0));
 }

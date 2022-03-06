@@ -1,4 +1,6 @@
-﻿namespace GameboyAdvanced.Core.Ppu;
+﻿using GameboyAdvanced.Core.Ppu.Registers;
+
+namespace GameboyAdvanced.Core.Ppu;
 
 /// <summary>
 /// There are 4 available backgrounds in the GBA PPU (BG0-3) which behave 

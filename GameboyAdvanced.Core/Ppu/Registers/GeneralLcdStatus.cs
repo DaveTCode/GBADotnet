@@ -1,4 +1,4 @@
-﻿namespace GameboyAdvanced.Core.Ppu;
+﻿namespace GameboyAdvanced.Core.Ppu.Registers;
 
 /// <summary>
 /// The DISPSTAT register containing the current status of the video controller
@@ -23,7 +23,7 @@ internal struct GeneralLcdStatus
          (VBlankIrqEnable ? 0b1000 : 0u) |
          (HBlankIrqEnable ? 0b1_0000 : 0u) |
          (VCounterIrqEnable ? 0b10_0000 : 0u) |
-        // bits 6,7 unused
+         // bits 6,7 unused
          ((uint)VCountSetting << 8)
         );
 
