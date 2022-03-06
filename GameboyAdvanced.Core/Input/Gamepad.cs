@@ -115,8 +115,6 @@ internal class Gamepad
             _irqEnabled = (value & (1 << 14)) == (1 << 14);
             _irqConditionAnd = (value & (1 << 15)) == (1 << 15);
         }
-
-        throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped to Gamepad memory space");
     }
 
     internal void PressKey(Key key)
