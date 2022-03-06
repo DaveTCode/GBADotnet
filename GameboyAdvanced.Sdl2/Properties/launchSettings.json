@@ -4,6 +4,22 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler-gba-fixed.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Open Bus Bios Misaligned": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\openbus_bios_misaligned.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Marie - Open Bus Bios": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\biosOpenBus.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Openbuster": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\openbuster.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Return Address": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\retAddr.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Beeg": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\beeg.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -164,13 +180,13 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Doom (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Final Fantasy VI": {
+    "Final Fantasy 6": {
       "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Final Fantasy VI Advance (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Final Fantasy 6 Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Grand Theft Auto Advance (U)": {
+    "Grand Theft Auto Advance": {
       "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Grand Theft Auto Advance (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Grand Theft Auto Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Kirby - Nightmare in Dream Land (USA)": {
       "commandName": "Project",

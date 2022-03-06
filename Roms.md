@@ -2,48 +2,54 @@
 
 ## Test Roms
 
-| Group      | Test                  | Status             | Notes |
-| ---------- | --------------------- | ------------------ | ----- |
-| DenSinH    | Arm Data Processing   | :heavy_check_mark: |       |
-| DenSinH    | Arm Any               | :heavy_check_mark: |       |
-| DenSinH    | Thumb Data Processing | :heavy_check_mark: |       |
-| DenSinH    | Thumb Any             | :heavy_check_mark: |       |
-| Dead_Body  | cpu_test              | :heavy_check_mark: | Passes after ensuring that the rotates on the data bus are handled for misaligned reads |
-| Wrestler   | arm-wrestler-fixed    | :heavy_check_mark: | Mode 0 enabled this to run. Fixed all LDR/STR/LDM/STM operations now that shifter treats RRX properly and register writebacks happen on the correct cycle. FIQ banking support required for MRS/MSR tests |
-| JSMolka    | arm                   | :x:                | Fails test 530 STMDA empty rlist, STMIA empty rlist works after a quick fix so not quite sure on difference |
-| JSMolka    | thumb                 | :heavy_check_mark: | Passes everything after some shenanigans with LDM/STM special cases |
-| JSMolka    | memory                | :heavy_check_mark: | Passes all memory mirror tests after implementing mirroring of relevant regions |
-| JSMolka    | nes                   | :heavy_check_mark: | Passed first time |
-| JSMolka    | hello                 | :heavy_check_mark: |  |
-| JSMolka    | shades                | :heavy_check_mark: | Amusingly reads beyond the end of the provided ROM (w/ pipelining) so that needed fixing before it passed |
-| JSMolka    | stripes               | :heavy_check_mark: |  |
-| JSMolka    | bios                  | :x:                | Fails on test #1 because I haven't implemented blocking reads from BIOS |
-| JSMolka    | unsafe                | :x:                | As per readme for this test it doesn't pass on real hardware |
-| Panda      | panda                 | :heavy_check_mark: | |
-| PeterLemon | Hello World           | :heavy_check_mark: | Required SWI, DMA channel 3 immediate, transparent palette color 0 and multiple palettes in same BG |
-| PeterLemon | BGMode0               | :x:                | Requires "BG Tile Offset = 0, Enable Mosaic, Tiles 8BPP, BG Map Offset = 26624, Map Size = 64x64 Tiles" |
-| PeterLemon | Fast Line             | :heavy_check_mark: | Ran on first attempt |
-| PeterLemon | Fast Line Clip        | :heavy_check_mark: | Ran on first attempt |
-| PeterLemon | Cylinder Map          | :heavy_check_mark: | Ran on first attempt, not clear what it showcases |
-| PeterLemon | Myst                  | :x:                | Requires BLDCNT |
-| PeterLemon | BigBuckBunny          | :?:                | Runs but only displays video in top left quadrant, haven't checked if that's intentional |
-| PeterLemon | BIOS - ArcTac         | :x:                | Passes check but fails timer by a few cycles |
-| PeterLemon | Timers                | :heavy_check_mark: | Passes after implementing timer register byte reads |
-| mgba       | suite                 | :x:                | Required vblank interrupts to process key presses but now gets to menu and allows several tests to run. Memory tests hang but some others pass/fail |
-| TONC       | First                 | :heavy_check_mark: | First passing test case! |
-| TONC       | Second                | :heavy_check_mark: | fixed with bug fixes around SWI return/MSR/MRS |
-| TONC       | Hello                 | :heavy_check_mark: | Calls an SWI from Thumb and then ends up executing beyond where it should in bios. Haven't checked what's happening precisely. |
-| TONC       | Pageflip              | :heavy_check_mark: | Requires LYC to behave vaguely sensibly and page flipping (obviously) so those are vaguely tested |
-| TONC       | M3 Demo               | :heavy_check_mark: |  |
-| TONC       | Octtest               | :x:				  | Not really sure what this even tests but it reads 0x0400_002A which we don't map in the PPU |
-| TONC       | Key Demo              | :heavy_check_mark: | Working first time it was tested |
-| TONC       | SWI Demo              | :heavy_check_mark: | Required a really interesting interaction with PC and a load instruction which was bugged for ages |
-| TONC       | SWI VSync             | :x:			      | Uses sprites and affine transformations to get the effects, I just show a black screen as obj not implemented |
-| TONC       | IRQ Demo              | :x:                | Garbled screen, looks likely because of screen effects which aren't implemented |
-| beeg       | beeg.gba              | :x:                | Predictably fails because this rom modifies data outside of vblank and I use a vblank single time render at the moment |
+| Group      | Test                     | Status             | Notes                                                                                                                                                                                                     |
+|------------|--------------------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DenSinH    | Arm Data Processing      | :heavy_check_mark: |                                                                                                                                                                                                           |
+| DenSinH    | Arm Any                  | :heavy_check_mark: |                                                                                                                                                                                                           |
+| DenSinH    | Thumb Data Processing    | :heavy_check_mark: |                                                                                                                                                                                                           |
+| DenSinH    | Thumb Any                | :heavy_check_mark: |                                                                                                                                                                                                           |
+| Open bus   | Open Bus Bios Misaligned | :heavy_check_mark: | Implemented open bus for bios and passed this and jsmolka bios tests                                                                                                                                      |
+| Marie      | Open Bus Bios            | :x:                | Fixed top 4, wrong with THM but so is mgba so not that big a deal                                                               | 
+| Marie      | Retaddr                  | :heavy_check_mark: |  |
+| Fleroviux  | Openbuster               | :x:                | 1/144 - smashed it (mostly because I haven't written a proper open bus rotate for LDRH)                                                                                                                    | 
+| Dead_Body  | cpu_test                 | :heavy_check_mark: | Passes after ensuring that the rotates on the data bus are handled for misaligned reads                                                                                                                   |
+| Wrestler   | arm-wrestler-fixed       | :heavy_check_mark: | Mode 0 enabled this to run. Fixed all LDR/STR/LDM/STM operations now that shifter treats RRX properly and register writebacks happen on the correct cycle. FIQ banking support required for MRS/MSR tests |
+| JSMolka    | arm                      | :x:                | Fails test 530 STMDA empty rlist, STMIA empty rlist works after a quick fix so not quite sure on difference                                                                                               |
+| JSMolka    | thumb                    | :heavy_check_mark: | Passes everything after some shenanigans with LDM/STM special cases                                                                                                                                       |
+| JSMolka    | memory                   | :heavy_check_mark: | Passes all memory mirror tests after implementing mirroring of relevant regions                                                                                                                           |
+| JSMolka    | nes                      | :heavy_check_mark: | Passed first time                                                                                                                                                                                         |
+| JSMolka    | hello                    | :heavy_check_mark: |                                                                                                                                                                                                           |
+| JSMolka    | shades                   | :heavy_check_mark: | Amusingly reads beyond the end of the provided ROM (w/ pipelining) so that needed fixing before it passed                                                                                                 |
+| JSMolka    | stripes                  | :heavy_check_mark: |                                                                                                                                                                                                           |
+| JSMolka    | bios                     | :heavy_check_mark: |                                                                                                                                                                                                           |
+| JSMolka    | unsafe                   | :heavy_check_mark: | According to readme doesn't pass on real hardware so this is not a great test to be passing!                                                                                                              |
+| Panda      | panda                    | :heavy_check_mark: |                                                                                                                                                                                                           |
+| PeterLemon | Hello World              | :heavy_check_mark: | Required SWI, DMA channel 3 immediate, transparent palette color 0 and multiple palettes in same BG                                                                                                       |
+| PeterLemon | BGMode0                  | :x:                | Requires "BG Tile Offset = 0, Enable Mosaic, Tiles 8BPP, BG Map Offset = 26624, Map Size = 64x64 Tiles"                                                                                                   |
+| PeterLemon | Fast Line                | :heavy_check_mark: | Ran on first attempt                                                                                                                                                                                      |
+| PeterLemon | Fast Line Clip           | :heavy_check_mark: | Ran on first attempt                                                                                                                                                                                      |
+| PeterLemon | Cylinder Map             | :heavy_check_mark: | Ran on first attempt, not clear what it showcases                                                                                                                                                         |
+| PeterLemon | Myst                     | :heavy_check_mark: | Looks good to me although only let it play for 30s or so                                                                                                                                                  |
+| PeterLemon | BigBuckBunny             | :?:                | Runs but only displays video in top left quadrant, haven't checked if that's intentional                                                                                                                  |
+| PeterLemon | BIOS - ArcTac            | :x:                | Passes check but fails timer by a few cycles                                                                                                                                                              |
+| PeterLemon | Timers                   | :heavy_check_mark: | Passes after implementing timer register byte reads                                                                                                                                                       |
+| mgba       | suite                    | :x:                | Required vblank interrupts to process key presses but now gets to menu and allows several tests to run. Memory tests hang but some others pass/fail                                                       |
+| TONC       | First                    | :heavy_check_mark: | First passing test case!                                                                                                                                                                                  |
+| TONC       | Second                   | :heavy_check_mark: | fixed with bug fixes around SWI return/MSR/MRS                                                                                                                                                            |
+| TONC       | Hello                    | :heavy_check_mark: | Calls an SWI from Thumb and then ends up executing beyond where it should in bios. Haven't checked what's happening precisely.                                                                            |
+| TONC       | Pageflip                 | :heavy_check_mark: | Requires LYC to behave vaguely sensibly and page flipping (obviously) so those are vaguely tested                                                                                                         |
+| TONC       | M3 Demo                  | :heavy_check_mark: |                                                                                                                                                                                                           |
+| TONC       | Octtest                  | :x:                | Not really sure what this even tests but it reads 0x0400_002A which we don't map in the PPU                                                                                                               |
+| TONC       | Key Demo                 | :heavy_check_mark: | Working first time it was tested                                                                                                                                                                          |
+| TONC       | SWI Demo                 | :heavy_check_mark: | Required a really interesting interaction with PC and a load instruction which was bugged for ages                                                                                                        |
+| TONC       | SWI VSync                | :x:                | Uses sprites and affine transformations to get the effects, I just show a black screen as obj not implemented                                                                                             |
+| TONC       | IRQ Demo                 | :x:                | Garbled screen, looks likely because of screen effects which aren't implemented                                                                                                                           |
+| beeg       | beeg.gba                 | :x:                | Predictably fails because this rom modifies data outside of vblank and I use a vblank single time render at the moment                                                                                    |
+
 
 ## Real Roms
 
 | Rom   | Status | Notes |
 | ----- | ------ | ----- |
-| Doom  | :x:    | 2 frames in does something with an invalid address, not investigated why yet |
+| Doom  | :x:    | Runs! First game to get in game |
+| Final Fantasy 6 | :x: | Reads a gamepad register I haven't mapped |

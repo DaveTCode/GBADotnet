@@ -4,6 +4,18 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler-gba-fixed.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Open Bus Bios Misaligned": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\openbus_bios_misaligned.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Marie - Open Bus Bios": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\biosOpenBus.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Beeg": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\beeg.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "DenSinH - Thumb Any": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\DenSinH\\THUMB_Any.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -28,6 +40,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\mgba\\suite.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "mgba-cutdown": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\suite.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "TONC - First": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\first.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -44,13 +60,29 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m3_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - Octtest": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\octtest.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "TONC - Pageflip": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\pageflip.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - Key Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\key_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "TONC - SWI Demo": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\swi_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - SWI VSync": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\swi_vsync.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - IRQ Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\irq_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Panda": {
       "commandName": "Project",
@@ -79,6 +111,14 @@
     "Peter Lemon - Myst": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\Myst\\Myst.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - BigBuckBunny": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\Video\\BigBuckBunny\\BigBuckBunny.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - Timers": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\Timers\\Timers.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Bios - ArcTan": {
       "commandName": "Project",
@@ -132,9 +172,25 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Doom (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Final Fantasy 6": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Final Fantasy 6 Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Grand Theft Auto Advance": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Grand Theft Auto Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Kirby - Nightmare in Dream Land (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Kirby - Nightmare in Dream Land (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Kirby & The Amazing Mirror (USA)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Kirby & The Amazing Mirror (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Super Mario Advance (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Mario Advance (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     }
   }
 }

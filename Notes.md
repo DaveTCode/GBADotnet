@@ -93,27 +93,32 @@ message which you can't click through to because VS has decided it doesn't want 
 | Serial        | 5%     | Just enough register read/writes mocked out to get roms which check them to pass |
 | Timers        | 60%    | Timer are tested and working (including a dedicated test rom), count down timers are _not_ working though |
 | APU           | 0%     | No registers or anything handled here yet |
-| OpenBus       | 0%     | Noting as a separate area since there's a bunch of work to be done |
+| OpenBus       | 15%    | IO registers are now mostly behaving correctly w.r.t open bus |
 | IRQs          | 50%    | Interrupts are there from timers, ppu, dma, keypad and tested working to at least a basic extent. No serial or gamepad interrupts implemented |
 
 ## Surprising things
 
 ### Writes to odd registers during BIOS
 
+Can't remember details here just noticed some BIOs writes pre-open bus
+
 ## mgba test notes
 
-Memory tests are now up to 1508/1552 with various things like unbanked rom area properly filled in. Remaining failures on memory tests are:
-1. OAM R/W 8 bits
-2. DMA0 load from SRAM mirror
-3. BIOS load & BIOS out of bounds load (non-dma which is fine and non-swi which is fine) - this is because I'm not implementing the bios read lock based on where PC is
-4. Out of bounds load in non-DMA/non-SWI mode
-
-Multiply long tests are failing on one flag, probs overflow which the manual says is unstable
-
-DMA tests are 1128/1256
-
-Timer IRQ tests are 1/90
-
-Timer Count up tests won't work because it's not implemented
-
-Timing Tests are 442/2020 but not sure whether to trust since timer irq tests are failing across the board so maybe my timers are screwed
+- Memory tests are now up to 1524/1552 with various things like unbanked rom area properly filled in. Remaining failures on memory tests are:
+	1. DMA0 load from SRAM mirror
+	2. BIOS load & BIOS out of bounds load (non-dma which is fine and non-swi which is fine) - this is because I'm not implementing the bios read lock based on where PC is
+	3. Out of bounds load in non-DMA/non-SWI mode
+	4. VRAM Mirror Store failing on 8 bit values
+- IO register tests are up to 94/123 where the remainder are basically APU registers which I haven't implemented
+- Timer IRQ tests are 1/90
+- Timer Count up tests hang but I also haven't actually implemented them!
+- Timing Tests are 449/2020 but not sure whether to trust since timer irq tests are failing across the board so maybe my timers are screwed
+- Shifter tests all pass
+- Carry tests all pass
+- Multiply long tests are failing on carry flag checks which _also_ fail in mgba & no$ so I'm not really sure anyone knows how to accurately set the carry flag
+- BIOS math tests all pass
+- DMA tests are 1220/1256
+	- Failures are Imm W R+0x10/+IWRAM/EWRAM both only from DMA channel 0 where expected value is 0 but I'm setting something (8 failures)
+	- HB1 W -ROM/EWRAM (and IWRAM) on all channels _except_ 0 (6) failures
+- MISC Edge test cases hangs for a while then hits 0/10
+- 
