@@ -149,8 +149,7 @@ internal class InterruptRegisters
         IE => _interruptEnable.Get(),
         IF => _interruptRequest.Get(),
         IME => (ushort)(_interruptMasterEnable ? 1 : 0u),
-        0x400020A => 0, // TODO - mgba suite reads from this as part of word read but it's unused
-        _ => throw new NotImplementedException($"Invalid address {address:X8} for interrupt registers")
+        _ => 0, // TODO - Think it's this and not open bus
     };
 
     internal uint ReadWord(uint address) =>
@@ -178,7 +177,7 @@ internal class InterruptRegisters
                 _interruptMasterEnable = (val & 0b1) == 0b1;
                 break;
             default:
-                throw new NotImplementedException($"Address {address:X8} not implemented in IO registers");
+                break;
         }
 
         UpdateCpuShouldIrq();
@@ -187,6 +186,6 @@ internal class InterruptRegisters
     internal void WriteWord(uint address, uint val)
     {
         WriteHalfWord(address, (ushort)val);
-        WriteHalfWord(address, (ushort)(val >> 16));
+        WriteHalfWord(address + 2, (ushort)(val >> 16));
     }
 }
