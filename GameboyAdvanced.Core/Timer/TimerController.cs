@@ -33,35 +33,49 @@ internal class TimerController
 
     internal void Step()
     {
+        // TODO - How to avoid this for loop when no timers enabled?
         for (var ix = 0; ix < _timers.Length; ix++)
         {
             if (_timers[ix].Start)
             {
-                _timerSteps[ix]--;
-                if (_timerSteps[ix] == 0)
+                if (_timers[ix].CountUpTiming && ix > 0) // Count up timing on TIMER0 is ignored (TODO - is it? Or does it hang?)
                 {
-                    _timerSteps[ix] = _timers[ix].PrescalerSelection.Cycles();
-                    _timers[ix].Counter++;
-
-                    if (_timers[ix].Counter == 0)
+                    if (_timers[ix - 1].Start && _timers[ix - 1].Counter == _timers[ix - 1].Reload)
                     {
-                        _timers[ix].Counter = _timers[ix].Reload;
-
-                        if (_timers[ix].IrqEnabled)
-                        {
-                            _interruptInterconnect.RaiseInterrupt(ix switch
-                            {
-                                0 => Interrupt.Timer0Overflow,
-                                1 => Interrupt.Timer1Overflow,
-                                2 => Interrupt.Timer2Overflow,
-                                3 => Interrupt.Timer3Overflow,
-                                _ => throw new Exception("Invalid timer ix"),
-                            });
-                        }
-
-                        // TODO - Handle count-up timing
+                        TickTimer(ref _timers[ix], ix);
                     }
                 }
+                else
+                {
+                    _timerSteps[ix]--;
+                    if (_timerSteps[ix] == 0)
+                    {
+                        _timerSteps[ix] = _timers[ix].PrescalerSelection.Cycles();
+                        TickTimer(ref _timers[ix], ix);
+                    }
+                }
+            }
+        }
+    }
+
+    private void TickTimer(ref TimerRegister timer, int ix)
+    {
+        timer.Counter++;
+
+        if (timer.Counter == 0)
+        {
+            timer.Counter = timer.Reload;
+
+            if (timer.IrqEnabled)
+            {
+                _interruptInterconnect.RaiseInterrupt(ix switch
+                {
+                    0 => Interrupt.Timer0Overflow,
+                    1 => Interrupt.Timer1Overflow,
+                    2 => Interrupt.Timer2Overflow,
+                    3 => Interrupt.Timer3Overflow,
+                    _ => throw new Exception("Invalid timer ix"),
+                });
             }
         }
     }
