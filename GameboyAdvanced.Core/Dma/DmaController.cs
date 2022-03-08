@@ -103,12 +103,10 @@ internal class DmaController
 
                     if (_dmaDataUnit.Channels[ii].IntWordCount == 0)
                     {
-                        Console.WriteLine($"DMA{ii} ({_dmaDataUnit.Channels[ii].ControlReg.Is32Bit}) {_dmaDataUnit.Channels[ii].SourceAddress:X8} -> {_dmaDataUnit.Channels[ii].DestinationAddress:X8} - {_dmaDataUnit.Channels[ii].WordCount:X8} complete");
                         _dmaDataUnit.Channels[ii].IntCachedValue = null;
 
                         if (_dmaDataUnit.Channels[ii].ControlReg.Repeat && _dmaDataUnit.Channels[ii].ControlReg.StartTiming != StartTiming.Immediate)
                         {
-                            Console.WriteLine($"Repeating DMA {ii}");
                             _dmaDataUnit.Channels[ii].IntWordCount = (_dmaDataUnit.Channels[ii].WordCount == 0) 
                                 ? DmaChannel.MaxWordCounts[ii]
                                 : _dmaDataUnit.Channels[ii].WordCount;
