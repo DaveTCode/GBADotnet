@@ -20,14 +20,31 @@ internal struct DisplayCtrl
     internal bool AllowOamDuringHblank;
     internal bool OneDimObjCharVramMapping;
     internal bool ForcedBlank;
-    internal bool ScreenDisplayBg0;
-    internal bool ScreenDisplayBg1;
-    internal bool ScreenDisplayBg2;
-    internal bool ScreenDisplayBg3;
+    internal bool[] ScreenDisplayBg;
     internal bool ScreenDisplayObj;
     internal bool Window0Display;
     internal bool Window1Display;
     internal bool ObjWindowDisplay;
+
+    public DisplayCtrl()
+    {
+        BgMode = BgMode.Video0;
+        IsCGB = false;
+        Frame1Select = false;
+        AllowOamDuringHblank = false;
+        OneDimObjCharVramMapping = false;
+        ForcedBlank = false;
+        ScreenDisplayBg = new bool[4];
+        ScreenDisplayObj = false;
+        Window0Display = false;
+        Window1Display = false;
+        ObjWindowDisplay = false;
+    }
+
+    internal void Reset()
+    {
+        Update(0);
+    }
 
     internal void Update(ushort value)
     {
@@ -37,10 +54,10 @@ internal struct DisplayCtrl
         AllowOamDuringHblank = (value & 0b10_0000) == 0b10_0000;
         OneDimObjCharVramMapping = (value & 0b100_0000) == 0b100_0000;
         ForcedBlank = (value & 0b1000_0000) == 0b1000_0000;
-        ScreenDisplayBg0 = (value & 0b1_0000_0000) == 0b1_0000_0000;
-        ScreenDisplayBg1 = (value & 0b10_0000_0000) == 0b10_0000_0000;
-        ScreenDisplayBg2 = (value & 0b100_0000_0000) == 0b100_0000_0000;
-        ScreenDisplayBg3 = (value & 0b1000_0000_0000) == 0b1000_0000_0000;
+        ScreenDisplayBg[0] = (value & 0b1_0000_0000) == 0b1_0000_0000;
+        ScreenDisplayBg[1] = (value & 0b10_0000_0000) == 0b10_0000_0000;
+        ScreenDisplayBg[2] = (value & 0b100_0000_0000) == 0b100_0000_0000;
+        ScreenDisplayBg[3] = (value & 0b1000_0000_0000) == 0b1000_0000_0000;
         ScreenDisplayObj = (value & 0b1_0000_0000_0000) == 0b1_0000_0000_0000;
         Window0Display = (value & 0b10_0000_0000_0000) == 0b10_0000_0000_0000;
         Window1Display = (value & 0b100_0000_0000_0000) == 0b100_0000_0000_0000;
@@ -54,10 +71,10 @@ internal struct DisplayCtrl
         (AllowOamDuringHblank ? 1 << 5 : 0) |
         (OneDimObjCharVramMapping ? 1 << 6 : 0) |
         (ForcedBlank ? 1 << 7 : 0) |
-        (ScreenDisplayBg0 ? 1 << 8 : 0) |
-        (ScreenDisplayBg1 ? 1 << 9 : 0) |
-        (ScreenDisplayBg2 ? 1 << 10 : 0) |
-        (ScreenDisplayBg3 ? 1 << 11 : 0) |
+        (ScreenDisplayBg[0] ? 1 << 8 : 0) |
+        (ScreenDisplayBg[1] ? 1 << 9 : 0) |
+        (ScreenDisplayBg[2] ? 1 << 10 : 0) |
+        (ScreenDisplayBg[3] ? 1 << 11 : 0) |
         (ScreenDisplayObj ? 1 << 12 : 0) |
         (Window0Display ? 1 << 13 : 0) |
         (Window1Display ? 1 << 14 : 0) |

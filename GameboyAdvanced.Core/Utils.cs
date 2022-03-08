@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using static GameboyAdvanced.Core.Ppu.Ppu;
 
 namespace GameboyAdvanced.Core;
 
@@ -38,12 +39,20 @@ public static class Utils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ColorToRgb(int color, Span<byte> buffer)
+    internal static void ColorToRgb(PaletteEntry color, Span<byte> buffer)
     {
-        // TODO - << 3 is bit of a sketchy way to convert palettes to RGB, is there something more accurate out there?
-        buffer[0] = (byte)((color & 0b11111) << 3); // R
-        buffer[1] = (byte)(((color >> 5) & 0b11111) << 3); // G
-        buffer[2] = (byte)(((color >> 10) & 0b11111) << 3); // B
-        buffer[3] = 0;
+        buffer[0] = color.R;
+        buffer[1] = color.G;
+        buffer[2] = color.B;
+        buffer[3] = 0; // Alpha channel
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void ColorToRgb(int color, Span<byte> buffer)
+    {
+        buffer[0] = (byte)((color & 0b11111) << 3);
+        buffer[1] = (byte)(((color >> 5) & 0b11111) << 3);
+        buffer[2] = (byte)(((color >> 10) & 0b11111) << 3);
+        buffer[3] = 0; // Alpha channel
     }
 }

@@ -122,3 +122,11 @@ Can't remember details here just noticed some BIOs writes pre-open bus
 	- HB1 W -ROM/EWRAM (and IWRAM) on all channels _except_ 0 (6) failures
 - MISC Edge test cases hangs for a while then hits 0/10
 - 
+
+
+## Which games test which features?
+
+- Doom is bitmap bg mode (4?) so is good for testing non-ppu stuff
+- Kirby Nightmare in Dreamland uses horizontal flipped tiles on logo page
+- Kirby also uses all 4 backgrounds with blending on the initial screens as well as lots of kirby sprites
+- Donkey Kong uses x scrolling on a BG to scroll clouds on title screen

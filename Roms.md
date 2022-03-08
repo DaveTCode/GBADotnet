@@ -45,7 +45,7 @@
 | TONC       | SWI VSync                | :x:                | Uses sprites and affine transformations to get the effects, I just show a black screen as obj not implemented                                                                                             |
 | TONC       | IRQ Demo                 | :x:                | Garbled screen, looks likely because of screen effects which aren't implemented                                                                                                                           |
 | beeg       | beeg.gba                 | :x:                | Predictably fails because this rom modifies data outside of vblank and I use a vblank single time render at the moment                                                                                    |
-
+| AGB        | AGB_CHECKER_TCHK10       | :x:                | Hangs on a nintendo logo screen -not sure what it's supposed to do and its possible it's just showing lack of ppu |
 
 ## Real Roms
 

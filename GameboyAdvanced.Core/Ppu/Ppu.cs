@@ -10,7 +10,7 @@ namespace GameboyAdvanced.Core.Ppu;
 /// This class both encapsulates the state of the PPU and provides 
 /// functionality for rendering the current state into a bitmap
 /// </summary>
-internal class Ppu
+internal partial class Ppu
 {
     private const int CyclesPerDot = 4;
     private const int CyclesPerVisibleLine = CyclesPerDot * Device.WIDTH; // 960
@@ -26,10 +26,11 @@ internal class Ppu
     private readonly InterruptInterconnect _interruptInterconnect;
 
     // TODO - Might be more efficient to store as ushorts given access is over 16 bit bus?
-    private readonly byte[] _paletteRam = new byte[0x400]; // 1KB
     private readonly byte[] _vram = new byte[0x18000]; // 96KB
     private readonly byte[] _oam = new byte[0x400]; // 1KB
     private readonly byte[] _frameBuffer = new byte[Device.WIDTH * Device.HEIGHT * 4]; // RGBA order
+    private readonly byte[][] _scanlineBgBuffer = new byte[4][];
+    private readonly int[] _scanlinePriorities = new int[Device.WIDTH];
 
     private DisplayCtrl _dispcnt = new();
     private ushort _greenSwap;
@@ -50,6 +51,11 @@ internal class Ppu
     {
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
         _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
+
+        for (var ii = 0; ii < 4; ii++)
+        {
+            _scanlineBgBuffer[ii] = new byte[Device.WIDTH * 4];
+        }
     }
 
     internal void Reset()
@@ -58,7 +64,7 @@ internal class Ppu
         Array.Clear(_vram);
         Array.Clear(_oam);
         Array.Clear(_frameBuffer);
-        _dispcnt = new DisplayCtrl();
+        _dispcnt.Reset();
         _greenSwap = 0;
         _dispstat = new GeneralLcdStatus();
         _currentLine = 0;
@@ -68,9 +74,10 @@ internal class Ppu
         _mosaic = new Mosaic();
         _bldcnt.Reset();
         _bldalpha.Reset();
-        foreach (var bg in _backgrounds)
+        for (var ii = 0; ii < 4; ii++)
         {
-            bg.Reset();
+            _backgrounds[ii].Reset();
+            Array.Clear(_scanlineBgBuffer[ii]);
         }
         foreach (var window in _windows)
         {
@@ -84,94 +91,6 @@ internal class Ppu
     /// </summary>
     internal byte[] GetFrame()
     {
-        if (_dispcnt.BgMode == BgMode.Video0)
-        {
-            foreach (var background in _backgrounds)
-            {
-                if ((_dispcnt.ScreenDisplayBg0 && background.Index == 0) ||
-                    (_dispcnt.ScreenDisplayBg1 && background.Index == 1) ||
-                    (_dispcnt.ScreenDisplayBg2 && background.Index == 2) ||
-                    (_dispcnt.ScreenDisplayBg3 && background.Index == 3))
-                {
-                    // TODO - Mode 0 only implemented in so far as required for Deadbody cpu tests
-                    // 32*32 tiles, 4 bit color depth, no flipping
-                    var tileMapBase = background.Control.ScreenBaseBlock * 0x800;
-                    var charMapBase = background.Control.CharBaseBlock * 0x4000;
-
-                    for (var row = 0; row < 20; row++)
-                    {
-                        for (var col = 0; col < 30; col++)
-                        {
-                            var frameBufferTileAddress = (col * 8 * 4) + (row * Device.WIDTH * 4 * 8);
-                            var tileMapAddress = tileMapBase + (row * 64) + (col * 2);
-                            var tileMap = _vram[tileMapAddress] | (_vram[tileMapAddress + 1] << 8);
-                            var tile = tileMap & 0b11_1111_1111;
-                            var _horizontalFlip = ((tileMap >> 10) & 1) == 1;
-                            var _verticalFlip = ((tileMap >> 11) & 1) == 1;
-                            var paletteNumber = ((tileMap >> 12) & 0b1111) << 4;
-
-                            var tileAddress = charMapBase + (tile * 32);
-                            for (var b = 0; b < 32; b++)
-                            {
-                                var x = b % 4;
-                                var y = b / 4;
-                                var tileData = _vram[tileAddress + b];
-                                var pixel1PalIx = tileData & 0b1111;
-                                var pixel2PalIx = tileData >> 4;
-
-                                // Color 0 in each BG/OBJ palette is transparent so replace with palette 0 color 0
-                                var pixel1PalNo = (pixel1PalIx == 0) ? 0 : (paletteNumber | pixel1PalIx) * 2;
-                                var pixel2PalNo = (pixel2PalIx == 0) ? 0 : (paletteNumber | pixel2PalIx) * 2;
-
-                                // Each palette takes up 2
-                                var pixel1Color = _paletteRam[pixel1PalNo] | (_paletteRam[pixel1PalNo + 1] << 8);
-                                var pixel2Color = _paletteRam[pixel2PalNo] | (_paletteRam[pixel2PalNo + 1] << 8);
-                                var fbPtr = frameBufferTileAddress + (x * 8) + (y * Device.WIDTH * 4);
-                                Utils.ColorToRgb(pixel1Color, _frameBuffer.AsSpan(fbPtr));
-                                Utils.ColorToRgb(pixel2Color, _frameBuffer.AsSpan(fbPtr + 4));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        // TODO - BG mode 1-2
-        else if (_dispcnt.BgMode == BgMode.Video3)
-        {
-            // TODO - This just hacks up a return of the vram buffer from mode 3 -> RGB instead of processing per pixel
-            for (var row = 0; row < 160; row++)
-            {
-                for (var col = 0; col < 240; col++)
-                {
-                    var vramPtr = 2 * ((row * 240) + col);
-                    var fbPtr = 2 * vramPtr;
-                    var hw = _vram[vramPtr] | (_vram[vramPtr + 1] << 8);
-                    Utils.ColorToRgb(hw, _frameBuffer.AsSpan(fbPtr));
-                }
-            }
-        }
-        else if (_dispcnt.BgMode == BgMode.Video4)
-        {
-            var baseAddress = _dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
-
-            // TODO - This just hacks up a return of the vram buffer from mode 4 -> palette -> RGB instead of processing per pixel
-            for (var row = 0; row < 160; row++)
-            {
-                for (var col = 0; col < 240; col++)
-                {
-                    var vramPtr = ((row * 240) + col);
-                    var fbPtr = 4 * vramPtr;
-                    var paletteIndex = _vram[baseAddress + vramPtr] * 2; // 2 bytes per color in palette
-                    var color = _paletteRam[paletteIndex] | (_paletteRam[paletteIndex + 1] << 8);
-                    Utils.ColorToRgb(color, _frameBuffer.AsSpan(fbPtr));
-                }
-            }
-        }
-        else if (_dispcnt.BgMode == BgMode.Video5)
-        {
-            throw new NotImplementedException("BG Mode 5 not implemented");
-        }
-
         return _frameBuffer;
     }
 
@@ -181,15 +100,22 @@ internal class Ppu
     internal bool CanHBlankDma() => _dispstat.HBlankFlag;
 
     /// <summary>
-    /// Step the PPU by a single master clock cycle
+    /// Step the PPU by a single master clock cycle.
+    /// 
+    /// Rendering currently happens at the start of hblank on a per scanline 
+    /// basis so this function is mostly responsible for keeping track of
+    /// hblank, vcount, vblank and raising interrupts on the right cycle.
     /// </summary>
     internal void Step()
     {
-        // TODO - Implement PPU properly
         _currentLineCycles++;
 
         if (_currentLineCycles == CyclesPerVisibleLine)
         {
+            if (_currentLine < Device.HEIGHT)
+            {
+                DrawCurrentScanline();
+            }
             _dispstat.HBlankFlag = true;
             if (_dispstat.HBlankIrqEnable)
             {
@@ -393,7 +319,7 @@ internal class Ppu
     internal byte ReadByte(uint address) => address switch
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
-        >= 0x0500_0000 and <= 0x05FF_FFFF => _paletteRam[address & 0x3FF],
+        >= 0x0500_0000 and <= 0x05FF_FFFF => ReadPaletteByte(address),
         >= 0x0600_0000 and <= 0x06FF_FFFF => _vram[MaskVRamAddress(address)],
         >= 0x0700_0000 and <= 0x07FF_FFFF => _oam[address & 0x3FF],
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
@@ -402,7 +328,7 @@ internal class Ppu
     internal ushort ReadHalfWord(uint address) => address switch
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
-        >= 0x0500_0000 and <= 0x05FF_FFFF => Utils.ReadHalfWord(_paletteRam, address, 0x3FF),
+        >= 0x0500_0000 and <= 0x05FF_FFFF => ReadPaletteHalfWord(address),
         >= 0x0600_0000 and <= 0x06FF_FFFF => Utils.ReadHalfWord(_vram, MaskVRamAddress(address), 0xF_FFFF),
         >= 0x0700_0000 and <= 0x07FF_FFFF => Utils.ReadHalfWord(_oam, address, 0x3FF),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
@@ -419,9 +345,7 @@ internal class Ppu
         {
             case uint _ when address is >= 0x0500_0000 and <= 0x05FF_FFFF:
                 {
-                    var hwAddress = address & 0xFFFF_FFFE;
-                    var hwValue = (ushort)((value << 8) | value);
-                    Utils.WriteHalfWord(_paletteRam, 0x3FF, hwAddress, hwValue);
+                    WritePaletteByte(address, value);
                     break;
                 }
             case uint _ when address is >= 0x0600_0000 and <= 0x06FF_FFFF:
@@ -458,7 +382,7 @@ internal class Ppu
         switch (address)
         {
             case uint _ when address is >= 0x0500_0000 and <= 0x05FF_FFFF:
-                Utils.WriteHalfWord(_paletteRam, 0x3FF, address, value);
+                WritePaletteHalfWord(address, value);
                 break;
             case uint _ when address is >= 0x0600_0000 and <= 0x06FF_FFFF:
                 Utils.WriteHalfWord(_vram, 0x1_FFFF, MaskVRamAddress(address), value);
