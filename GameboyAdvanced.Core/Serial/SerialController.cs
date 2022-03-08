@@ -34,7 +34,8 @@ internal class SerialController
         JOY_RECV => throw new NotImplementedException("Joypad reads are probably supposed to be word reads"),
         JOY_TRANS => throw new NotImplementedException("Joypad reads are probably supposed to be word reads"),
         JOYSTAT => throw new NotImplementedException("Joypad reads are probably supposed to be word reads"),
-        _ => throw new Exception($"Serial controller doesn't map address {address:X8}"),
+        0x0400_012C => 0, // Unused address on serial controller which gets read/written by various games during startup
+        _ => throw new Exception($"Serial controller doesn't map address {address:X8} for halfword reads"), // TODO - Not 100% sure this is right
     };
 
     internal uint ReadWord(uint address) => address switch
@@ -46,77 +47,17 @@ internal class SerialController
 
     internal void WriteByte(uint address, byte value)
     {
-        switch (address)
-        {
-            case SIODATA32:
-            case SIOMULTI1:
-            case SIOMULTI2:
-            case SIOMULTI3:
-            case SIOCNT:
-            case SIODATA8:
-            case RCNT:
-            case JOYCNT:
-            case JOY_RECV:
-            case JOY_TRANS:
-            case JOYSTAT:
-                // TODO - Actually do something with these
-#if DEBUG
-                _debugger.Log($"Byte write to {address:X8}={value:X4} but serial registers aren't doing anything yet");
-#endif
-                return;
-            default:
-                throw new Exception($"Invalid address {address:X8} for serial controller write byte");
-        }
+        // TODO
     }
 
     internal void WriteHalfWord(uint address, ushort value)
     {
-        // TODO - This is only implemented at all because both doom and mgba expect to write to RCNT
-        switch (address)
-        {
-            case SIODATA32:
-            case SIOMULTI1:
-            case SIOMULTI2:
-            case SIOMULTI3:
-            case SIOCNT:
-            case SIODATA8:
-            case RCNT:
-            case JOYCNT:
-            case JOY_RECV:
-            case JOY_TRANS:
-            case JOYSTAT:
-                // TODO - Actually do something with these
-#if DEBUG
-                _debugger.Log($"Half word write to {address:X8}={value:X4} but serial registers aren't doing anything yet");
-#endif
-                return;
-            default:
-                throw new Exception($"Invalid address {address:X8} for serial controller write half word");
-        }
+        // TODO
     }
 
     internal void WriteWord(uint address, uint value)
     {
-        switch (address)
-        {
-            case SIODATA32:
-            case SIOMULTI1:
-            case SIOMULTI2:
-            case SIOMULTI3:
-            case SIOCNT:
-            case SIODATA8:
-            case RCNT:
-            case JOYCNT:
-            case JOY_RECV:
-            case JOY_TRANS:
-            case JOYSTAT:
-                // TODO - Actually do something with these
-#if DEBUG
-                _debugger.Log($"Half word write to {address:X8}={value:X4} but serial registers aren't doing anything yet");
-#endif
-                return;
-            default:
-                throw new Exception($"Invalid address {address:X8} for serial controller write word");
-        }
+        WriteHalfWord(address, (ushort)value);
+        WriteHalfWord(address + 2, (ushort)(value >> 16));
     }
 }

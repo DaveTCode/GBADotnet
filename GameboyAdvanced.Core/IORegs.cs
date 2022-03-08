@@ -97,6 +97,7 @@ public static class IORegs
     public const uint KEYINPUT = 0x04000130;
     public const uint KEYCNT = 0x04000132;
     public const uint RCNT = 0x04000134;
+    public const uint IR = 0x04000136; // Ancient - Infrared Register (Prototypes only)
     public const uint JOYCNT = 0x04000140;
     public const uint JOY_RECV = 0x04000150;
     public const uint JOY_TRANS = 0x04000154;
