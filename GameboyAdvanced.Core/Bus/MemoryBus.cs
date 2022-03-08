@@ -187,7 +187,7 @@ internal class MemoryBus
                 return alignedAddress switch
                 {
                     uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_0056 => (uint)(_ppu.ReadRegisterHalfWord(alignedAddress, D) | (_ppu.ReadRegisterHalfWord(alignedAddress + 2, D) << 16)),
-                    uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8 => throw new NotImplementedException("Sound registers not yet implemented"),
+                    uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8 => 0, // TODO - Sound registers not implemented
                     uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadWord(alignedAddress, D),
                     uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0108 => _timerController.ReadWord(alignedAddress),
                     uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C => _serialController.ReadWord(alignedAddress),
