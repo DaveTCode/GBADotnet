@@ -27,9 +27,8 @@ internal partial class Ppu
 
     // TODO - Might be more efficient to store as ushorts given access is over 16 bit bus?
     private readonly byte[] _vram = new byte[0x18000]; // 96KB
-    private readonly byte[] _oam = new byte[0x400]; // 1KB
     private readonly byte[] _frameBuffer = new byte[Device.WIDTH * Device.HEIGHT * 4]; // RGBA order
-    private readonly byte[][] _scanlineBgBuffer = new byte[4][];
+    private readonly int[][] _scanlineBgBuffer = new int[4][];
     private readonly int[] _scanlinePriorities = new int[Device.WIDTH];
 
     private DisplayCtrl _dispcnt = new();
@@ -54,7 +53,12 @@ internal partial class Ppu
 
         for (var ii = 0; ii < 4; ii++)
         {
-            _scanlineBgBuffer[ii] = new byte[Device.WIDTH * 4];
+            _scanlineBgBuffer[ii] = new int[Device.WIDTH];
+        }
+
+        for (var ii = 0; ii < _sprites.Length; ii++)
+        {
+            _sprites[ii].Index = ii;
         }
     }
 
@@ -82,6 +86,11 @@ internal partial class Ppu
         foreach (var window in _windows)
         {
             window.Reset();
+        }
+
+        foreach (var sprite in _sprites)
+        {
+            sprite.Reset();
         }
     }
 
@@ -321,7 +330,7 @@ internal partial class Ppu
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
         >= 0x0500_0000 and <= 0x05FF_FFFF => ReadPaletteByte(address),
         >= 0x0600_0000 and <= 0x06FF_FFFF => _vram[MaskVRamAddress(address)],
-        >= 0x0700_0000 and <= 0x07FF_FFFF => _oam[address & 0x3FF],
+        >= 0x0700_0000 and <= 0x07FF_FFFF => ReadOamByte(address),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
 
@@ -330,7 +339,7 @@ internal partial class Ppu
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
         >= 0x0500_0000 and <= 0x05FF_FFFF => ReadPaletteHalfWord(address),
         >= 0x0600_0000 and <= 0x06FF_FFFF => Utils.ReadHalfWord(_vram, MaskVRamAddress(address), 0xF_FFFF),
-        >= 0x0700_0000 and <= 0x07FF_FFFF => Utils.ReadHalfWord(_oam, address, 0x3FF),
+        >= 0x0700_0000 and <= 0x07FF_FFFF => ReadOamHalfWord(address),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
     };
 
@@ -388,7 +397,7 @@ internal partial class Ppu
                 Utils.WriteHalfWord(_vram, 0x1_FFFF, MaskVRamAddress(address), value);
                 break;
             case uint _ when address is >= 0x0700_0000 and <= 0x07FF_FFFF:
-                Utils.WriteHalfWord(_oam, 0x3FF, address, value);
+                WriteOamHalfWord(address, value);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused"); // TODO - Handle unused addresses properly

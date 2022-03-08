@@ -22,11 +22,10 @@ internal partial class Ppu
                     {
                         bgPriorities[ii] = _backgrounds[ii].Control.BgPriority;
                         DrawTextModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
-                        
-                        // TODO - How to combine backgrounds
-                        Array.Copy(_scanlineBgBuffer[ii], 0, _frameBuffer, _currentLine * Device.WIDTH * 4, Device.WIDTH * 4);
                     }
                 }
+
+                CombineBackgroundsScanline();
                 break;
             case BgMode.Video1:
                 // Background 0-1 are text mode, 2-3 are affine
@@ -35,13 +34,12 @@ internal partial class Ppu
                     if (_dispcnt.ScreenDisplayBg[ii])
                     {
                         DrawTextModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
-
-                        // TODO - How to combine backgrounds
-                        Array.Copy(_scanlineBgBuffer[ii], 0, _frameBuffer, _currentLine * Device.WIDTH * 4, Device.WIDTH * 4);
                     }
                 }
 
                 // TODO - Handle affine backgrounds
+
+                CombineBackgroundsScanline();
                 break;
             case BgMode.Video2:
                 for (var ii = 0; ii < 4; ii++)
@@ -79,6 +77,65 @@ internal partial class Ppu
         }
     }
 
+    private void CombineBackgroundsScanline()
+    {
+        var sortedBgIxs = new[] { 0, 1, 2, 3 };
+        // Step 1 - Use an optimal sorting network to sort the backgrounds in priority order
+        // Network is [[0 1][2 3][0 2][1 3][1 2]]
+        // This is absolutely necessary optimisation and I won't hear anything against it
+        if (_backgrounds[0].Control.BgPriority > _backgrounds[1].Control.BgPriority)
+        {
+            sortedBgIxs[0] = 1;
+            sortedBgIxs[1] = 0;
+        }
+        if (_backgrounds[2].Control.BgPriority > _backgrounds[3].Control.BgPriority)
+        {
+            sortedBgIxs[2] = 3;
+            sortedBgIxs[3] = 2;
+        }
+        if (_backgrounds[sortedBgIxs[0]].Control.BgPriority > _backgrounds[sortedBgIxs[2]].Control.BgPriority)
+        {
+            var tmp = sortedBgIxs[0];
+            sortedBgIxs[0] = sortedBgIxs[2];
+            sortedBgIxs[2] = tmp;
+        }
+        if (_backgrounds[sortedBgIxs[1]].Control.BgPriority > _backgrounds[sortedBgIxs[3]].Control.BgPriority)
+        {
+            var tmp = sortedBgIxs[1];
+            sortedBgIxs[1] = sortedBgIxs[3];
+            sortedBgIxs[3] = tmp;
+        }
+        if (_backgrounds[sortedBgIxs[1]].Control.BgPriority > _backgrounds[sortedBgIxs[2]].Control.BgPriority)
+        {
+            var tmp = sortedBgIxs[1];
+            sortedBgIxs[1] = sortedBgIxs[2];
+            sortedBgIxs[2] = tmp;
+        }
+
+        var fbPtr = _currentLine * Device.WIDTH * 4;
+        for (var x = 0; x < Device.WIDTH; x++)
+        {
+            var filledPixel = false;
+            for (var bgIx = 0; bgIx < 4; bgIx++)
+            {
+                // Check that the BG is both enabled and that the color is not the backdrop
+                if (_dispcnt.ScreenDisplayBg[sortedBgIxs[bgIx]] && _scanlineBgBuffer[sortedBgIxs[bgIx]][x] != 0)
+                {
+                    Utils.ColorToRgb(_paletteEntries[_scanlineBgBuffer[sortedBgIxs[bgIx]][x]], _frameBuffer.AsSpan(fbPtr));
+                    filledPixel = true;
+                    break; // This was the highest priority pixel
+                }
+            }
+
+            if (!filledPixel)
+            {
+                Utils.ColorToRgb(BackdropColor, _frameBuffer.AsSpan(fbPtr));
+            }
+
+            fbPtr += 4;
+        }
+    }
+
     private void DrawProhibitedModeScanline()
     {
         var fbPtr = Device.WIDTH * 4 * _currentLine; // 4 bytes per pixel
@@ -89,7 +146,7 @@ internal partial class Ppu
         }
     }
 
-    private void DrawTextModeScanline(Background background, ref byte[] scanlineBuffer)
+    private void DrawTextModeScanline(Background background, ref int[] scanlineBuffer)
     {
         // TODO - Mode 0 only implemented in so far as required for Deadbody cpu tests
         // 32*32 tiles, 4 bit color depth
@@ -97,8 +154,6 @@ internal partial class Ppu
         var lineScrolled = _currentLine + background.YOffset;
         var gridY = (lineScrolled / 8) % 32;
         var tileMapBase = (background.Control.ScreenBaseBlock * 0x800) + (gridY * 64);
-
-        var scanlinePtr = 0;
 
         // TODO - This is horribly inefficient, going through all 240 pixels one at a time
         //        Could at least do things two at a time since the tile data is the same!
@@ -123,10 +178,8 @@ internal partial class Ppu
             // Color 0 in each BG/OBJ palette is transparent so replace with palette 0 color 0
             // TODO - Not taking into account palette mode in BGxCNT
             var pixelPalNo = (pixelPalIx == 0) ? 0 : (paletteNumber | pixelPalIx);
-            var pixelColor = _paletteEntries[pixelPalNo];
-
-            Utils.ColorToRgb(pixelColor, scanlineBuffer.AsSpan(scanlinePtr));
-            scanlinePtr += 4; // Move to next pixel in frame buffer
+            
+            scanlineBuffer[x] = pixelPalNo;
         }
     }
 

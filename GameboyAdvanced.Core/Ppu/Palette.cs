@@ -48,7 +48,7 @@ internal partial class Ppu
 
     internal void WritePaletteHalfWord(uint address, ushort value)
     {
-        var paletteIx = (address & 0x1FF) >> 1;
+        var paletteIx = (address & 0x3FF) >> 1;
         _paletteRam[paletteIx] = value;
 
         _paletteEntries[paletteIx].Set(value);
@@ -66,5 +66,5 @@ internal partial class Ppu
     internal byte ReadPaletteByte(uint address) =>
         (byte)(ReadPaletteHalfWord(address) >> (int)(8 * (address & 0b1)));
 
-    internal ushort ReadPaletteHalfWord(uint address) => _paletteRam[address & 0x1FF];
+    internal ushort ReadPaletteHalfWord(uint address) => _paletteRam[(address & 0x3FF) >> 1];
 }
