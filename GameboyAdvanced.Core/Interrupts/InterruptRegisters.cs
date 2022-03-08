@@ -60,11 +60,6 @@ internal class InterruptRegisters
             _dma3 = ((val & (1u << 11)) == 1u << 11);
             _keypad = ((val & (1u << 12)) == 1u << 12);
             _gamepak = ((val & (1u << 13)) == 1u << 13);
-
-            if (_serialComms)
-            {
-                var a= 1;
-            }
         }
 
         internal void Set(Interrupt interrupt)
