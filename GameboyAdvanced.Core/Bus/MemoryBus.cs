@@ -121,7 +121,7 @@ internal partial class MemoryBus
                 }
                 return _prefetcher.ReadGamePakByte(address, _waitControl.WaitState2[seq], currentCycles, ref waitStates);
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
-                // TODO - How does SRAM affect prefetch
+                _prefetcher.Reset();
                 waitStates += _waitControl.SRAMWaitControl;
                 return _gamePak.ReadSRam(address);
             default:
@@ -184,7 +184,8 @@ internal partial class MemoryBus
                     seq = 0;
                 }
                 return _prefetcher.ReadGamePakHalfWord(alignedAddress, _waitControl.WaitState2[seq], currentCycles, ref waitStates);
-            case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF: 
+            case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
+                _prefetcher.Reset();
                 waitStates += _waitControl.SRAMWaitControl;
                 return (ushort)(_gamePak.ReadSRam(unalignedAddress) * 0x0101);
             default:
@@ -252,6 +253,7 @@ internal partial class MemoryBus
                 }
                 return _prefetcher.ReadGamePakWord(alignedAddress, _waitControl.WaitState2[seq], _waitControl.WaitState2[1] + 1, currentCycles, ref waitStates);
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
+                _prefetcher.Reset();
                 waitStates += _waitControl.SRAMWaitControl;
                 return _gamePak.ReadSRam(unalignedAddress) * 0x01010101u;
             default:
@@ -259,7 +261,7 @@ internal partial class MemoryBus
         };
     }
 
-    internal int WriteByte(uint address, byte value)
+    internal int WriteByte(uint address, byte value, int seq)
     {
 #if DEBUG
         _debugger.Log("W {0:X8}={1:X8}", address, value);
@@ -320,9 +322,32 @@ internal partial class MemoryBus
             case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 _ppu.WriteByte(address, value);
                 return 0;
-            case uint _ when address is >= 0x0800_0000 and <= 0x0DFF_FFFF:
-                return 0; // TODO - Is it right that no wait states occur on attempted writes to Gamepak?
+            case uint _ when address is >= 0x0800_0000 and <= 0x09FF_FFFF:
+                _prefetcher.Reset();
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((address & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _waitControl.WaitState0[seq];
+            case uint _ when address is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
+                _prefetcher.Reset();
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((address & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _waitControl.WaitState1[seq];
+            case uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
+                _prefetcher.Reset();
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((address & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _waitControl.WaitState2[seq];
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
+                _prefetcher.Reset();
                 _gamePak.WriteSRam(address, value);
                 return _waitControl.SRAMWaitControl;
             default:
@@ -331,7 +356,7 @@ internal partial class MemoryBus
         }
     }
 
-    internal int WriteHalfWord(uint unalignedAddress, ushort value)
+    internal int WriteHalfWord(uint unalignedAddress, ushort value, int seq)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFE;
 #if DEBUG
@@ -391,9 +416,32 @@ internal partial class MemoryBus
             case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 _ppu.WriteHalfWord(alignedAddress, value);
                 return 0;
-            case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x0DFF_FFFF:
-                return 0; // TODO - Is it right that no wait states occur on attempted writes to Gamepak?
+            case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
+                _prefetcher.Reset();
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _waitControl.WaitState0[seq];
+            case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
+                _prefetcher.Reset();
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _waitControl.WaitState1[seq];
+            case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
+                _prefetcher.Reset();
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _waitControl.WaitState2[seq];
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
+                _prefetcher.Reset();
                 var shift = (ushort)(unalignedAddress & 1) << 3;
                 _gamePak.WriteSRam(unalignedAddress, (byte)(value >> shift));
                 return _waitControl.SRAMWaitControl;
@@ -403,7 +451,7 @@ internal partial class MemoryBus
         }
     }
 
-    internal int WriteWord(uint unalignedAddress, uint value)
+    internal int WriteWord(uint unalignedAddress, uint value, int seq)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFC;
 #if DEBUG
@@ -467,9 +515,32 @@ internal partial class MemoryBus
                 _ppu.WriteHalfWord(alignedAddress, (ushort)value);
                 _ppu.WriteHalfWord(alignedAddress + 2, (ushort)(value >> 16));
                 return 1; // 1 cycle extra as 16 bit bus
-            case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x0DFF_FFFF:
-                return 0; // TODO - Is it right that no wait states occur on attempted writes to Gamepak?
+            case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
+                _prefetcher.Reset();
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _waitControl.WaitState0[seq] + _waitControl.WaitState0[1] + 1;
+            case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
+                _prefetcher.Reset();
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _waitControl.WaitState1[seq] + _waitControl.WaitState1[1] + 1;
+            case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
+                _prefetcher.Reset();
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _waitControl.WaitState2[seq] + _waitControl.WaitState2[1] + 1;
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
+                _prefetcher.Reset();
                 var shift = (int)(unalignedAddress & 0b11) << 3;
                 _gamePak.WriteSRam(unalignedAddress, (byte)(value >> shift));
                 return _waitControl.SRAMWaitControl;

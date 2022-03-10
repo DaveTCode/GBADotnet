@@ -76,6 +76,7 @@ public unsafe class Device
 
     public void RunCycle(bool skipBreakpoints=false)
     {
+        _cpu.Cycles++;
 #if DEBUG
         if (!skipBreakpoints && Debugger.CheckBreakpoints(_cpu))
         {

@@ -16,7 +16,8 @@ internal struct DmaChannel
     internal int IntDestAddressIncrement;
     internal int IntSrcAddressIncrement;
     internal uint InternalLatch;
-    internal int SequentialAccess;
+    internal int IntDestSeqAccess;
+    internal int IntSrcSeqAccess;
 
     internal DmaControlRegister ControlReg;
 
@@ -31,11 +32,12 @@ internal struct DmaChannel
         IntCachedValue = null;
         IntWordCount = 0;
         IntDestAddressIncrement = 0;
+        IntDestSeqAccess = 0;
         IntSrcAddressIncrement = 0;
+        IntSrcSeqAccess = 0;
         ControlReg = new DmaControlRegister(id);
         ClocksToStart = 0;
         InternalLatch = 0;
-        SequentialAccess = 0;
     }
 
     internal void UpdateControlRegister(ushort value)
@@ -45,7 +47,8 @@ internal struct DmaChannel
         if (enableBitFlip)
         {
             ClocksToStart = 2; // 2 clock cycles after setting before DMA starts (and one at end)
-            SequentialAccess = 0; // 1st read/write pair are non-sequential
+            IntSrcSeqAccess = 0; // 1st read/write pair are non-sequential
+            IntDestSeqAccess = 0; // 1st read/write pair are non-sequential
 
             // Both source and destination addresses are forcibly aligned to halfword/word boundaries
             IntSourceAddress = SourceAddress & (ControlReg.Is32Bit ? 0xFFFF_FFFC : 0xFFFF_FFFE);

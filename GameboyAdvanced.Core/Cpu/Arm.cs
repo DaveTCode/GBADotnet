@@ -1040,6 +1040,7 @@ internal static unsafe partial class Arm
     internal static void swpCycle2(Core core, uint _instruction)
     {
         _swpCachedVal = core.D;
+        core.SEQ = 0;
         core.nRW = true;
         core.D = ((_swpSourceReg == 15) ? core.R[_swpSourceReg] + 4 : core.R[_swpSourceReg]) & _dataMask;
         core.NextExecuteAction = &swpCycle3;
@@ -1047,6 +1048,7 @@ internal static unsafe partial class Arm
 
     internal static void swpCycle3(Core core, uint _instruction)
     {
+        core.SEQ = 0;
         core.nRW = false;
         core.nMREQ = true;
         core.NextExecuteAction = &swpCycle4;
