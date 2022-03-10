@@ -1058,7 +1058,6 @@ internal static unsafe partial class Arm
         Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
     }
 
-    // TODO - SWP doesn't handle mis-aligned addresses properly
     internal static void swp(Core core, uint instruction)
     {
         var rn = (instruction >> 16) & 0b1111;
