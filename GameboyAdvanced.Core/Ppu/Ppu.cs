@@ -133,6 +133,7 @@ internal partial class Ppu
         }
         else if (_currentLineCycles == CyclesPerLine)
         {
+            _dispstat.VCounterFlag = false;
             _dispstat.HBlankFlag = false;
             _currentLine++;
             _currentLineCycles = 0;
@@ -154,9 +155,12 @@ internal partial class Ppu
                     _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVBlank);
                 }
             }
-            else if (_currentLine == VBlankLines + Device.HEIGHT)
+            else if (_currentLine == VBlankLines + Device.HEIGHT - 1)
             {
                 _dispstat.VBlankFlag = false;
+            }
+            else if (_currentLine == VBlankLines + Device.HEIGHT)
+            {
                 _currentLine = 0;
             }
         }
