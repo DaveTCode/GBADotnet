@@ -18,7 +18,7 @@ internal enum PhiOutput
 /// 
 /// TODO - Not actually using these wait timings anywhere yet, assuming defaults in memory bus
 /// </summary>
-internal struct WaitControl
+internal class WaitControl
 {
     internal int SRAMWaitControl;
     internal int[] WaitState0 = new int[2];
@@ -28,13 +28,9 @@ internal struct WaitControl
     internal bool EnableGamepakPrefetch;
     internal bool GamepakIsCGB;
 
-    public WaitControl()
+    internal WaitControl()
     {
-        SRAMWaitControl = 0;
-        PhiTerminalOutput = PhiOutput.Disabled;
-        EnableGamepakPrefetch = false;
-        GamepakIsCGB = false;
-        Set(0);
+        Reset();
     }
 
     /// <summary>
@@ -55,7 +51,7 @@ internal struct WaitControl
         WaitState2[0] = WaitStatesNFromBitVal((value >> 8) & 0b11);
         WaitState2[1] = ((value >> 10) & 0b1) == 0 ? 8 : 1;
         PhiTerminalOutput = (PhiOutput)((value >> 11) & 0b11);
-        EnableGamepakPrefetch = ((value >> 14) & 0b1) == 0b1;
+        //EnableGamepakPrefetch = ((value >> 14) & 0b1) == 0b1;
         GamepakIsCGB = ((value >> 15) & 0b1) == 0b1;
     }
 

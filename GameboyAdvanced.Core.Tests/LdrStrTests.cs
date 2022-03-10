@@ -39,7 +39,7 @@ public class LdrStrTests
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         cpu.R[1] = 0x0000_0004u; // Set up offset (so actual write will be to 0x0300_0001)
         cpu.R[2] = 0x1234_5678u;
-        _ = cpu.Bus.WriteWord(0x0300_1004, 0xBEEF_FEEDu, 0);
+        _ = cpu.Bus.WriteWord(0x0300_1004, 0xBEEF_FEEDu);
 
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
         cpu.Clock(); // Fill execute stage of pipeline and perform address translation

@@ -104,14 +104,10 @@ Can't remember details here just noticed some BIOs writes pre-open bus
 
 ## mgba test notes
 
-- Memory tests are now up to 1524/1552 with various things like unbanked rom area properly filled in. Remaining failures on memory tests are:
-	1. DMA0 load from SRAM mirror
-	2. BIOS load & BIOS out of bounds load (non-dma which is fine and non-swi which is fine) - this is because I'm not implementing the bios read lock based on where PC is
-	3. Out of bounds load in non-DMA/non-SWI mode
-	4. VRAM Mirror Store failing on 8 bit values
+- Memory tests are intermittent at 1552/1552 DMA0 load from SRAM mirror seems to be the one which is inconsistent
 - IO register tests are up to 94/123 where the remainder are basically APU registers which I haven't implemented
-- Timer IRQ tests are 1/90
-- Timer Count up tests hang but I also haven't actually implemented them!
+- Timer IRQ tests ~are~ were 1/90 and are now 0/90. Yay!
+- Timer Count up tests are 366/936 now that it's been implemented. Having looked into what these actually do though.
 - Timing Tests are 449/2020 but not sure whether to trust since timer irq tests are failing across the board so maybe my timers are screwed
 - Shifter tests all pass
 - Carry tests all pass

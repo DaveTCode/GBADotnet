@@ -15,8 +15,9 @@ namespace GameboyAdvanced.Core.Bus;
 /// It is responsible for all the memory mapped requests and determining how 
 /// many wait states should be injected.
 /// </summary>
-internal class MemoryBus
+internal partial class MemoryBus
 {
+    private readonly Prefetcher _prefetcher;
     private readonly BaseDebugger _debugger;
     private readonly Ppu.Ppu _ppu;
     private readonly Gamepad _gamepad;
@@ -28,17 +29,8 @@ internal class MemoryBus
     private readonly Bios _bios;
     private readonly byte[] _onBoardWRam = new byte[0x4_0000];
     private readonly byte[] _onChipWRam = new byte[0x8000];
-    private WaitControl _waitControl;
+    private readonly WaitControl _waitControl;
     private InternalMemoryControl _intMemoryControl;
-
-    internal void Reset(bool skipBios)
-    {
-        Array.Clear(_onBoardWRam);
-        Array.Clear(_onChipWRam);
-        _waitControl.Reset();
-        _intMemoryControl.Reset();
-        _bios.Reset(skipBios);
-    }
 
     internal MemoryBus(
         byte[] bios,
@@ -63,9 +55,20 @@ internal class MemoryBus
         _serialController = serialController ?? throw new ArgumentNullException(nameof(serialController));
         _waitControl = new WaitControl();
         _intMemoryControl = new InternalMemoryControl();
+        _prefetcher = new Prefetcher(_waitControl, gamePak);
     }
 
-    internal byte ReadByte(uint address, int seq, uint r15, uint D, ref int waitStates)
+    internal void Reset(bool skipBios)
+    {
+        Array.Clear(_onBoardWRam);
+        Array.Clear(_onChipWRam);
+        _waitControl.Reset();
+        _intMemoryControl.Reset();
+        _bios.Reset(skipBios);
+        _prefetcher.Reset();
+    }
+
+    internal byte ReadByte(uint address, int seq, uint r15, uint D, ulong currentCycles, ref int waitStates)
     {
         switch (address)
         {
@@ -97,15 +100,28 @@ internal class MemoryBus
             case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 return _ppu.ReadByte(address);
             case uint _ when address is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                waitStates += _waitControl.WaitState0[seq];
-                return _gamePak.ReadByte(address & 0x1FF_FFFF);
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((address & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _prefetcher.ReadGamePakByte(address, _waitControl.WaitState0[seq], currentCycles, ref waitStates);
             case uint _ when address is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                waitStates += _waitControl.WaitState1[seq];
-                return _gamePak.ReadByte(address & 0x1FF_FFFF);
-            case uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF: 
-                waitStates += _waitControl.WaitState2[seq];
-                return _gamePak.ReadByte(address & 0x1FF_FFFF);
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((address & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _prefetcher.ReadGamePakByte(address, _waitControl.WaitState1[seq], currentCycles, ref waitStates);
+            case uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((address & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _prefetcher.ReadGamePakByte(address, _waitControl.WaitState2[seq], currentCycles, ref waitStates);
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
+                // TODO - How does SRAM affect prefetch
                 waitStates += _waitControl.SRAMWaitControl;
                 return _gamePak.ReadSRam(address);
             default:
@@ -114,7 +130,7 @@ internal class MemoryBus
         };
     }
 
-    internal ushort ReadHalfWord(uint unalignedAddress, int seq, uint r15, uint D, ref int waitStates)
+    internal ushort ReadHalfWord(uint unalignedAddress, int seq, uint r15, uint D, ulong currentCycles, ref int waitStates)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFE;
 
@@ -148,14 +164,26 @@ internal class MemoryBus
             case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF: 
                 return _ppu.ReadHalfWord(alignedAddress);
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                waitStates += _waitControl.WaitState0[seq];
-                return _gamePak.ReadHalfWord(alignedAddress & 0x1FF_FFFF);
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _prefetcher.ReadGamePakHalfWord(alignedAddress, _waitControl.WaitState0[seq], currentCycles, ref waitStates);
             case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                waitStates += _waitControl.WaitState1[seq];
-                return _gamePak.ReadHalfWord(alignedAddress & 0x1FF_FFFF);
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _prefetcher.ReadGamePakHalfWord(alignedAddress, _waitControl.WaitState1[seq], currentCycles, ref waitStates);
             case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                waitStates += _waitControl.WaitState2[seq];
-                return _gamePak.ReadHalfWord(alignedAddress & 0x1FF_FFFF);
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _prefetcher.ReadGamePakHalfWord(alignedAddress, _waitControl.WaitState2[seq], currentCycles, ref waitStates);
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF: 
                 waitStates += _waitControl.SRAMWaitControl;
                 return (ushort)(_gamePak.ReadSRam(unalignedAddress) * 0x0101);
@@ -170,7 +198,7 @@ internal class MemoryBus
         };
     }
 
-    internal uint ReadWord(uint unalignedAddress, int seq, uint r15, uint D, ref int waitStates)
+    internal uint ReadWord(uint unalignedAddress, int seq, uint r15, uint D, ulong currentCycles, ref int waitStates)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFC;
 
@@ -179,7 +207,7 @@ internal class MemoryBus
             case uint _ when alignedAddress <= 0x0000_3FFF:
                 return _bios.ReadWord(unalignedAddress, r15);
             case uint _ when alignedAddress is >= 0x0200_0000 and <= 0x02FF_FFFF:
-                waitStates += _intMemoryControl.WaitControlWRAM * 2;
+                waitStates += 1 + (_intMemoryControl.WaitControlWRAM * 2); // Additional wait state as 16 bit bus
                 return Utils.ReadWord(_onBoardWRam, alignedAddress, 0x3_FFFF);
             case uint _ when alignedAddress is >= 0x0300_0000 and <= 0x03FF_FFFF:
                 return Utils.ReadWord(_onChipWRam, alignedAddress, 0x7FFF);
@@ -204,14 +232,25 @@ internal class MemoryBus
                 waitStates += 1; // TODO - Adding a single wait state here because it's 2 memory accesses over PPU 16 bit bus
                 return (uint)(_ppu.ReadHalfWord(alignedAddress) | (_ppu.ReadHalfWord(alignedAddress + 2) << 16));
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                waitStates += _waitControl.WaitState0[seq] + _waitControl.WaitState0[1];
-                return _gamePak.ReadWord(alignedAddress & 0x1FF_FFFF);
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0) {
+                    seq = 0;
+                }
+                return _prefetcher.ReadGamePakWord(alignedAddress, _waitControl.WaitState0[seq], _waitControl.WaitState0[1] + 1, currentCycles, ref waitStates);
             case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                waitStates += _waitControl.WaitState1[seq] + _waitControl.WaitState1[1];
-                return _gamePak.ReadWord(alignedAddress & 0x1FF_FFFF);
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _prefetcher.ReadGamePakWord(alignedAddress, _waitControl.WaitState1[seq], _waitControl.WaitState1[1] + 1, currentCycles, ref waitStates);
             case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                waitStates += _waitControl.WaitState2[seq] + _waitControl.WaitState2[1];
-                return _gamePak.ReadWord(alignedAddress & 0x1FF_FFFF);
+                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
+                if ((alignedAddress & 0x1_FFFF) == 0)
+                {
+                    seq = 0;
+                }
+                return _prefetcher.ReadGamePakWord(alignedAddress, _waitControl.WaitState2[seq], _waitControl.WaitState2[1] + 1, currentCycles, ref waitStates);
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 waitStates += _waitControl.SRAMWaitControl;
                 return _gamePak.ReadSRam(unalignedAddress) * 0x01010101u;
@@ -220,7 +259,7 @@ internal class MemoryBus
         };
     }
 
-    internal int WriteByte(uint address, byte value, int seq)
+    internal int WriteByte(uint address, byte value)
     {
 #if DEBUG
         _debugger.Log("W {0:X8}={1:X8}", address, value);
@@ -292,7 +331,7 @@ internal class MemoryBus
         }
     }
 
-    internal int WriteHalfWord(uint unalignedAddress, ushort value, int seq)
+    internal int WriteHalfWord(uint unalignedAddress, ushort value)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFE;
 #if DEBUG
@@ -364,7 +403,7 @@ internal class MemoryBus
         }
     }
 
-    internal int WriteWord(uint unalignedAddress, uint value, int seq)
+    internal int WriteWord(uint unalignedAddress, uint value)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFC;
 #if DEBUG
@@ -377,7 +416,7 @@ internal class MemoryBus
                 return 0;
             case uint _ when alignedAddress is >= 0x0200_0000 and <= 0x02FF_FFFF:
                 Utils.WriteWord(_onBoardWRam, 0x3_FFFF, alignedAddress, value);
-                return _intMemoryControl.WaitControlWRAM * 2;
+                return 1 + (_intMemoryControl.WaitControlWRAM * 2); // Extra cycle as this is a 16 bit bus
             case uint _ when alignedAddress is >= 0x0300_0000 and <= 0x03FF_FFFF:
                 Utils.WriteWord(_onChipWRam, 0x7FFF, alignedAddress, value);
                 return 0;
@@ -427,7 +466,7 @@ internal class MemoryBus
             case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 _ppu.WriteHalfWord(alignedAddress, (ushort)value);
                 _ppu.WriteHalfWord(alignedAddress + 2, (ushort)(value >> 16));
-                return 1;
+                return 1; // 1 cycle extra as 16 bit bus
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x0DFF_FFFF:
                 return 0; // TODO - Is it right that no wait states occur on attempted writes to Gamepak?
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:

@@ -59,10 +59,10 @@ public class StoreLoadMultipleTests
         Assert.Equal(0, cpu.SEQ);
         Assert.Equal(0x0300_101Cu, cpu.R[0]);
 
-        var waitStates = 0;
+        int waitStates = 0;
         for (var r = 1u; r < 8; r++)
         {
-            Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, ref waitStates));
+            Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, 0, ref waitStates));
         }
         Assert.Equal(2u + 2 + 6, cpu.Cycles); // 2 for pipeline + 2N + (1-n)S cycles
     }
@@ -107,7 +107,7 @@ public class StoreLoadMultipleTests
         var waitStates = 0;
         for (var r = 1u; r < 8; r++)
         {
-            Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, ref waitStates));
+            Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, 0, ref waitStates));
         }
         Assert.Equal(2u + 2 + 6, cpu.Cycles); // 2 for pipeline + 2N + (1-n)S cycles
     }
@@ -124,7 +124,7 @@ public class StoreLoadMultipleTests
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         for (var r = 0u; r < 7; r++)
         {
-            _ = cpu.Bus.WriteWord(0x0300_1000u + (r * 4), r + 1, 0);
+            _ = cpu.Bus.WriteWord(0x0300_1000u + (r * 4), r + 1);
         }
 
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline;

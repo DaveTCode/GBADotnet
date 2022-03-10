@@ -225,11 +225,11 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            WaitStates += Bus.WriteByte(A, (byte)D, SEQ);
+                            WaitStates += Bus.WriteByte(A, (byte)D);
                         }
                         else
                         {
-                            D = Bus.ReadByte(A, SEQ, R[15], D, ref WaitStates);
+                            D = Bus.ReadByte(A, SEQ, R[15], D, Cycles, ref WaitStates);
                         }
                         break;
                     }
@@ -237,11 +237,11 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            WaitStates += Bus.WriteHalfWord(A, (ushort)D, SEQ);
+                            WaitStates += Bus.WriteHalfWord(A, (ushort)D);
                         }
                         else
                         {
-                            D = Bus.ReadHalfWord(A, SEQ, R[15], D, ref WaitStates);
+                            D = Bus.ReadHalfWord(A, SEQ, R[15], D, Cycles, ref WaitStates);
                         }
 
                         break;
@@ -249,16 +249,20 @@ public unsafe class Core
                 case BusWidth.Word:
                     if (nRW)
                     {
-                        WaitStates += Bus.WriteWord(A, D, SEQ);
+                        WaitStates += Bus.WriteWord(A, D);
                     }
                     else
                     {
-                        D = Bus.ReadWord(A, SEQ, R[15], D, ref WaitStates);
+                        D = Bus.ReadWord(A, SEQ, R[15], D, Cycles, ref WaitStates);
                     }
                     break;
                 default:
                     throw new Exception($"Invalid value for MAS {MAS}");
             }
+
+#if DEBUG
+            Debugger.Log("Mem Access {0:X}={1:X8},nRW={2},SEQ={3},nOPC={4}", A, D, nRW, SEQ, nOPC);
+#endif
         }
     }
 
@@ -356,6 +360,10 @@ public unsafe class Core
 
         StepMemoryUnit();
 
+        // SEQ defaults to true after a memory request and each operation is
+        // responsible for pulling it low if it affects the address bus.
+        SEQ = 1;
+
         if (!nOPC && !nMREQ)
         {
             if (Pipeline.DecodedOpcode.HasValue && Pipeline.DecodedOpcodeAddress.HasValue)
@@ -410,6 +418,7 @@ public unsafe class Core
         A = R[15];
         AIncrement = (uint)MAS;
         Pipeline.ClearedThisCycle = true;
+        SEQ = 0;
     }
 
     /// <summary>
