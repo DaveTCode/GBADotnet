@@ -58,14 +58,14 @@ internal class Prefetcher
     {
         CheckAdjustPrefetchBuffer(address, waitStatesNoPrefetch, currentCycles, ref waitStates);
 
-        return _gamePak.ReadByte(address & 0x1F_FFFF);
+        return _gamePak.ReadByte(address & 0x1FF_FFFF);
     }
 
     internal ushort ReadGamePakHalfWord(uint address, int waitStatesNoPrefetch, ulong currentCycles, ref int waitStates)
     {
         CheckAdjustPrefetchBuffer(address, waitStatesNoPrefetch, currentCycles, ref waitStates);
 
-        return _gamePak.ReadHalfWord(address & 0x1F_FFFF);
+        return _gamePak.ReadHalfWord(address & 0x1FF_FFFF);
     }
 
     internal uint ReadGamePakWord(uint address, int waitStatesNoPrefetch1, int waitStatesNoPrefetch2, ulong currentCycles, ref int waitStates)
@@ -73,6 +73,6 @@ internal class Prefetcher
         CheckAdjustPrefetchBuffer(address, waitStatesNoPrefetch1, currentCycles, ref waitStates);
         CheckAdjustPrefetchBuffer(address + 2, waitStatesNoPrefetch2, currentCycles, ref waitStates);
         
-        return _gamePak.ReadWord(address & 0x1F_FFFF);
+        return _gamePak.ReadWord(address & 0x1FF_FFFF);
     }
 }
