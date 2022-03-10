@@ -43,15 +43,21 @@ internal class Prefetcher
             if (adjustedWaitStates > 0)
             {
                 waitStates += adjustedWaitStates;
+                _cycleBurstStart = currentCycles;
+            }
+            else
+            {
+                // Carry over spare cycles from this access
+                _cycleBurstStart = currentCycles + (ulong)adjustedWaitStates;
             }
         }
         else
         {
             waitStates += waitStatesNoPrefetch;
+            _cycleBurstStart = currentCycles;
         }
 
         _currentPreFetchBase = address;
-        _cycleBurstStart = currentCycles;
     }
 
     internal byte ReadGamePakByte(uint address, int waitStatesNoPrefetch, ulong currentCycles, ref int waitStates)

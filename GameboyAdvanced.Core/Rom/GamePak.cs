@@ -57,7 +57,9 @@ public class GamePak
         _sram[address & 0x0EFF_FFFF & 0x7FFF] = value;
     }
 
-    internal byte ReadByte(uint address) => address < _data.Length ? _data[address] : (byte)(address >> 1 >> (int)((address & 1) * 8));
+    internal byte ReadByte(uint address) => address < _data.Length ? 
+        _data[address] : 
+        (byte)(address >> 1 >> (int)((address & 1) * 8));
 
     internal ushort ReadHalfWord(uint address) => address < _data.Length 
         ? Utils.ReadHalfWord(_data, address, 0x1FF_FFFF) 

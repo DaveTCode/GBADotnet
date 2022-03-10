@@ -225,7 +225,7 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            WaitStates += Bus.WriteByte(A, (byte)D);
+                            WaitStates += Bus.WriteByte(A, (byte)D, SEQ);
                         }
                         else
                         {
@@ -237,7 +237,7 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            WaitStates += Bus.WriteHalfWord(A, (ushort)D);
+                            WaitStates += Bus.WriteHalfWord(A, (ushort)D, SEQ);
                         }
                         else
                         {
@@ -249,7 +249,7 @@ public unsafe class Core
                 case BusWidth.Word:
                     if (nRW)
                     {
-                        WaitStates += Bus.WriteWord(A, D);
+                        WaitStates += Bus.WriteWord(A, D, SEQ);
                     }
                     else
                     {
@@ -351,7 +351,6 @@ public unsafe class Core
     /// </remarks>
     internal void Clock()
     {
-        Cycles++;
         if (WaitStates > 0)
         {
             WaitStates--;

@@ -51,7 +51,7 @@ internal class WaitControl
         WaitState2[0] = WaitStatesNFromBitVal((value >> 8) & 0b11);
         WaitState2[1] = ((value >> 10) & 0b1) == 0 ? 8 : 1;
         PhiTerminalOutput = (PhiOutput)((value >> 11) & 0b11);
-        //EnableGamepakPrefetch = ((value >> 14) & 0b1) == 0b1;
+        EnableGamepakPrefetch = ((value >> 14) & 0b1) == 0b1;
         GamepakIsCGB = ((value >> 15) & 0b1) == 0b1;
     }
 
