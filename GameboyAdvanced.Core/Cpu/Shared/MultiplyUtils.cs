@@ -32,7 +32,7 @@ internal static unsafe class MultiplyUtils
         _requiredCycles++; // 1 extra I cycle for MLA operation
     }
 
-    internal static int CyclesForMultiplyA(uint operand)
+    internal static int CyclesForMultiplySigned(uint operand)
     {
         if ((operand & 0xFFFF_FF00) is 0 or 0xFFFF_FF00)
         {
@@ -52,7 +52,7 @@ internal static unsafe class MultiplyUtils
         }
     }
 
-    internal static int CyclesForMultiplyB(uint operand)
+    internal static int CyclesForMultiplyUnsigned(uint operand)
     {
         if ((operand & 0xFFFF_FF00) is 0)
         {
@@ -80,36 +80,42 @@ internal static unsafe class MultiplyUtils
         core.AIncrement = 0;
         _destinationReg = rd;
         _currentCycles = 0;
-        _requiredCycles = CyclesForMultiplyA(core.R[rs]); // TODO - Suspect, is it really A not B? Data sheet says yes but they've been wrong before
+        _requiredCycles = CyclesForMultiplySigned(core.R[rs]);
         _multiplyResult = (uint)((int)core.R[rs] * (int)core.R[rm]);
         core.NextExecuteAction = &MultiplyCycle;
     }
 
     internal static void MultiplyCycle(Core core, uint instruction)
     {
+        _currentCycles++;
+
         if (_currentCycles == _requiredCycles)
         {
             core.R[_destinationReg] = _multiplyResult;
             Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
+            core.SEQ = 1;
         }
         else
         {
-            _currentCycles++;
+            core.SEQ = 0;
         }
     }
 
     internal static void MultiplyCycleWFlags(Core core, uint instruction)
     {
+        _currentCycles++;
+
         if (_currentCycles == _requiredCycles)
         {
             core.R[_destinationReg] = _multiplyResult;
             ALU.SetZeroSignFlags(ref core.Cpsr, _multiplyResult);
             // TODO - The carry flag is set to a meaningless value. Ok, but what.
             Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
+            core.SEQ = 1;
         }
         else
         {
-            _currentCycles++;
+            core.SEQ = 0;
         }
     }
 }

@@ -109,6 +109,7 @@ internal static unsafe class LdrStrUtils
             core.ClearPipeline();
         }
         core.nMREQ = false;
+        core.SEQ = 0;
         core.AIncrement = (uint)core.MAS;
 
         core.MoveExecutePipelineToNextInstruction();

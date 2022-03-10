@@ -18,7 +18,7 @@ internal static unsafe class MultiplyLongUtils
     {
         SetupForMultiplyLongCommon(core, rdHi, rdLo);
         var longAccumulator = (long)(((ulong)core.R[rdHi] << 32) | core.R[rdLo]);
-        _requiredCycles = MultiplyUtils.CyclesForMultiplyA(core.R[rs]) + 2;
+        _requiredCycles = MultiplyUtils.CyclesForMultiplySigned(core.R[rs]) + 2;
         _multiplyResult = (ulong)(((long)(int)core.R[rs] * (long)(int)core.R[rm]) + longAccumulator);
         core.NextExecuteAction = &MultiplyCycleWFlags;
     }
@@ -26,7 +26,7 @@ internal static unsafe class MultiplyLongUtils
     internal static void SetupForSignedMultiplyLongFlags(Core core, uint rdHi, uint rdLo, uint rs, uint rm)
     {
         SetupForMultiplyLongCommon(core, rdHi, rdLo);
-        _requiredCycles = MultiplyUtils.CyclesForMultiplyA(core.R[rs]) + 1;
+        _requiredCycles = MultiplyUtils.CyclesForMultiplySigned(core.R[rs]) + 1;
         _multiplyResult = (ulong)((long)(int)core.R[rs] * (long)(int)core.R[rm]);
         core.NextExecuteAction = &MultiplyCycleWFlags;
     }
@@ -35,7 +35,7 @@ internal static unsafe class MultiplyLongUtils
     {
         SetupForMultiplyLongCommon(core, rdHi, rdLo);
         var longAccumulator = (long)(((ulong)core.R[rdHi] << 32) | core.R[rdLo]);
-        _requiredCycles = MultiplyUtils.CyclesForMultiplyA(core.R[rs]) + 2;
+        _requiredCycles = MultiplyUtils.CyclesForMultiplySigned(core.R[rs]) + 2;
         _multiplyResult = (ulong)(((long)(int)core.R[rs] * (long)(int)core.R[rm]) + longAccumulator);
         core.NextExecuteAction = &MultiplyCycle;
     }
@@ -43,7 +43,7 @@ internal static unsafe class MultiplyLongUtils
     internal static void SetupForSignedMultiplyLong(Core core, uint rdHi, uint rdLo, uint rs, uint rm)
     {
         SetupForMultiplyLongCommon(core, rdHi, rdLo);
-        _requiredCycles = MultiplyUtils.CyclesForMultiplyA(core.R[rs]) + 1;
+        _requiredCycles = MultiplyUtils.CyclesForMultiplySigned(core.R[rs]) + 1;
         _multiplyResult = (ulong)((long)(int)core.R[rs] * (long)(int)core.R[rm]);
         core.NextExecuteAction = &MultiplyCycle;
     }
@@ -53,14 +53,14 @@ internal static unsafe class MultiplyLongUtils
         SetupForMultiplyLongCommon(core, rdHi, rdLo);
         var longAccumulator = ((ulong)core.R[rdHi] << 32) | core.R[rdLo];
         _multiplyResult = (core.R[rs] * (ulong)core.R[rm]) + longAccumulator;
-        _requiredCycles = MultiplyUtils.CyclesForMultiplyB(core.R[rs]) + 2;
+        _requiredCycles = MultiplyUtils.CyclesForMultiplyUnsigned(core.R[rs]) + 2;
         core.NextExecuteAction = &MultiplyCycleWFlags;
     }
 
     internal static void SetupForMultiplyLongFlags(Core core, uint rdHi, uint rdLo, uint rs, uint rm)
     {
         SetupForMultiplyLongCommon(core, rdHi, rdLo);
-        _requiredCycles = MultiplyUtils.CyclesForMultiplyB(core.R[rs]) + 1;
+        _requiredCycles = MultiplyUtils.CyclesForMultiplyUnsigned(core.R[rs]) + 1;
         _multiplyResult = core.R[rs] * (ulong)core.R[rm];
         core.NextExecuteAction = &MultiplyCycleWFlags;
     }
@@ -70,14 +70,14 @@ internal static unsafe class MultiplyLongUtils
         SetupForMultiplyLongCommon(core, rdHi, rdLo);
         var longAccumulator = ((ulong)core.R[rdHi] << 32) | core.R[rdLo];
         _multiplyResult = (core.R[rs] * (ulong)core.R[rm]) + longAccumulator;
-        _requiredCycles = MultiplyUtils.CyclesForMultiplyB(core.R[rs]) + 2;
+        _requiredCycles = MultiplyUtils.CyclesForMultiplyUnsigned(core.R[rs]) + 2;
         core.NextExecuteAction = &MultiplyCycle;
     }
 
     internal static void SetupForMultiplyLong(Core core, uint rdHi, uint rdLo, uint rs, uint rm)
     {
         SetupForMultiplyLongCommon(core, rdHi, rdLo);
-        _requiredCycles = MultiplyUtils.CyclesForMultiplyB(core.R[rs]) + 1;
+        _requiredCycles = MultiplyUtils.CyclesForMultiplyUnsigned(core.R[rs]) + 1;
         _multiplyResult = core.R[rs] * (ulong)core.R[rm];
         core.NextExecuteAction = &MultiplyCycle;
     }
@@ -95,20 +95,25 @@ internal static unsafe class MultiplyLongUtils
 
     internal static void MultiplyCycle(Core core, uint instruction)
     {
+        _currentCycles++;
+
         if (_currentCycles == _requiredCycles)
         {
             core.R[_destinationRegHi] = (uint)(_multiplyResult >> 32);
             core.R[_destinationRegLo] = (uint)_multiplyResult;
             Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
+            core.SEQ = 1;
         }
         else
         {
-            _currentCycles++;
+            core.SEQ = 0;
         }
     }
 
     internal static void MultiplyCycleWFlags(Core core, uint instruction)
     {
+        _currentCycles++;
+
         if (_currentCycles == _requiredCycles)
         {
             core.R[_destinationRegHi] = (uint)(_multiplyResult >> 32);
@@ -116,10 +121,11 @@ internal static unsafe class MultiplyLongUtils
             ALU.SetZeroSignFlags(ref core.Cpsr, _multiplyResult);
             // TODO - The carry/overflow flags are set to a meaningless value. Ok, but what.
             Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
+            core.SEQ = 1;
         }
         else
         {
-            _currentCycles++;
+            core.SEQ = 0;
         }
     }
 }

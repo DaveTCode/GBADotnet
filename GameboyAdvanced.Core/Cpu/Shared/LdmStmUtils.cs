@@ -51,6 +51,7 @@ internal static class LdmStmUtils
         }
         else
         {
+            core.SEQ = 1;
             core.A += 4;
             core.D = _useBank0Regs
                 ? core.GetUserModeRegister((int)_storeLoadMultipleState[_storeLoadMultiplePtr])
@@ -155,12 +156,13 @@ internal static class LdmStmUtils
 
         _cachedLdmValue = core.D;
         core.A += 4;
+        core.SEQ = 1;
 
         if (_storeLoadMultiplePtr == _storeLoadMultiplePopCount - 1)
         {
             core.A = core.R[15];
             core.AIncrement = 0;
-            core.SEQ = 1;
+            core.SEQ = 0;
             core.MAS = core.Cpsr.ThumbMode ? BusWidth.HalfWord : BusWidth.Word;
             core.nMREQ = true;
         }
