@@ -86,7 +86,7 @@ static partial void {funcName}(Core core, uint instruction)
     }}
 
     core.nOPC = true;
-    core.SEQ = LdmStmUtils._storeLoadMultiplePopCount > 1 ? 1 : 0;
+    core.SEQ = 0;
     core.MAS = BusWidth.Word;
     {nrwStr}
     core.NextExecuteAction = &{nextAction};
