@@ -12,6 +12,15 @@ internal struct InternalMemoryControl
     internal bool IsWRAMDisabled;
     internal bool Is256KBWRAM;
     internal int WaitControlWRAM;
+
+    public InternalMemoryControl()
+    {
+        _raw = 0x0D00_0020;
+        IsWRAMDisabled = false;
+        Is256KBWRAM = true;
+        WaitControlWRAM = 2;
+        Update();
+    }
     
     internal void Reset()
     {
