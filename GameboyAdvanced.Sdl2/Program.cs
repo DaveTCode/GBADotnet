@@ -51,6 +51,10 @@ internal class Program
 
                 var application = new Sdl2Application(device, o.PixelSize, consoleLevelLoggingSwitch);
                 application.Run();
+            })
+            .WithNotParsed(o =>
+            {
+                Console.WriteLine(o);
             });
     }
 }

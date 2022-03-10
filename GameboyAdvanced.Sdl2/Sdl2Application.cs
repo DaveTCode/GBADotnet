@@ -51,9 +51,10 @@ internal class Sdl2Application : IDisposable
             $"GBA - {_device.LoadedRomName()}",
             SDL.SDL_WINDOWPOS_UNDEFINED,
             SDL.SDL_WINDOWPOS_UNDEFINED,
-            240 * _pixelSize,
-            160 * _pixelSize,
+            Device.WIDTH * _pixelSize,
+            Device.HEIGHT * _pixelSize,
             SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN);
+        SDL.SDL_SetWindowMinimumSize(_window, Device.WIDTH, Device.HEIGHT);
 
         if (_window == IntPtr.Zero)
         {

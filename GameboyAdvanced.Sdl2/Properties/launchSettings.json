@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "Aging Cartridge": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "ARM Wrestler": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler-gba-fixed.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -15,6 +19,10 @@
     "Openbuster": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\openbuster.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Zayd - Prefetch Abuse": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\prefetch-abuse-idleafter.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Return Address": {
       "commandName": "Project",
