@@ -11,6 +11,7 @@ internal class DmaController
     private readonly DmaDataUnit _dmaDataUnit;
     private readonly InterruptInterconnect _interruptInterconnect;
     private readonly Ppu.Ppu _ppu;
+    private readonly Core _cpu;
 
     /// <summary>
     /// Like the CPU, when DMA accesses memory addresses it can stretch out N/S
@@ -20,13 +21,14 @@ internal class DmaController
     /// </summary>
     private int _waitStates = 0;
 
-    internal DmaController(MemoryBus bus, BaseDebugger debugger, DmaDataUnit dmaDataUnit, InterruptInterconnect interruptInterconnect, Ppu.Ppu ppu)
+    internal DmaController(MemoryBus bus, BaseDebugger debugger, DmaDataUnit dmaDataUnit, InterruptInterconnect interruptInterconnect, Ppu.Ppu ppu, Core cpu)
     {
         _bus = bus ?? throw new ArgumentNullException(nameof(bus));
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
         _dmaDataUnit = dmaDataUnit ?? throw new ArgumentNullException(nameof(dmaDataUnit));
         _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
         _ppu = ppu ?? throw new ArgumentNullException(nameof(ppu));
+        _cpu = cpu ?? throw new ArgumentNullException(nameof(cpu));
     }
 
     internal void Reset()
@@ -95,14 +97,16 @@ internal class DmaController
                 if (_dmaDataUnit.Channels[ii].IntCachedValue.HasValue)
                 {
                     _waitStates += (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
-                        ? _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].SequentialAccess)
-                        : _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].SequentialAccess);
+                        ? _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value)
+                        : _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value);
                     _dmaDataUnit.Channels[ii].IntDestinationAddress = (uint)(_dmaDataUnit.Channels[ii].IntDestinationAddress + _dmaDataUnit.Channels[ii].IntDestAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
                     _dmaDataUnit.Channels[ii].IntWordCount--;
                     _dmaDataUnit.Channels[ii].IntCachedValue = null;
 
                     if (_dmaDataUnit.Channels[ii].IntWordCount == 0)
                     {
+                        // One additional cycle after DMA complete
+                        _waitStates++;
                         _dmaDataUnit.Channels[ii].IntCachedValue = null;
 
                         if (_dmaDataUnit.Channels[ii].ControlReg.Repeat && _dmaDataUnit.Channels[ii].ControlReg.StartTiming != StartTiming.Immediate)
@@ -146,11 +150,11 @@ internal class DmaController
                     {
                         if (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
                         {
-                            _dmaDataUnit.Channels[ii].InternalLatch = _bus.ReadWord(_dmaDataUnit.Channels[ii].IntSourceAddress, _dmaDataUnit.Channels[ii].SequentialAccess, 0xFFFF_FFFF, _dmaDataUnit.Channels[ii].InternalLatch, ref waitStates);
+                            _dmaDataUnit.Channels[ii].InternalLatch = _bus.ReadWord(_dmaDataUnit.Channels[ii].IntSourceAddress, _dmaDataUnit.Channels[ii].SequentialAccess, 0xFFFF_FFFF, _dmaDataUnit.Channels[ii].InternalLatch, _cpu.Cycles, ref waitStates);
                         }
                         else
                         {
-                            _dmaDataUnit.Channels[ii].InternalLatch = _bus.ReadHalfWord(_dmaDataUnit.Channels[ii].IntSourceAddress, _dmaDataUnit.Channels[ii].SequentialAccess, 0xFFFF_FFFF, _dmaDataUnit.Channels[ii].InternalLatch, ref waitStates);
+                            _dmaDataUnit.Channels[ii].InternalLatch = _bus.ReadHalfWord(_dmaDataUnit.Channels[ii].IntSourceAddress, _dmaDataUnit.Channels[ii].SequentialAccess, 0xFFFF_FFFF, _dmaDataUnit.Channels[ii].InternalLatch, _cpu.Cycles, ref waitStates);
                             _dmaDataUnit.Channels[ii].InternalLatch |= (_dmaDataUnit.Channels[ii].InternalLatch << 16);
                         }
                         _dmaDataUnit.Channels[ii].IntCachedValue = _dmaDataUnit.Channels[ii].InternalLatch;

@@ -44,7 +44,7 @@ internal struct DmaChannel
 
         if (enableBitFlip)
         {
-            ClocksToStart = 2; // 2 clock cycles after setting before DMA starts
+            ClocksToStart = 2; // 2 clock cycles after setting before DMA starts (and one at end)
             SequentialAccess = 0; // 1st read/write pair are non-sequential
 
             // Both source and destination addresses are forcibly aligned to halfword/word boundaries
