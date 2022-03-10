@@ -59,7 +59,9 @@ public class GamePak
 
     internal byte ReadByte(uint address) => address < _data.Length ? _data[address] : (byte)(address >> 1 >> (int)((address & 1) * 8));
 
-    internal ushort ReadHalfWord(uint address) => address < _data.Length ? Utils.ReadHalfWord(_data, address, 0x1FF_FFFF) : (ushort)(address >> 1);
+    internal ushort ReadHalfWord(uint address) => address < _data.Length 
+        ? Utils.ReadHalfWord(_data, address, 0x1FF_FFFF) 
+        : (ushort)(address >> 1);
 
     internal uint ReadWord(uint address) => address < _data.Length 
         ? Utils.ReadWord(_data, address, 0x1FF_FFFF) 
