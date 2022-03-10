@@ -31,7 +31,9 @@
 | PeterLemon | Cylinder Map             | :heavy_check_mark: | Ran on first attempt, not clear what it showcases                                                                                                                                                         |
 | PeterLemon | Myst                     | :heavy_check_mark: | Looks good to me although only let it play for 30s or so                                                                                                                                                  |
 | PeterLemon | BigBuckBunny             | :?:                | Runs but only displays video in top left quadrant, haven't checked if that's intentional                                                                                                                  |
-| PeterLemon | BIOS - ArcTac            | :x:                | Passes check but fails timer by a few cycles                                                                                                                                                              |
+| PeterLemon | BIOS - ArcTan            | :heavy_check_mark: | Passes after lots of work on timers                                                                                                                                                                       |
+| PeterLemon | BIOS - Div               | :heavy_check_mark: | Passes after lots of work on timers                                                                                                                                                                       |
+| PeterLemon | BIOS - Sqrt              | :heavy_check_mark: | Passes after lots of work on timers                                                                                                                                                                       |
 | PeterLemon | Timers                   | :heavy_check_mark: | Passes after implementing timer register byte reads                                                                                                                                                       |
 | mgba       | suite                    | :x:                | Required vblank interrupts to process key presses but now gets to menu and allows several tests to run. Memory tests hang but some others pass/fail                                                       |
 | TONC       | First                    | :heavy_check_mark: | First passing test case!                                                                                                                                                                                  |
@@ -44,12 +46,17 @@
 | TONC       | SWI Demo                 | :heavy_check_mark: | Required a really interesting interaction with PC and a load instruction which was bugged for ages                                                                                                        |
 | TONC       | SWI VSync                | :x:                | Uses sprites and affine transformations to get the effects, I just show a black screen as obj not implemented                                                                                             |
 | TONC       | IRQ Demo                 | :x:                | Garbled screen, looks likely because of screen effects which aren't implemented                                                                                                                           |
-| beeg       | beeg.gba                 | :x:                | Predictably fails because this rom modifies data outside of vblank and I use a vblank single time render at the moment                                                                                    |
-| AGB        | AGB_CHECKER_TCHK10       | :x:                | Hangs on a nintendo logo screen -not sure what it's supposed to do and its possible it's just showing lack of ppu |
+| beeg       | beeg.gba                 | :heavy_check_mark: | Predictably fails because this rom modifies data outside of vblank and I use a vblank single time render at the moment                                                                                    |
+| AGB        | AGB_CHECKER_TCHK10       | :x:                | Hangs on one of the LCD tests, also fails a few memory tests but this is super sensitive to timing issues around DMA so mgba must come first |
+| zayd       | prefetch abuse           | :x:                | All wrong values, still don't have a good handle on the prefetch module |
+| zayd       | dmaslow                  | :x:                | All wrong values, still don't have a good handle on the prefetch module |
+| zayd       | dmamedium                | :x:                | All wrong values, still don't have a good handle on the prefetch module |
+| zayd       | dmamedium2               | :x:                | All wrong values, still don't have a good handle on the prefetch module |
+| zayd       | dmafast                  | :x:                | All wrong values, still don't have a good handle on the prefetch module |
 
 ## Real Roms
 
 | Rom   | Status | Notes |
 | ----- | ------ | ----- |
-| Doom  | :x:    | Runs! First game to get in game |
-| Final Fantasy 6 | :x: | Reads a gamepad register I haven't mapped |
+| Doom  | :heavy_check_mark:    | Runs! First game to get in game and playable |
+| Final Fantasy 6 | :x: | Gets in game but screen is missing all sorts of features |
