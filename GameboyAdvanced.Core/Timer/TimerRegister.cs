@@ -9,6 +9,7 @@ internal struct TimerRegister
     internal bool CountUpTiming;
     internal bool IrqEnabled;
     internal bool Start;
+    internal int CyclesToStart;
 
     public TimerRegister(int index)
     {
@@ -19,6 +20,7 @@ internal struct TimerRegister
         CountUpTiming = false;
         IrqEnabled = false;
         Start = false;
+        CyclesToStart = 0;
     }
 
     internal ushort ReadControl() => (ushort)(
@@ -27,7 +29,7 @@ internal struct TimerRegister
         (IrqEnabled ? (1 << 6) : 0) |
         (Start ? (1 << 7) : 0));
 
-    internal void UpdateControl(ushort value, HashSet<int> runningTimerIxs)
+    internal void UpdateControl(ushort value)
     {
         PrescalerSelection = (TimerPrescaler)(value & 0b11);
         CountUpTiming = (value & (1 << 2)) == (1 << 2);
@@ -40,12 +42,8 @@ internal struct TimerRegister
             if (!oldStart)
             {
                 Counter = Reload;
+                CyclesToStart = 2; // 2 cycle startup delay inc this cycle?
             }
-            _ = runningTimerIxs.Add(Index);
-        }
-        else
-        {
-            _ = runningTimerIxs.Remove(Index);
         }
     }
 
@@ -57,5 +55,6 @@ internal struct TimerRegister
         CountUpTiming = false;
         IrqEnabled = false;
         Start = false;
+        CyclesToStart = 0;
     }
 }

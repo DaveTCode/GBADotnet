@@ -8,18 +8,23 @@ namespace GameboyAdvanced.Core.Timer;
 /// The timer controller subsystem ticks on each clock cycle and is responsible 
 /// for incrementing/decrementing timers and determining when to fire IRQs
 /// </summary>
-internal class TimerController
+internal unsafe class TimerController
 {
     private readonly BaseDebugger _debugger;
     private readonly InterruptInterconnect _interruptInterconnect;
     private readonly TimerRegister[] _timers = new TimerRegister[4] { new TimerRegister(0), new TimerRegister(1), new TimerRegister(2), new TimerRegister(3) };
     private readonly int[] _timerSteps = new int[4];
-    private readonly HashSet<int> _runningTimerIxs = new();
+    private delegate*<TimerController, void> _timerFunction = &StepNoop;
 
     internal TimerController(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
     {
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
         _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
+    }
+
+    internal void Step()
+    {
+        _timerFunction(this);
     }
 
     internal void Reset()
@@ -30,28 +35,36 @@ internal class TimerController
         }
     }
 
+    internal static void StepNoop(TimerController _) { }
 
-    internal void Step()
+    internal static void StepOp(TimerController ctrl)
     {
         // TODO - How to avoid this for loop when no timers enabled?
-        for (var ix = 0; ix < _timers.Length; ix++)
+        for (var ix = 0; ix < ctrl._timers.Length; ix++)
         {
-            if (_timers[ix].Start)
+            if (ctrl._timers[ix].Start)
             {
-                if (_timers[ix].CountUpTiming && ix > 0) // Count up timing on TIMER0 is ignored (TODO - is it? Or does it hang?)
+                // Emulate startup delay
+                if (ctrl._timers[ix].CyclesToStart > 0)
                 {
-                    if (_timers[ix - 1].Start && _timers[ix - 1].Counter == _timers[ix - 1].Reload)
+                    ctrl._timers[ix].CyclesToStart--;
+                    continue;
+                }
+
+                if (ctrl._timers[ix].CountUpTiming && ix > 0) // Count up timing on TIMER0 is ignored (TODO - is it? Or does it hang?)
+                {
+                    if (ctrl._timers[ix - 1].Start && ctrl._timers[ix - 1].Counter == ctrl._timers[ix - 1].Reload)
                     {
-                        TickTimer(ref _timers[ix], ix);
+                        ctrl.TickTimer(ref ctrl._timers[ix], ix);
                     }
                 }
                 else
                 {
-                    _timerSteps[ix]--;
-                    if (_timerSteps[ix] == 0)
+                    ctrl._timerSteps[ix]--;
+                    if (ctrl._timerSteps[ix] == 0)
                     {
-                        _timerSteps[ix] = _timers[ix].PrescalerSelection.Cycles();
-                        TickTimer(ref _timers[ix], ix);
+                        ctrl._timerSteps[ix] = ctrl._timers[ix].PrescalerSelection.Cycles();
+                        ctrl.TickTimer(ref ctrl._timers[ix], ix);
                     }
                 }
             }
@@ -109,35 +122,51 @@ internal class TimerController
         {
             case TM0CNT_L:
                 _timers[0].Reload = value;
-                return;
+                break;
             case TM0CNT_H:
-                _timers[0].UpdateControl(value, _runningTimerIxs);
+                _timers[0].UpdateControl(value);
                 _timerSteps[0] = _timers[0].PrescalerSelection.Cycles();
-                return;
+                break;
             case TM1CNT_L:
                 _timers[1].Reload = value;
-                return;
+                break;
             case TM1CNT_H:
-                _timers[1].UpdateControl(value, _runningTimerIxs);
+                _timers[1].UpdateControl(value);
                 _timerSteps[1] = _timers[1].PrescalerSelection.Cycles();
-                return;
+                break;
             case TM2CNT_L:
                 _timers[2].Reload = value;
-                return;
+                break;
             case TM2CNT_H:
-                _timers[2].UpdateControl(value, _runningTimerIxs);
+                _timers[2].UpdateControl(value);
                 _timerSteps[2] = _timers[2].PrescalerSelection.Cycles();
-                return;
+                break;
             case TM3CNT_L:
                 _timers[3].Reload = value;
-                return;
+                break;
             case TM3CNT_H:
-                _timers[3].UpdateControl(value, _runningTimerIxs);
+                _timers[3].UpdateControl(value);
                 _timerSteps[3] = _timers[3].PrescalerSelection.Cycles();
-                return;
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not mapped for timers");
         }
+
+        CheckEnableTimerFunction();
+    }
+
+    internal void CheckEnableTimerFunction()
+    {
+        for (var ii = 0; ii < 4; ii++)
+        {
+            if (_timers[ii].Start)
+            {
+                _timerFunction = &StepOp;
+                return;
+            }
+        }
+
+        _timerFunction = &StepNoop;
     }
 
     internal void WriteWord(uint address, uint value)
