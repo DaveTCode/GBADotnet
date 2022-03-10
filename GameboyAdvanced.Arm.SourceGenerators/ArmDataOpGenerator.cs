@@ -215,8 +215,11 @@ internal static unsafe partial class Arm
                             _ => "core.ClearPipeline();"
                         };
 
-                        var dontIncrementAOnICycle = type == OperandType.Llr || type == OperandType.Lrr || type == OperandType.Arr || type == OperandType.Rrr
-                            ? "core.AIncrement = 0;"
+                        var resetMemoryUnit = type == OperandType.Llr || type == OperandType.Lrr || type == OperandType.Arr || type == OperandType.Rrr
+                            ? @"
+core.nOPC = false;
+core.SEQ = 1;
+core.nMREQ = false;"
                             : "";
 
                         // Most data ops take 1S cycle to operate but operations which use a register shifted
@@ -240,14 +243,15 @@ static partial void {funcName + "_" + type.ToString().ToLowerInvariant()}_write(
             {clearPipeline}
         }}
 
-        Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
-        {dontIncrementAOnICycle}
+        {resetMemoryUnit}
+        core.MoveExecutePipelineToNextInstruction();
 }}
 ";
                         var nextActionStatement = type == OperandType.Llr || type == OperandType.Lrr || type == OperandType.Arr || type == OperandType.Rrr
                             ? $@"
 core.nMREQ = true;
 core.nOPC = true;
+core.SEQ = 0;
 core.NextExecuteAction = &{funcName + "_" + type.ToString().ToLowerInvariant()}_write;"
                             : $"{funcName + "_" + type.ToString().ToLowerInvariant()}_write(core, instruction);";
 
