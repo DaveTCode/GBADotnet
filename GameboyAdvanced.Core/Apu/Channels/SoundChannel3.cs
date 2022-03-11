@@ -48,35 +48,53 @@ internal class SoundChannel3 : GBSoundChannel
     internal override ushort ReadControlH() =>
         (ushort)((_volume << 13) | (_force75PctVolume ? (1 << 15) : 0));
 
-    internal override void WriteControlH(ushort value)
+    internal override void WriteControlH(byte value, uint byteIndex)
     {
-        _length = value & 0XF;
-        _volume = (value >> 13) & 0b11;
-        _force75PctVolume = (value >> 15) == 1;
+        switch (byteIndex)
+        {
+            case 0:
+                _length = value & 0xF;
+                break;
+            default:
+                _volume = (value >> 5) & 0b11;
+                _force75PctVolume = (value >> 7) == 1;
+                break;
+        }
     }
 
     internal override ushort ReadControlL() =>
         (ushort)((_isTwoBankRam ? (1 << 5) : 0) | (_waveRamBankIndex << 6) | (_on ? (1 << 7) : 0));
 
-    internal override void WriteControlL(ushort value)
+    internal override void WriteControlL(byte value, uint byteIndex)
     {
-        _isTwoBankRam = ((value >> 5) & 1) == 1;
-        _waveRamBankIndex = (value >> 6) & 1;
-        _on = ((value >> 7) & 1) == 1;
+        if (byteIndex == 0)
+        {
+            _isTwoBankRam = ((value >> 5) & 1) == 1;
+            _waveRamBankIndex = (value >> 6) & 1;
+            _on = ((value >> 7) & 1) == 1;
+        }
     }
 
     internal override ushort ReadControlX() => (ushort)(_lengthFlag ? (1 << 14) : 0);
 
-    internal override void WriteControlX(ushort value)
+    internal override void WriteControlX(byte value, uint byteIndex)
     {
-        _sampleRate = value & 0b111_1111_1111;
-        _lengthFlag = ((value >> 14) & 0b1) == 0b1;
-        _restartScheduled = ((value >> 15) & 0b1) == 0b1;
+        switch (byteIndex)
+        {
+            case 0:
+                _sampleRate = (_sampleRate & 0xFF00) | value;
+                break;
+            default:
+                _sampleRate = (_sampleRate & 0xFF) | ((value & 0b111) << 8);
+                _lengthFlag = ((value >> 6) & 0b1) == 0b1;
+                _restartScheduled = ((value >> 7) & 0b1) == 0b1;
+                break;
+        }
     }
 
-    internal void WriteWaveRam(uint alignedAddress, ushort value)
+    internal void WriteWaveRamByte(uint address, byte value)
     {
-        Utils.WriteHalfWord(_waveRamBanks[_waveRamBankIndex ^ 1], 0xF, alignedAddress, value);
+        _waveRamBanks[_waveRamBankIndex ^ 1][address & 0xF] = value;
     }
 
     internal ushort ReadWaveRam(uint alignedAddress) =>

@@ -47,10 +47,8 @@ internal class Apu
         return (ushort)(_psgFifoMasterEnable ? (1 << 7) : 0);
     }
 
-    internal byte ReadByte(uint address, uint openbus) => address switch
-    {
-        _ => throw new NotImplementedException("Byte reads from APU registers not implemented")
-    };
+    internal byte ReadByte(uint address, uint openbus) => 
+        (byte)(ReadHalfWord(address, openbus) >> (int)(8 * (address & 1)));
 
     internal ushort ReadHalfWord(uint alignedAddress, uint openbus) => alignedAddress switch
     {
@@ -86,58 +84,62 @@ internal class Apu
 
     internal void WriteByte(uint address, byte value)
     {
-        throw new NotImplementedException("Byte write to APU registers not yet implemented");
-    }
-
-    internal void WriteHalfWord(uint alignedAddress, ushort value)
-    {
-        switch (alignedAddress)
+        switch (address & 0xFFFF_FFFE)
         {
             case SOUND1CNT_L: // Channel 1 Sweep register
-                _channels[0].WriteControlL(value);
+                _channels[0].WriteControlL(value, address & 1);
                 break;
             case SOUND1CNT_H: // Channel 1 Duty/Length/Envelope
-                _channels[0].WriteControlH(value);
+                _channels[0].WriteControlH(value, address & 1);
                 break;
             case SOUND1CNT_X: // Channel 1 Frequency/Control
-                _channels[0].WriteControlX(value);
+                _channels[0].WriteControlX(value, address & 1);
                 break;
             case SOUND2CNT_L: // Channel 2 Duty/Length/Envelope
-                _channels[1].WriteControlL(value);
+                _channels[1].WriteControlL(value, address & 1);
                 break;
             case SOUND2CNT_H: // Channel 2 Frequency/Control
-                _channels[1].WriteControlH(value);
+                _channels[1].WriteControlH(value, address & 1);
                 break;
             case SOUND3CNT_L: // Channel 3 Stop/Wave RAM select
-                _channels[2].WriteControlL(value);
+                _channels[2].WriteControlL(value, address & 1);
                 break;
             case SOUND3CNT_H: // Channel 3 Length/Volume
-                _channels[2].WriteControlH(value);
+                _channels[2].WriteControlH(value, address & 1);
                 break;
             case SOUND3CNT_X: // Channel 3 Frequency/Control
-                _channels[2].WriteControlX(value);
+                _channels[2].WriteControlX(value, address & 1);
                 break;
             case SOUND4CNT_L: // Channel 4 Length/Envelope
-                _channels[3].WriteControlL(value);
+                _channels[3].WriteControlL(value, address & 1);
                 break;
             case SOUND4CNT_H: // Channel 4 Frequency/Control
-                _channels[3].WriteControlH(value);
+                _channels[3].WriteControlH(value, address & 1);
                 break;
             case SOUNDCNT_L: // Control Stereo/Volume/Enable
-                _soundControlRegister.SetSoundCntL(value);
+                _soundControlRegister.SetSoundCntL(value, address & 1);
                 break;
             case SOUNDCNT_H: // Control mixing/DMA control
-                _soundControlRegister.SetSoundCntH(value);
+                _soundControlRegister.SetSoundCntH(value, address & 1);
                 break;
             case SOUNDCNT_X: // Control Sound on/off
-                _psgFifoMasterEnable = ((value >> 7) & 0b1) == 0b1;
+                if ((address & 1) == 1)
+                {
+                    _psgFifoMasterEnable = ((value >> 7) & 0b1) == 0b1;
+                }
                 break;
             case SOUNDBIAS: // Sound PWM Control
-                _biasLevel = (value >> 1) & 0b1_1111_1111;
-                _samplingCycle = (value >> 14) & 0b11;
+                if ((address & 1) == 1)
+                {
+                    _biasLevel = (value >> 1) & 0b1_1111_1111;
+                }
+                else
+                {
+                    _samplingCycle = (value >> 6) & 0b11;
+                }
                 break;
-            case var _ when alignedAddress is >= WAVE_RAM and < WAVE_RAM + 16: // Channel 3 wave pattern RAM
-                (_channels[2] as SoundChannel3)!.WriteWaveRam(alignedAddress, value);
+            case var _ when address is >= WAVE_RAM and < WAVE_RAM + 16: // Channel 3 wave pattern RAM
+                (_channels[2] as SoundChannel3)!.WriteWaveRamByte(address, value);
                 break;
             case FIFO_A: // Channel A FIFO low half word, Data 0-1
                 // TODO
@@ -152,6 +154,12 @@ internal class Apu
                 // TODO
                 break;
         }
+    }
+
+    internal void WriteHalfWord(uint alignedAddress, ushort value)
+    {
+        WriteByte(alignedAddress, (byte)value);
+        WriteByte(alignedAddress + 1, (byte)(value >> 8));
     }
 
     internal void WriteWord(uint alignedAddress, uint value)

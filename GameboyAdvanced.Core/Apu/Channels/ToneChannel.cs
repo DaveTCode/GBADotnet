@@ -12,20 +12,27 @@ internal abstract class ToneChannel : GBSoundChannel
 
     internal ToneChannel(int index) : base(index) { }
 
-    protected void WriteDutyLengthEnvelope(ushort value)
+    protected void WriteDutyLength(byte value)
     {
         _length = value & 0b11_1111;
         _dutyPattern = (value >> 6) & 0b11;
-        _envelope.Set((byte)(value >> 8));
     }
 
     protected ushort ReadDutyLengthEnvelope() => (ushort)((_dutyPattern << 6) | (_envelope.Get() << 8));
 
-    protected void WriteFrequencyControl(ushort value)
+    protected void WriteFrequencyControl(byte value, uint byteIndex)
     {
-        _frequency = value & 0b0111_1111_1111;
-        _lengthFlag = ((value >> 14) & 0b1) == 0b1;
-        _restartScheduled = ((value >> 15) & 0b1) == 0b1;
+        switch (byteIndex)
+        {
+            case 0:
+                _frequency = (_frequency & 0xFF00) | value;
+                break;
+            default:
+                _frequency = (_frequency & 0xFF) | ((value & 0b111) << 8);
+                _lengthFlag = ((value >> 6) & 0b1) == 0b1;
+                _restartScheduled = ((value >> 7) & 0b1) == 0b1;
+                break;
+        }
     }
 
     protected ushort ReadFrequencyControl() => (ushort)(_lengthFlag ? (1 << 14) : 0);

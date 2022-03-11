@@ -21,24 +21,32 @@ internal class SoundControlRegister
 
     internal void Reset()
     {
-        SetSoundCntL(0);
-        SetSoundCntH(0);
+        SetSoundCntL(0, 0);
+        SetSoundCntL(0, 1);
+        SetSoundCntH(0, 0);
+        SetSoundCntH(0, 1);
     }
 
-    internal void SetSoundCntL(ushort value)
+    internal void SetSoundCntL(byte value, uint byteIndex)
     {
-        Sound1to4MasterVolumeRight = value & 0b111;
-        Sound1to4MasterVolumeLeft = (value >> 4) & 0b111;
+        switch (byteIndex)
+        {
+            case 0:
+                Sound1to4MasterVolumeRight = value & 0b111;
+                Sound1to4MasterVolumeLeft = (value >> 4) & 0b111;
+                break;
+            default:
+                GbChannelEnableFlagsRight[0] = (value & 0b1) == 0b1;
+                GbChannelEnableFlagsRight[1] = ((value >> 1) & 0b1) == 0b1;
+                GbChannelEnableFlagsRight[2] = ((value >> 2) & 0b1) == 0b1;
+                GbChannelEnableFlagsRight[3] = ((value >> 3) & 0b1) == 0b1;
 
-        GbChannelEnableFlagsRight[0] = ((value >> 8) & 0b1) == 0b1;
-        GbChannelEnableFlagsRight[1] = ((value >> 9) & 0b1) == 0b1;
-        GbChannelEnableFlagsRight[2] = ((value >> 10) & 0b1) == 0b1;
-        GbChannelEnableFlagsRight[3] = ((value >> 11) & 0b1) == 0b1;
-
-        GbChannelEnableFlagsLeft[0] = ((value >> 12) & 0b1) == 0b1;
-        GbChannelEnableFlagsLeft[1] = ((value >> 13) & 0b1) == 0b1;
-        GbChannelEnableFlagsLeft[2] = ((value >> 14) & 0b1) == 0b1;
-        GbChannelEnableFlagsLeft[3] = ((value >> 15) & 0b1) == 0b1;
+                GbChannelEnableFlagsLeft[0] = ((value >> 4) & 0b1) == 0b1;
+                GbChannelEnableFlagsLeft[1] = ((value >> 5) & 0b1) == 0b1;
+                GbChannelEnableFlagsLeft[2] = ((value >> 6) & 0b1) == 0b1;
+                GbChannelEnableFlagsLeft[3] = ((value >> 7) & 0b1) == 0b1;
+                break;
+        }
     }
 
     internal ushort GetSoundCntL() => (ushort)(
@@ -54,26 +62,32 @@ internal class SoundControlRegister
         (GbChannelEnableFlagsLeft[3] ? (1 << 15) : 0));
 
 
-    internal void SetSoundCntH(ushort value)
+    internal void SetSoundCntH(byte value, uint byteIndex)
     {
-        Sound1to4Volume = value & 0b11;
-        _dmaChannels[0].FullVolume = ((value >> 2) & 0b1) == 0b1;
-        _dmaChannels[1].FullVolume = ((value >> 3) & 0b1) == 0b1;
-
-        _dmaChannels[0].EnableRight = ((value >> 8) & 0b1) == 0b1;
-        _dmaChannels[0].EnableLeft = ((value >> 9) & 0b1) == 0b1;
-        _dmaChannels[0].SelectTimer1 = ((value >> 10) & 0b1) == 0b1;
-        if (((value >> 11) & 0b1) == 0b1)
+        switch (byteIndex)
         {
-            _dmaChannels[0].ResetFifo();
-        }
+            case 0:
+                Sound1to4Volume = value & 0b11;
+                _dmaChannels[0].FullVolume = ((value >> 2) & 0b1) == 0b1;
+                _dmaChannels[1].FullVolume = ((value >> 3) & 0b1) == 0b1;
+                break;
+            case 1:
+                _dmaChannels[0].EnableRight = (value & 0b1) == 0b1;
+                _dmaChannels[0].EnableLeft = ((value >> 1) & 0b1) == 0b1;
+                _dmaChannels[0].SelectTimer1 = ((value >> 2) & 0b1) == 0b1;
+                if (((value >> 3) & 0b1) == 0b1)
+                {
+                    _dmaChannels[0].ResetFifo();
+                }
 
-        _dmaChannels[1].EnableRight = ((value >> 12) & 0b1) == 0b1;
-        _dmaChannels[1].EnableLeft = ((value >> 13) & 0b1) == 0b1;
-        _dmaChannels[1].SelectTimer1 = ((value >> 14) & 0b1) == 0b1;
-        if (((value >> 15) & 0b1) == 0b1)
-        {
-            _dmaChannels[1].ResetFifo();
+                _dmaChannels[1].EnableRight = ((value >> 4) & 0b1) == 0b1;
+                _dmaChannels[1].EnableLeft = ((value >> 5) & 0b1) == 0b1;
+                _dmaChannels[1].SelectTimer1 = ((value >> 6) & 0b1) == 0b1;
+                if (((value >> 7) & 0b1) == 0b1)
+                {
+                    _dmaChannels[1].ResetFifo();
+                }
+                break;
         }
     }
 

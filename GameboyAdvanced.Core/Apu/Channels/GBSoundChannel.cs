@@ -23,13 +23,13 @@ internal abstract class GBSoundChannel : BaseChannel
 
     internal abstract ushort ReadControlL();
 
-    internal abstract void WriteControlL(ushort value);
+    internal abstract void WriteControlL(byte value, uint byteIndex);
 
     internal abstract ushort ReadControlH();
 
-    internal abstract void WriteControlH(ushort value);
+    internal abstract void WriteControlH(byte value, uint byteIndex);
 
     internal abstract ushort ReadControlX();
 
-    internal abstract void WriteControlX(ushort value);
+    internal abstract void WriteControlX(byte value, uint byteIndex);
 }

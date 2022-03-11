@@ -11,7 +11,7 @@ internal class SweepUnit
         Set(0);
     }
 
-    internal void Set(ushort val)
+    internal void Set(byte val)
     {
         NumberOfSweepShift = val & 0b111;
         IsDecrease = (val & 0b1000) == 0b1000;

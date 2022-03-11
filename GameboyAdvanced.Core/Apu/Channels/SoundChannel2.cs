@@ -23,12 +23,23 @@ internal class SoundChannel2 : ToneChannel
 
     internal override ushort ReadControlH() => ReadFrequencyControl();
 
-    internal override void WriteControlH(ushort value) => WriteFrequencyControl(value);
+    internal override void WriteControlH(byte value, uint byteIndex) => WriteFrequencyControl(value, byteIndex);
 
     internal override ushort ReadControlL() => ReadDutyLengthEnvelope();
 
-    internal override void WriteControlL(ushort value) => WriteDutyLengthEnvelope(value);
+    internal override void WriteControlL(byte value, uint byteIndex)
+    {
+        switch (byteIndex)
+        {
+            case 0:
+                WriteDutyLength(value);
+                break;
+            default:
+                _envelope.Set(value);
+                break;
+        }
+    }
 
     internal override ushort ReadControlX() => throw new Exception("Not CNT_X register for sound 2");
-    internal override void WriteControlX(ushort value) => throw new Exception("Not CNT_X register for sound 2");
+    internal override void WriteControlX(byte value, uint byteIndex) => throw new Exception("Not CNT_X register for sound 2");
 }
