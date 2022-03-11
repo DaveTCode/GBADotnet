@@ -21,6 +21,7 @@ public class SwpTests
     private readonly static InterruptInterconnect _interruptInterconnect = new(_testDebugger, _interruptRegisters);
     private readonly static Gamepad _testGamepad = new(_testDebugger, _interruptInterconnect);
     private readonly static Ppu.Ppu _testPpu = new(_testDebugger, _interruptInterconnect);
+    private readonly static Apu.Apu _testApu = new(_testDebugger);
     private readonly static TimerController _testTimerController = new(_testDebugger, _interruptInterconnect);
     private readonly static SerialController _serialController = new(_testDebugger, _interruptInterconnect);
 
@@ -30,12 +31,12 @@ public class SwpTests
         Array.Clear(_bios);
         var instruction = 0b1110_0001_0000_0000_0001_0000_1001_0010; // SWP R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testApu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
         cpu.R[2] = 0xFEED_BEEFu; // This value should be overwritten
-        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFFu);
+        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFFu, 1);
 
         var waitStates = 0;
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
@@ -69,12 +70,12 @@ public class SwpTests
         Array.Clear(_bios);
         var instruction = 0b1110_0001_0100_0000_0001_0000_1001_0010; // SWPB R1, R2, [R0]
         Utils.WriteWord(_bios, 0xFFFF, 0x0, instruction);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testApu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
         cpu.R[2] = 0xFEED_BEEFu; // This value should be overwritten
-        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFEu);
+        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFEu, 1);
 
         var waitStates = 0;
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction

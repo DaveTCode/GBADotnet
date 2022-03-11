@@ -60,6 +60,7 @@ public static class IORegs
     public const uint SOUNDCNT_H = 0x04000082;
     public const uint SOUNDCNT_X = 0x04000084;
     public const uint SOUNDBIAS = 0x04000088;
+    public const uint WAVE_RAM = 0x04000090; // Not really IO register, 2x10h starting here
     public const uint FIFO_A = 0x040000A0;
     public const uint FIFO_B = 0x040000A4;
     public const uint DMA0SAD = 0x040000B0;

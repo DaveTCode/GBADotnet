@@ -21,6 +21,7 @@ public class StoreLoadMultipleTests
     private readonly static InterruptInterconnect _interruptInterconnect = new(_testDebugger, _interruptRegisters);
     private readonly static Gamepad _testGamepad = new(_testDebugger, _interruptInterconnect);
     private readonly static Ppu.Ppu _testPpu = new(_testDebugger, _interruptInterconnect);
+    private readonly static Apu.Apu _testApu = new(_testDebugger);
     private readonly static TimerController _testTimerController = new(_testDebugger, _interruptInterconnect);
     private readonly static SerialController _serialController = new(_testDebugger, _interruptInterconnect);
 
@@ -31,7 +32,7 @@ public class StoreLoadMultipleTests
         var instruction = 0b1100_0000_1111_1110; // STMIA R0!, [r1-r7]
         _bios[0] = (byte)(instruction & 0xFF);
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testApu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
@@ -77,7 +78,7 @@ public class StoreLoadMultipleTests
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
         _bios[2] = (byte)((instruction >> 16) & 0xFF);
         _bios[3] = (byte)((instruction >> 24) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testApu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         for (var r = 1u; r < 8; r++)
@@ -118,13 +119,13 @@ public class StoreLoadMultipleTests
         var instruction = 0b1100_1000_1111_1110; // LDMIA R0!, [r1-r7]
         _bios[0] = (byte)(instruction & 0xFF);
         _bios[1] = (byte)((instruction >> 8) & 0xFF);
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testApu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.Cpsr.ThumbMode = true;
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         for (var r = 0u; r < 7; r++)
         {
-            _ = cpu.Bus.WriteWord(0x0300_1000u + (r * 4), r + 1);
+            _ = cpu.Bus.WriteWord(0x0300_1000u + (r * 4), r + 1, 1);
         }
 
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline;

@@ -28,6 +28,7 @@ public unsafe class Device
     private readonly GamePak _gamepak;
     private readonly Gamepad _gamepad;
     private readonly Ppu.Ppu _ppu;
+    private readonly Apu.Apu _apu;
     private readonly TimerController _timerController;
     private readonly InterruptRegisters _interruptRegisters;
     private readonly InterruptInterconnect _interruptInterconnect;
@@ -66,9 +67,10 @@ public unsafe class Device
         _gamepad = new Gamepad(debugger, _interruptInterconnect);
         _timerController = new TimerController(debugger, _interruptInterconnect);
         _ppu = new Ppu.Ppu(debugger, _interruptInterconnect);
+        _apu = new Apu.Apu(debugger);
         _dmaData = new DmaDataUnit();
         _serialController = new SerialController(debugger, _interruptInterconnect);
-        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _dmaData, _timerController, _interruptRegisters, _serialController, debugger, skipBios);
+        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _apu, _dmaData, _timerController, _interruptRegisters, _serialController, debugger, skipBios);
         _cpu = new Core(Bus, skipBios, debugger, _interruptRegisters);
         _dmaCtrl = new DmaController(Bus, debugger, _dmaData, _interruptInterconnect, _ppu, _cpu);
         Debugger = debugger;

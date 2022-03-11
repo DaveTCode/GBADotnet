@@ -20,6 +20,7 @@ internal partial class MemoryBus
     private readonly Prefetcher _prefetcher;
     private readonly BaseDebugger _debugger;
     private readonly Ppu.Ppu _ppu;
+    private readonly Apu.Apu _apu;
     private readonly Gamepad _gamepad;
     private readonly GamePak _gamePak;
     private readonly DmaDataUnit _dma;
@@ -37,6 +38,7 @@ internal partial class MemoryBus
         Gamepad gamepad,
         GamePak gamePak,
         Ppu.Ppu ppu,
+        Apu.Apu apu,
         DmaDataUnit dma,
         TimerController timerController,
         InterruptRegisters interruptRegisters,
@@ -46,6 +48,7 @@ internal partial class MemoryBus
     {
         _bios = new Bios(bios, skipBios);
         _ppu = ppu ?? throw new ArgumentNullException(nameof(ppu));
+        _apu = apu ?? throw new ArgumentNullException(nameof(apu));
         _gamepad = gamepad ?? throw new ArgumentNullException(nameof(gamepad));
         _gamePak = gamePak ?? throw new ArgumentNullException(nameof(gamePak));
         _dma = dma ?? throw new ArgumentNullException(nameof(dma));
@@ -83,7 +86,7 @@ internal partial class MemoryBus
                 return address switch
                 {
                     uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.ReadRegisterByte(address, D),
-                    uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => (byte)0, // TODO - Sound registers
+                    uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => _apu.ReadByte(address, D),
                     uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadByte(address),
                     uint _ when address is >= 0x0400_0100 and <= 0x0400_0109 => _timerController.ReadByte(address),
                     uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => _serialController.ReadByte(address),
@@ -147,7 +150,7 @@ internal partial class MemoryBus
                 return alignedAddress switch
                 {
                     uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.ReadRegisterHalfWord(alignedAddress, D),
-                    uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8 => (ushort)0, // TODO - Sound registers,
+                    uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8 => _apu.ReadHalfWord(alignedAddress, D),
                     uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadHalfWord(alignedAddress, D),
                     uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0108 => _timerController.ReadHalfWord(alignedAddress),
                     uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C => _serialController.ReadHalfWord(alignedAddress),
@@ -216,7 +219,7 @@ internal partial class MemoryBus
                 return alignedAddress switch
                 {
                     uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_0056 => (uint)(_ppu.ReadRegisterHalfWord(alignedAddress, D) | (_ppu.ReadRegisterHalfWord(alignedAddress + 2, D) << 16)),
-                    uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8 => 0, // TODO - Sound registers not implemented
+                    uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8 => _apu.ReadWord(alignedAddress, D),
                     uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadWord(alignedAddress, D),
                     uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0108 => _timerController.ReadWord(alignedAddress),
                     uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C => _serialController.ReadWord(alignedAddress),
@@ -283,7 +286,7 @@ internal partial class MemoryBus
                         _ppu.WriteRegisterByte(address, value);
                         return 0;
                     case uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8:
-                        // TODO - No APU or sound registers yet
+                        _apu.WriteByte(address, value);
                         return 0;
                     case uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE:
                         _dma.WriteByte(address, value);
@@ -379,7 +382,7 @@ internal partial class MemoryBus
                         _ppu.WriteRegisterHalfWord(alignedAddress, value);
                         return 0;
                     case uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8:
-                        // TODO - No APU or sound registers yet
+                        _apu.WriteHalfWord(alignedAddress, value);
                         return 0;
                     case uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE:
                         _dma.WriteHalfWord(alignedAddress, value);
@@ -476,7 +479,7 @@ internal partial class MemoryBus
                         _ppu.WriteRegisterHalfWord(alignedAddress + 2, (ushort)(value >> 16));
                         return 0;
                     case uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8:
-                        // TODO - No APU or sound registers yet
+                        _apu.WriteWord(alignedAddress, value);
                         return 0;
                     case uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE:
                         _dma.WriteWord(alignedAddress, value);

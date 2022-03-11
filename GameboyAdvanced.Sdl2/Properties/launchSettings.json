@@ -24,6 +24,22 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\prefetch-abuse-idleafter.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Zayd - DMA Slow": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmaslow.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Zayd - DMA Medium": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmamedium.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Zayd - DMA Medium 2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmamedium2.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Zayd - DMA Fast": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmafast.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Return Address": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\retAddr.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"

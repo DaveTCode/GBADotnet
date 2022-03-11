@@ -21,6 +21,7 @@ public class ThumbTests
     private readonly static InterruptInterconnect _interruptInterconnect = new(_testDebugger, _interruptRegisters);
     private readonly static Gamepad _testGamepad = new(_testDebugger, _interruptInterconnect);
     private readonly static Ppu.Ppu _testPpu = new(_testDebugger, _interruptInterconnect);
+    private readonly static Apu.Apu _testApu = new(_testDebugger);
     private readonly static TimerController _testTimerController = new(_testDebugger, _interruptInterconnect);
     private readonly static SerialController _serialController = new(_testDebugger, _interruptInterconnect);
 
@@ -32,7 +33,7 @@ public class ThumbTests
     [InlineData(0x8000_0000, 2, 0, false)]
     public void TestLSL(uint rs, int offset, uint expected, bool expectedCarry)
     {
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testApu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.R[1] = rs;
 
@@ -49,7 +50,7 @@ public class ThumbTests
     [InlineData(0x8000_0000, 1, 0x4000_0000, false)]
     public void TestLSR(uint rs, int offset, uint expected, bool expectedCarry)
     {
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testApu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.R[1] = rs;
 
@@ -66,7 +67,7 @@ public class ThumbTests
     [InlineData(0x8000_0000, 1, 0xC000_0000, false)] // Retain bit 31
     public void TestASR(uint rs, int offset, uint expected, bool expectedCarry)
     {
-        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
+        var bus = new MemoryBus(_bios, _testGamepad, _testGamePak, _testPpu, _testApu, _testDmaDataUnit, _testTimerController, _interruptRegisters, _serialController, _testDebugger, false);
         var cpu = new Core(bus, false, _testDebugger, _interruptRegisters);
         cpu.R[1] = rs;
 
