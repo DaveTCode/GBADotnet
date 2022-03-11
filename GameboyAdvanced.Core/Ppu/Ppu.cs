@@ -308,7 +308,8 @@ internal partial class Ppu
         }
     }
 
-    internal byte ReadRegisterByte(uint address, uint openbus) => (byte)ReadRegisterHalfWord(address, openbus); // TODO - Not 100% confident about this although beeg.gba does it and the result works in that specific case (read VCOUNT with high byte being 0)
+    internal byte ReadRegisterByte(uint address, uint openbus) => 
+        (byte)(ReadRegisterHalfWord(address, openbus) >> (int)(8 * (address & 1))); // TODO - Not 100% confident about this although beeg.gba does it and the result works in that specific case (read VCOUNT with high byte being 0)
 
     internal ushort ReadRegisterHalfWord(uint address, uint openbus) => address switch
     {
@@ -335,7 +336,7 @@ internal partial class Ppu
         >= 0x0500_0000 and <= 0x05FF_FFFF => ReadPaletteByte(address),
         >= 0x0600_0000 and <= 0x06FF_FFFF => _vram[MaskVRamAddress(address)],
         >= 0x0700_0000 and <= 0x07FF_FFFF => ReadOamByte(address),
-        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
+        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused")
     };
 
     internal ushort ReadHalfWord(uint address) => address switch
@@ -344,7 +345,7 @@ internal partial class Ppu
         >= 0x0500_0000 and <= 0x05FF_FFFF => ReadPaletteHalfWord(address),
         >= 0x0600_0000 and <= 0x06FF_FFFF => Utils.ReadHalfWord(_vram, MaskVRamAddress(address), 0xF_FFFF),
         >= 0x0700_0000 and <= 0x07FF_FFFF => ReadOamHalfWord(address),
-        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused") // TODO - Handle unused addresses properly
+        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused")
     };
 
     /// <summary>
