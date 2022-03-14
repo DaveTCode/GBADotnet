@@ -73,51 +73,53 @@ message which you can't click through to because VS has decided it doesn't want 
 
 ## WIP
 
-* Cycle counting seems all off
-	* At least LDR as I've set it up seems to take 2 cycles (one to set up A and one to write it back, cycle 3 is missing) but all cycle counting seems off what mgba is reporting
-* Vast majority of simple roms are working now, PPU is whole frame only so lots of PPU specific tests don't work
-* jsmolka arm suite _almost_ passes but fails on test 530 stmdb on empty rlist. Doubt that's affecting anything else so deprioritised
-* mgba suite is the next serious target but current the main tests (DMA, Timing, Memory) all crash out after a while hitting illegal ops so _something_ is going wrong
-* No games work yet, almost all need BLDCNT which I haven't implemented
+State now is that almost all of the GBA is now emulated to it's basic form. 
+
+- The APU doesn't yet produce samples
+- The PPU implements all bitmap modes and BG text mode backgrounds but doesn't handle non-standard settings on screen size, 8 bit tiles etc
+- No affine transformations
+- No OBJs although data is being stored in OAM RAM and various corresponding objects
+
+Most basic test are passing and all CPU tests pass. mgba suite is passing most non-timing tests and is about halfway passing the timing based ones.
 
 ## Status
 
 | Component     | Status | Notes                         |
 | ------------- | ------ | ----------------------------- |
 | CPU - General | 95%    | All instructions implemented and DenSinH tests passed, definitely still bugs in some instructions |
-| CPU - Timing  | 30%    | Implementation considers timing properly but it's totally untested until mgba test suite can run |
+| CPU - Timing  | 70%    | Implementation considers timing properly but it's totally untested until mgba test suite can run |
 | Dma           | 30%    | Shown working for DMA3 in a Peter Lemon test rom (hello world), all DMAs theoretically implemented. Added vblank, hblank dmas but not special yet |
 | Input         | 80%    | Register read/write working and input from SDL app appears fine, no IRQs implemented, tested working on DenSinH tests. Dedicated keypad test working. |
-| Ppu           | 10%    | BG1-2 not implemented at all, BG0 only insofar as required for tests, 3-5 implemented as single end of frame render. No FIFO pixel pipeline, no IRQs, none of the required bits for tile maps etc |
+| Ppu           | 30%    | BG1-2 not implemented at all, BG0 only insofar as required for tests, 3-5 implemented as single end of frame render. No FIFO pixel pipeline, no IRQs, none of the required bits for tile maps etc |
 | Gamepak       | ?      | Not sure what will even be needed here although I can load a basic rom |
 | Serial        | 5%     | Just enough register read/writes mocked out to get roms which check them to pass |
 | Timers        | 60%    | Timer are tested and working (including a dedicated test rom), count down timers are _not_ working though |
-| APU           | 0%     | No registers or anything handled here yet |
-| OpenBus       | 15%    | IO registers are now mostly behaving correctly w.r.t open bus |
+| APU           | 20%    | No registers or anything handled here yet |
+| OpenBus       | 80%    | IO registers are now mostly behaving correctly w.r.t open bus |
 | IRQs          | 50%    | Interrupts are there from timers, ppu, dma, keypad and tested working to at least a basic extent. No serial or gamepad interrupts implemented |
 
 ## Surprising things
 
 ### Writes to odd registers during BIOS
 
-Can't remember details here just noticed some BIOs writes pre-open bus
+Can't remember details here just noticed some BIOS writes pre-open bus
 
 ## mgba test notes
 
 - Memory tests are intermittent at 1552/1552 DMA0 load from SRAM mirror seems to be the one which is inconsistent
-- IO register tests are up to 94/123 where the remainder are basically APU registers which I haven't implemented
-- Timer IRQ tests ~are~ were 1/90 and are now 0/90. Yay!
-- Timer Count up tests are 366/936 now that it's been implemented. Having looked into what these actually do though.
-- Timing Tests are 449/2020 but not sure whether to trust since timer irq tests are failing across the board so maybe my timers are screwed
+- IO register tests all pass including open bus and unused registers
+- Timing Tests are 1025/2020 and seem to be working quite well, all timed operations pass against IWRAM so the ops themselves take the right number of cycles. Most remaining issues are with prefetch unit
+- Timer IRQ tests are 36/90 but I'm not really sure what the different tests are doing. I don't implement any sort of IRQ delay either so this is all a bit suspect.
+- Timer Count up tests are 398/936 now that it's been implemented. Having looked into what these actually do though.
 - Shifter tests all pass
 - Carry tests all pass
-- Multiply long tests are failing on carry flag checks which _also_ fail in mgba & no$ so I'm not really sure anyone knows how to accurately set the carry flag
+- Multiply long tests are failing on carry flag checks which nobody knows how to pass
 - BIOS math tests all pass
 - DMA tests are 1220/1256
 	- Failures are Imm W R+0x10/+IWRAM/EWRAM both only from DMA channel 0 where expected value is 0 but I'm setting something (8 failures)
 	- HB1 W -ROM/EWRAM (and IWRAM) on all channels _except_ 0 (6) failures
 - MISC Edge test cases hangs for a while then hits 0/10
-- 
+- Video tests aren't really useful tests per se and I haven't checked them against mgba
 
 
 ## Which games test which features?
@@ -126,3 +128,4 @@ Can't remember details here just noticed some BIOs writes pre-open bus
 - Kirby Nightmare in Dreamland uses horizontal flipped tiles on logo page
 - Kirby also uses all 4 backgrounds with blending on the initial screens as well as lots of kirby sprites
 - Donkey Kong uses x scrolling on a BG to scroll clouds on title screen
+- Super Monkey Ball Jr seems to use 256 color mode and 256*256 size screen during logo screens

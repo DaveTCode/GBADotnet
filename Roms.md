@@ -47,7 +47,7 @@
 | TONC       | SWI VSync                | :x:                | Uses sprites and affine transformations to get the effects, I just show a black screen as obj not implemented                                                                                             |
 | TONC       | IRQ Demo                 | :x:                | Garbled screen, looks likely because of screen effects which aren't implemented                                                                                                                           |
 | beeg       | beeg.gba                 | :heavy_check_mark: | Predictably fails because this rom modifies data outside of vblank and I use a vblank single time render at the moment                                                                                    |
-| AGB        | AGB_CHECKER_TCHK10       | :x:                | Hangs on one of the LCD tests, also fails a few memory tests but this is super sensitive to timing issues around DMA so mgba must come first |
+| AGB        | AGB_CHECKER_TCHK10       | :x:                | No longer hangs after fixing the vcount flag (was set to 1 forever afer set once) but fails many tests. Most worryingly the timer tests |
 | zayd       | prefetch abuse           | :x:                | All wrong values, still don't have a good handle on the prefetch module |
 | zayd       | dmaslow                  | :x:                | All wrong values, still don't have a good handle on the prefetch module |
 | zayd       | dmamedium                | :x:                | All wrong values, still don't have a good handle on the prefetch module |
