@@ -34,7 +34,7 @@ internal partial class Ppu
         var maskedAddress = address & 0x3FF;
         _oam[maskedAddress >> 1] = value;
 
-        switch (maskedAddress & 0b11)
+        switch ((maskedAddress >> 1) & 0b11)
         {
             case 0:
                 _sprites[maskedAddress >> 3].UpdateAttr1(value);
