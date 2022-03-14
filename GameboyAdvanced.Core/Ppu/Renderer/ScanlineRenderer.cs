@@ -10,6 +10,28 @@ namespace GameboyAdvanced.Core.Ppu;
 /// </summary>
 internal partial class Ppu
 {
+    /// <summary>
+    /// Whilst iterating over the set of sprites we populate a list of 
+    /// properties for each pixel in the scanline so that we can then 
+    /// correctly blend sprites with backgrounds.
+    /// </summary>
+    private struct SpritePixelProperties
+    {
+        internal int PaletteColor;
+        internal SpriteMode PixelMode;
+        internal int Priority;
+    }
+
+    private struct BgPixelProperties
+    {
+        internal int PaletteColor;
+        internal int Priority;
+    }
+
+    private readonly int[][] _scanlineBgBuffer = new int[4][];
+    private readonly SpritePixelProperties[] _objBuffer = new SpritePixelProperties[Device.WIDTH];
+    private readonly BgPixelProperties[] _bgBuffer = new BgPixelProperties[Device.WIDTH];
+
     internal void DrawCurrentScanline()
     {
         var bgPriorities = new[] { -1, -1, -1, -1 };
@@ -25,7 +47,9 @@ internal partial class Ppu
                     }
                 }
 
-                CombineBackgroundsScanline();
+                DrawSpritesOnLine(0x0001_0000);
+                CombineBackgroundsInScanline();
+                CombineBackgroundsAndSprites();
                 break;
             case BgMode.Video1:
                 // Background 0-1 are text mode, 2-3 are affine
@@ -37,9 +61,11 @@ internal partial class Ppu
                     }
                 }
 
-                // TODO - Handle affine backgrounds
+                DrawSpritesOnLine(0x0001_0000);
 
-                CombineBackgroundsScanline();
+                // TODO - Handle affine backgrounds
+                CombineBackgroundsInScanline();
+                CombineBackgroundsAndSprites();
                 break;
             case BgMode.Video2:
                 for (var ii = 0; ii < 4; ii++)
@@ -51,23 +77,39 @@ internal partial class Ppu
 
                     // TODO - How to combine the backgrounds?
                 }
+
+                DrawSpritesOnLine(0x0001_0000);
+                CombineBackgroundsInScanline();
+                CombineBackgroundsAndSprites();
                 break;
             case BgMode.Video3:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode3CurrentScanline();
+
+                    DrawSpritesOnLine(0x0001_0000);
+
+                    // TODO - Add sprites in to bitmap modes 
                 }
                 break;
             case BgMode.Video4:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode4CurrentScanline();
+
+                    DrawSpritesOnLine(0x0001_4000);
+
+                    // TODO - Add sprites in to bitmap modes
                 }
                 break;
             case BgMode.Video5:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode5CurrentScanline();
+
+                    DrawSpritesOnLine(0x0001_4000);
+
+                    // TODO - Add sprites in to bitmap modes
                 }
                 break;
             case BgMode.Prohibited6:
@@ -77,7 +119,31 @@ internal partial class Ppu
         }
     }
 
-    private void CombineBackgroundsScanline()
+    private void CombineBackgroundsAndSprites()
+    {
+        var fbPtr = _currentLine * Device.WIDTH * 4;
+
+        for (var x = 0; x < Device.WIDTH; x++)
+        {
+            var bgEntry = _bgBuffer[x];
+            var spriteEntry = _objBuffer[x];
+
+            var paletteEntry = (bgEntry.Priority <= spriteEntry.Priority, bgEntry.PaletteColor, spriteEntry.PaletteColor) switch
+            {
+                (_, 0, 0) => BackdropColor,
+                (_, 0, _) => _paletteEntries[spriteEntry.PaletteColor],
+                (_, _, 0) => _paletteEntries[bgEntry.PaletteColor],
+                (true, _, _) => _paletteEntries[bgEntry.PaletteColor],
+                (false, _, _) => _paletteEntries[spriteEntry.PaletteColor],
+            };
+
+            Utils.ColorToRgb(paletteEntry, _frameBuffer.AsSpan(fbPtr));
+
+            fbPtr += 4;
+        }
+    }
+
+    private void CombineBackgroundsInScanline()
     {
         var sortedBgIxs = new[] { 0, 1, 2, 3 };
         // Step 1 - Use an optimal sorting network to sort the backgrounds in priority order
@@ -112,7 +178,6 @@ internal partial class Ppu
             sortedBgIxs[2] = tmp;
         }
 
-        var fbPtr = _currentLine * Device.WIDTH * 4;
         for (var x = 0; x < Device.WIDTH; x++)
         {
             var filledPixel = false;
@@ -121,7 +186,8 @@ internal partial class Ppu
                 // Check that the BG is both enabled and that the color is not the backdrop
                 if (_dispcnt.ScreenDisplayBg[sortedBgIxs[bgIx]] && _scanlineBgBuffer[sortedBgIxs[bgIx]][x] != 0)
                 {
-                    Utils.ColorToRgb(_paletteEntries[_scanlineBgBuffer[sortedBgIxs[bgIx]][x]], _frameBuffer.AsSpan(fbPtr));
+                    _bgBuffer[x].PaletteColor = _scanlineBgBuffer[sortedBgIxs[bgIx]][x];
+                    _bgBuffer[x].Priority = _backgrounds[bgIx].Control.BgPriority;
                     filledPixel = true;
                     break; // This was the highest priority pixel
                 }
@@ -129,10 +195,85 @@ internal partial class Ppu
 
             if (!filledPixel)
             {
-                Utils.ColorToRgb(BackdropColor, _frameBuffer.AsSpan(fbPtr));
+                _bgBuffer[x].PaletteColor = 0;
+                _bgBuffer[x].Priority = 4;
             }
+        }
+    }
 
-            fbPtr += 4;
+    private void DrawSpritesOnLine(uint baseTileAddress)
+    {
+        // Check if OBJs are disabled globally on the PPU
+        if (!_dispcnt.ScreenDisplayObj) return;
+
+        // Clear the previous scanlines obj buffer
+        for (var ii = 0; ii < Device.WIDTH; ii++)
+        {
+            _objBuffer[ii].PaletteColor = 0;
+            _objBuffer[ii].Priority = 4;
+            _objBuffer[ii].PixelMode = SpriteMode.Normal;
+        }
+
+        foreach (var sprite in _sprites)
+        {
+            // Check if the sprite is just disabled
+            if (sprite.ObjDisable && sprite.RotationScalingFlag) continue;
+
+            // Sprites that have gone too far beyond the edge of the screen loop back around
+            var loopedX = sprite.X >= Device.WIDTH ? sprite.X - 512 : sprite.X;
+            var loopedY = sprite.Y >= Device.HEIGHT ? sprite.Y - 256 : sprite.Y;
+
+            // Check if the sprite falls within the scanline
+            if (loopedY > _currentLine) continue;
+            if (loopedY + sprite.Height < _currentLine) continue;
+
+            // TODO - Double check this behaviour, do we skip prohibited mode sprites
+            if (sprite.ObjMode == SpriteMode.Prohibited) continue;
+
+            // TODO - Implement window mode sprites instead of skipping them
+            if (sprite.ObjMode == SpriteMode.ObjWindow) continue;
+
+            for (var ii = 0; ii < sprite.Width; ii++)
+            {
+                var lineX = loopedX + ii;
+
+                // Skip pixels which fall outside the visible area
+                if (lineX is < 0 or >= Device.WIDTH) continue;
+
+                // Skip pixels if a higher priority sprite already occupies that pixel
+                if (_objBuffer[lineX].Priority < sprite.PriorityRelativeToBg) continue;
+
+                // Work out which pixel relative to the sized texture we're processing
+                var textureX = sprite.HorizontalFlip ? sprite.Width - ii - 1 : ii;
+                var textureY = sprite.VerticalFlip ? sprite.Height - (_currentLine - loopedY) - 1 : _currentLine - loopedY;
+                
+                // Decide which tile corresponds to that texture coordinate,
+                // this depends on whether we're in 256 color mode and whether
+                // the OAM space is configured for 1D or 2D mapping
+                var tileAddressOffset = 32 * (sprite.LargePalette, _dispcnt.OneDimObjCharVramMapping) switch
+                {
+                    (true, true) => sprite.Tile + (textureY / 8 * (sprite.Width / 4)) + (textureX / 4),
+                    (true, false) => (sprite.Tile & 0xFFFF_FFFE) + (textureY * 4) + (textureX / 4),
+                    (false, true) => sprite.Tile + ((textureY / 8) * (sprite.Width / 8)) + (textureX / 8),
+                    (false, false) => sprite.Tile + (textureY * 4) + (textureX / 8),
+                };
+
+                tileAddressOffset += ((textureX % 8) * 32) + ((textureY % 8) * 4);
+
+                var tileData = _vram[baseTileAddress + tileAddressOffset];
+
+                // Color 0 in each BG/OBJ palette is transparent so replace with palette 0 color 0
+                // TODO - Not taking into account palette mode in BGxCNT
+                var pixelPalNo = sprite.LargePalette switch
+                {
+                    true => tileData,
+                    false => ((textureX & 1) == 1) ? (tileData >> 4) & 0b1111 : tileData & 0b1111,
+                };
+
+                _objBuffer[lineX].PaletteColor = pixelPalNo;
+                _objBuffer[lineX].Priority = sprite.PriorityRelativeToBg;
+                _objBuffer[lineX].PixelMode = sprite.ObjMode;
+            }
         }
     }
 
@@ -165,12 +306,12 @@ internal partial class Ppu
             var tileMapAddress = tileMapBase + (gridX * 2); // 2 bytes per tile map entry
             var tileMap = _vram[tileMapAddress] | (_vram[tileMapAddress + 1] << 8);
             var tile = tileMap & 0b11_1111_1111;
-            var _horizontalFlip = ((tileMap >> 10) & 1) == 1;
-            var _verticalFlip = ((tileMap >> 11) & 1) == 1;
+            var horizontalFlip = ((tileMap >> 10) & 1) == 1;
+            var verticalFlip = ((tileMap >> 11) & 1) == 1;
             var paletteNumber = ((tileMap >> 12) & 0b1111) << 4;
 
-            var tileX = _horizontalFlip ? 7 - (scrolledX % 8) : scrolledX % 8;
-            var tileY = _verticalFlip ? 7 - (lineScrolled % 8) : lineScrolled % 8;
+            var tileX = horizontalFlip ? 7 - (scrolledX % 8) : scrolledX % 8;
+            var tileY = verticalFlip ? 7 - (lineScrolled % 8) : lineScrolled % 8;
             var tileAddressOffset = (tileX / 2) + (tileY * 4);
             var tileAddress = charMapBase + (tile * 32) + tileAddressOffset; // 32 bytes per tile
             var tileData = _vram[tileAddress];
@@ -179,6 +320,11 @@ internal partial class Ppu
             // TODO - Not taking into account palette mode in BGxCNT
             var pixelPalNo = (pixelPalIx == 0) ? 0 : (paletteNumber | pixelPalIx);
             
+            if (_currentLine == 60 && x == 80)
+            {
+                var a = 1;
+            }
+
             scanlineBuffer[x] = pixelPalNo;
         }
     }

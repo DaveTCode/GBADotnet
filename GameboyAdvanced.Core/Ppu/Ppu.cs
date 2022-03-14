@@ -28,8 +28,6 @@ internal partial class Ppu
     // TODO - Might be more efficient to store as ushorts given access is over 16 bit bus?
     private readonly byte[] _vram = new byte[0x18000]; // 96KB
     private readonly byte[] _frameBuffer = new byte[Device.WIDTH * Device.HEIGHT * 4]; // RGBA order
-    private readonly int[][] _scanlineBgBuffer = new int[4][];
-    private readonly int[] _scanlinePriorities = new int[Device.WIDTH];
 
     private DisplayCtrl _dispcnt = new();
     private ushort _greenSwap;
@@ -58,7 +56,11 @@ internal partial class Ppu
 
         for (var ii = 0; ii < _sprites.Length; ii++)
         {
-            _sprites[ii].Index = ii;
+
+            _sprites[ii] = new Sprite
+            {
+                Index = ii,
+            };
         }
     }
 
@@ -68,6 +70,7 @@ internal partial class Ppu
         Array.Clear(_vram);
         Array.Clear(_oam);
         Array.Clear(_frameBuffer);
+        Array.Clear(_objBuffer);
         _dispcnt.Reset();
         _greenSwap = 0;
         _dispstat = new GeneralLcdStatus();
