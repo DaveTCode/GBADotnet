@@ -116,6 +116,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\irq_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - Obj Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\obj_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Panda": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\panda.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"

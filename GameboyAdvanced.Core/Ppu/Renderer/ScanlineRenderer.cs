@@ -26,6 +26,7 @@ internal partial class Ppu
     {
         internal int PaletteColor;
         internal int Priority;
+        internal bool ColorIsPaletteIndex;
     }
 
     private readonly int[][] _scanlineBgBuffer = new int[4][];
@@ -47,9 +48,7 @@ internal partial class Ppu
                     }
                 }
 
-                DrawSpritesOnLine(0x0001_0000);
                 CombineBackgroundsInScanline();
-                CombineBackgroundsAndSprites();
                 break;
             case BgMode.Video1:
                 // Background 0-1 are text mode, 2-3 are affine
@@ -61,11 +60,8 @@ internal partial class Ppu
                     }
                 }
 
-                DrawSpritesOnLine(0x0001_0000);
-
                 // TODO - Handle affine backgrounds
                 CombineBackgroundsInScanline();
-                CombineBackgroundsAndSprites();
                 break;
             case BgMode.Video2:
                 for (var ii = 0; ii < 4; ii++)
@@ -78,38 +74,24 @@ internal partial class Ppu
                     // TODO - How to combine the backgrounds?
                 }
 
-                DrawSpritesOnLine(0x0001_0000);
                 CombineBackgroundsInScanline();
-                CombineBackgroundsAndSprites();
                 break;
             case BgMode.Video3:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode3CurrentScanline();
-
-                    DrawSpritesOnLine(0x0001_0000);
-
-                    // TODO - Add sprites in to bitmap modes 
                 }
                 break;
             case BgMode.Video4:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode4CurrentScanline();
-
-                    DrawSpritesOnLine(0x0001_4000);
-
-                    // TODO - Add sprites in to bitmap modes
                 }
                 break;
             case BgMode.Video5:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode5CurrentScanline();
-
-                    DrawSpritesOnLine(0x0001_4000);
-
-                    // TODO - Add sprites in to bitmap modes
                 }
                 break;
             case BgMode.Prohibited6:
@@ -117,6 +99,13 @@ internal partial class Ppu
                 DrawProhibitedModeScanline();
                 break;
         }
+
+        // Sprites can exist on any background
+        DrawSpritesOnLine(0x0001_0000);
+
+        // Final step is to pick the highest priority pixel of each (bg vs obj)
+        // TODO - eventually I guess this will do alpha blending etc
+        CombineBackgroundsAndSprites();
     }
 
     private void CombineBackgroundsAndSprites()
@@ -128,17 +117,31 @@ internal partial class Ppu
             var bgEntry = _bgBuffer[x];
             var spriteEntry = _objBuffer[x];
 
-            var paletteEntry = (bgEntry.Priority <= spriteEntry.Priority, bgEntry.PaletteColor, spriteEntry.PaletteColor) switch
+            if (bgEntry.ColorIsPaletteIndex)
             {
-                (_, 0, 0) => BackdropColor,
-                (_, 0, _) => _paletteEntries[spriteEntry.PaletteColor],
-                (_, _, 0) => _paletteEntries[bgEntry.PaletteColor],
-                (true, _, _) => _paletteEntries[bgEntry.PaletteColor],
-                (false, _, _) => _paletteEntries[spriteEntry.PaletteColor],
-            };
+                var paletteEntry = (bgEntry.PaletteColor, spriteEntry.PaletteColor, bgEntry.Priority >= spriteEntry.Priority) switch 
+                {
+                    (0, 0, _) => BackdropColor,
+                    (0, _, _) => _paletteEntries[0x100 + spriteEntry.PaletteColor],
+                    (_, 0, _) => _paletteEntries[bgEntry.PaletteColor],
+                    (_, _, true) => _paletteEntries[0x100 + spriteEntry.PaletteColor],
+                    (_, _, false) => _paletteEntries[bgEntry.PaletteColor],
+                };
 
-            Utils.ColorToRgb(paletteEntry, _frameBuffer.AsSpan(fbPtr));
-
+                Utils.ColorToRgb(paletteEntry, _frameBuffer.AsSpan(fbPtr));
+            }
+            else
+            {
+                if (spriteEntry.Priority <= bgEntry.Priority && spriteEntry.PaletteColor != 0)
+                {
+                    Utils.ColorToRgb(_paletteEntries[0x100 + spriteEntry.PaletteColor], _frameBuffer.AsSpan(fbPtr));
+                }
+                else
+                {
+                    Utils.ColorToRgb(bgEntry.PaletteColor, _frameBuffer.AsSpan(fbPtr));
+                }
+            }
+            
             fbPtr += 4;
         }
     }
@@ -188,6 +191,7 @@ internal partial class Ppu
                 {
                     _bgBuffer[x].PaletteColor = _scanlineBgBuffer[sortedBgIxs[bgIx]][x];
                     _bgBuffer[x].Priority = _backgrounds[bgIx].Control.BgPriority;
+                    _bgBuffer[x].ColorIsPaletteIndex = true;
                     filledPixel = true;
                     break; // This was the highest priority pixel
                 }
@@ -197,6 +201,7 @@ internal partial class Ppu
             {
                 _bgBuffer[x].PaletteColor = 0;
                 _bgBuffer[x].Priority = 4;
+                _bgBuffer[x].ColorIsPaletteIndex = true;
             }
         }
     }
@@ -245,12 +250,12 @@ internal partial class Ppu
 
                 // Work out which pixel relative to the sized texture we're processing
                 var textureX = sprite.HorizontalFlip ? sprite.Width - ii - 1 : ii;
-                var textureY = sprite.VerticalFlip ? sprite.Height - (_currentLine - loopedY) - 1 : _currentLine - loopedY;
+                var textureY = sprite.VerticalFlip ? sprite.Height - (_currentLine - loopedY) : _currentLine - loopedY;
                 
                 // Decide which tile corresponds to that texture coordinate,
                 // this depends on whether we're in 256 color mode and whether
                 // the OAM space is configured for 1D or 2D mapping
-                var tileAddressOffset = 32 * (sprite.LargePalette, _dispcnt.OneDimObjCharVramMapping) switch
+                var tileAddressOffset = (sprite.LargePalette, _dispcnt.OneDimObjCharVramMapping) switch
                 {
                     (true, true) => sprite.Tile + (textureY / 8 * (sprite.Width / 4)) + (textureX / 4),
                     (true, false) => (sprite.Tile & 0xFFFF_FFFE) + (textureY * 4) + (textureX / 4),
@@ -258,7 +263,9 @@ internal partial class Ppu
                     (false, false) => sprite.Tile + (textureY * 4) + (textureX / 8),
                 };
 
-                tileAddressOffset += ((textureX % 8) * 32) + ((textureY % 8) * 4);
+                tileAddressOffset &= 0x3FF;
+                tileAddressOffset *= 32; // Each tile takes 32 bytes regardless of modes
+                tileAddressOffset += (textureX % 8) / 2 + ((textureY % 8) * 4);
 
                 var tileData = _vram[baseTileAddress + tileAddressOffset];
 
@@ -267,8 +274,13 @@ internal partial class Ppu
                 var pixelPalNo = sprite.LargePalette switch
                 {
                     true => tileData,
-                    false => ((textureX & 1) == 1) ? (tileData >> 4) & 0b1111 : tileData & 0b1111,
+                    false => (tileData >> (4 * (textureX & 1))) & 0b1111,
                 };
+
+                if (sprite.Index == 0 && textureY == 1)
+                {
+                    Console.WriteLine($"Sprite {sprite} -> {ii} -> {textureX},{textureY} -> {baseTileAddress + tileAddressOffset:X8} = {tileData & 0b1111},{(tileData >> 4) & 0b1111} = {_paletteEntries[0x100 + pixelPalNo]}");
+                }
 
                 _objBuffer[lineX].PaletteColor = pixelPalNo;
                 _objBuffer[lineX].Priority = sprite.PriorityRelativeToBg;
@@ -319,11 +331,6 @@ internal partial class Ppu
             // Color 0 in each BG/OBJ palette is transparent so replace with palette 0 color 0
             // TODO - Not taking into account palette mode in BGxCNT
             var pixelPalNo = (pixelPalIx == 0) ? 0 : (paletteNumber | pixelPalIx);
-            
-            if (_currentLine == 60 && x == 80)
-            {
-                var a = 1;
-            }
 
             scanlineBuffer[x] = pixelPalNo;
         }
@@ -334,12 +341,13 @@ internal partial class Ppu
     private void DrawBgMode3CurrentScanline()
     {
         var vramPtrBase = _currentLine * 480;
-        for (var col = 0; col < 480; col += 2)
+        for (var col = 0; col < 240; col ++)
         {
-            var vramPtr = vramPtrBase + col;
-            var fbPtr = 2 * vramPtr;
+            var vramPtr = vramPtrBase + (col * 2);
             var hw = _vram[vramPtr] | (_vram[vramPtr + 1] << 8);
-            Utils.ColorToRgb(hw, _frameBuffer.AsSpan(fbPtr));
+            _bgBuffer[col].PaletteColor = hw;
+            _bgBuffer[col].Priority = _backgrounds[2].Control.BgPriority;
+            _bgBuffer[col].ColorIsPaletteIndex = false;
         }
     }
 
@@ -351,10 +359,10 @@ internal partial class Ppu
         for (var col = 0; col < 240; col++)
         {
             var vramPtr = vramPtrBase + col;
-            var fbPtr = 4 * vramPtr;
             var paletteIndex = _vram[baseAddress + vramPtr];
-            var color = _paletteEntries[paletteIndex];
-            Utils.ColorToRgb(color, _frameBuffer.AsSpan(fbPtr));
+            _bgBuffer[col].PaletteColor = paletteIndex;
+            _bgBuffer[col].Priority = _backgrounds[2].Control.BgPriority;
+            _bgBuffer[col].ColorIsPaletteIndex = true;
         }
     }
 
@@ -363,12 +371,13 @@ internal partial class Ppu
         var baseAddress = _dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
 
         var vramPtrBase = baseAddress + (_currentLine * 320);
-        for (var col = 0; col < 480; col += 2)
+        for (var col = 0; col < 240; col++)
         {
-            var vramPtr = vramPtrBase + col;
-            var fbPtr = 2 * vramPtr;
+            var vramPtr = vramPtrBase + (col * 2);
             var hw = _vram[vramPtr] | (_vram[vramPtr + 1] << 8);
-            Utils.ColorToRgb(hw, _frameBuffer.AsSpan(fbPtr));
+            _bgBuffer[col].PaletteColor = hw;
+            _bgBuffer[col].Priority = _backgrounds[2].Control.BgPriority;
+            _bgBuffer[col].ColorIsPaletteIndex = false;
         }
     }
 }
