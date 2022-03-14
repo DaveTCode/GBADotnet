@@ -219,6 +219,7 @@ internal static unsafe partial class Arm
                             ? @"
 core.nOPC = false;
 core.SEQ = 1;
+core.AIncrement = 0;
 core.nMREQ = false;"
                             : "";
 
