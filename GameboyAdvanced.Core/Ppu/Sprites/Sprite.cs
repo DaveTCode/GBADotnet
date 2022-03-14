@@ -16,7 +16,7 @@ internal enum SpriteShape
     Prohibited,
 }
 
-internal struct Sprite
+internal class Sprite
 {
     internal int Index;
     internal int X;
@@ -36,6 +36,20 @@ internal struct Sprite
     internal int PriorityRelativeToBg;
     internal int PaletteNumber;
 
+    /// <summary>
+    /// This is a calculated property of a sprite based on size and shape
+    /// cached to make determining whether a sprite is within a scanline 
+    /// more efficient.
+    /// </summary>
+    internal int Height;
+
+    /// <summary>
+    /// This is a calculated property of a sprite based on size and shape
+    /// cached to make determining whether a sprite is within a scanline 
+    /// more efficient.
+    /// </summary>
+    internal int Width;
+
     internal void UpdateAttr1(ushort value)
     {
         Y = value & 0b1111_1111;
@@ -54,6 +68,7 @@ internal struct Sprite
         ObjMosaic = ((value >> 12) & 0b1) == 0b1;
         LargePalette = ((value >> 13) & 0b1) == 0b1;
         Shape = (SpriteShape)((value >> 14) & 0b11);
+        UpdateSize();
     }
 
     internal void UpdateAttr2(ushort value)
@@ -63,6 +78,7 @@ internal struct Sprite
         HorizontalFlip = ((value >> 12) & 0b1) == 0b1;
         VerticalFlip = ((value >> 13) & 0b1) == 0b1;
         SpriteSize = (value >> 14) & 0b11;
+        UpdateSize();
     }
 
     internal void UpdateAttr3(ushort value)
@@ -77,6 +93,42 @@ internal struct Sprite
         UpdateAttr1(0);
         UpdateAttr2(0);
         UpdateAttr3(0);
+    }
+
+    private void UpdateSize()
+    {
+        (Width, Height) = SpriteSize switch
+        {
+            0 => Shape switch
+            {
+                SpriteShape.Square => (8, 8),
+                SpriteShape.Horizontal => (16, 8),
+                SpriteShape.Vertical => (8, 16),
+                _ => (0, 0),
+            },
+            1 => Shape switch
+            {
+                SpriteShape.Square => (16, 16),
+                SpriteShape.Horizontal => (32, 8),
+                SpriteShape.Vertical => (8, 32),
+                _ => (0, 0),
+            },
+            2 => Shape switch
+            {
+                SpriteShape.Square => (32, 32),
+                SpriteShape.Horizontal => (32, 16),
+                SpriteShape.Vertical => (16, 32),
+                _ => (0, 0),
+            },
+            3 => Shape switch
+            {
+                SpriteShape.Square => (64, 64),
+                SpriteShape.Horizontal => (64, 32),
+                SpriteShape.Vertical => (64, 32),
+                _ => (0, 0),
+            },
+            _ => throw new Exception("Invalid sprite size")
+        };
     }
 
     public override string ToString() => $"{Index} - ({X},{Y}) = Tile {Tile}";
