@@ -104,6 +104,24 @@ Most basic test are passing and all CPU tests pass. mgba suite is passing most n
 
 Can't remember details here just noticed some BIOS writes pre-open bus
 
+### ARM technical reference manual letting me down?
+
+The ARM tech reference manual for data operations with shift suggests that nMREQ is driven high during the 1st 
+cycle to take effect in the second. This is sensible as it makes it what GBA emudevs call an "internal" cycle. What doesn't make
+sense is that it suggests nOPC is driven low when nMREQ is high and then driven high after.
+
+| Cycle | Address | MAS[1:0] | nRW | Data    | nMREQ | SEQ | nOPC |
+|-------|---------|----------|-----|---------|-------|-----|------|
+| 1     | pc+2L   | i        | 0   | (pc+2L) | 1     | 0   | 0    |
+| 2     | pc+3L   | i        | 0   | -       | 0     | 1   | 1    |
+| ..    | pc+3L   |          |     |         |       |     |      |
+
+That kinda works but what does it mean for the pipeline? The memory request for PC+3L happens on the 3rd cycle (which is an S cycle)
+but how does the pipeline know that memory read is not just a generic memory read? I thought that's what nOPC did.
+
+In my emulator I drive nOPC high on cycle 1 with nMREQ and low on cycle 2 which I believe is right. Of course I could just misunderstand 
+how the pipeline is wired up to the data bus.
+
 ## mgba test notes
 
 - Memory tests are intermittent at 1552/1552 DMA0 load from SRAM mirror seems to be the one which is inconsistent
