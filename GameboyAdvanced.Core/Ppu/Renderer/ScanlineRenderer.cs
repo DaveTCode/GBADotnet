@@ -49,6 +49,8 @@ internal partial class Ppu
                 }
 
                 CombineBackgroundsInScanline();
+
+                DrawSpritesOnLine(false);
                 break;
             case BgMode.Video1:
                 // Background 0-1 are text mode, 2-3 are affine
@@ -62,6 +64,8 @@ internal partial class Ppu
 
                 // TODO - Handle affine backgrounds
                 CombineBackgroundsInScanline();
+
+                DrawSpritesOnLine(false);
                 break;
             case BgMode.Video2:
                 for (var ii = 0; ii < 4; ii++)
@@ -75,33 +79,38 @@ internal partial class Ppu
                 }
 
                 CombineBackgroundsInScanline();
+
+                DrawSpritesOnLine(false);
                 break;
             case BgMode.Video3:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode3CurrentScanline();
                 }
+
+                DrawSpritesOnLine(true);
                 break;
             case BgMode.Video4:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode4CurrentScanline();
                 }
+
+                DrawSpritesOnLine(true);
                 break;
             case BgMode.Video5:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode5CurrentScanline();
                 }
+
+                DrawSpritesOnLine(true);
                 break;
             case BgMode.Prohibited6:
             case BgMode.Prohibited7:
                 DrawProhibitedModeScanline();
                 break;
         }
-
-        // Sprites can exist on any background
-        DrawSpritesOnLine(0x0001_0000);
 
         // Final step is to pick the highest priority pixel of each (bg vs obj)
         // TODO - eventually I guess this will do alpha blending etc
@@ -206,7 +215,7 @@ internal partial class Ppu
         }
     }
 
-    private void DrawSpritesOnLine(uint baseTileAddress)
+    private void DrawSpritesOnLine(bool bitmapMode)
     {
         // Check if OBJs are disabled globally on the PPU
         if (!_dispcnt.ScreenDisplayObj) return;
@@ -230,7 +239,7 @@ internal partial class Ppu
 
             // Check if the sprite falls within the scanline
             if (loopedY > _currentLine) continue;
-            if (loopedY + sprite.Height < _currentLine) continue;
+            if (loopedY + sprite.Height <= _currentLine) continue;
 
             // TODO - Double check this behaviour, do we skip prohibited mode sprites
             if (sprite.ObjMode == SpriteMode.Prohibited) continue;
@@ -269,9 +278,11 @@ internal partial class Ppu
                 };
                 finalTileNumber &= 0x3FF; // Wrap around tiles
 
+                if (bitmapMode && finalTileNumber < 0x200) continue;
+
                 var finalTileAddressOffset = finalTileNumber * (sprite.LargePalette ? 64 : 32);
 
-                var pixelByteAddress = baseTileAddress + finalTileAddressOffset + ((spriteX % 8) / 2) + ((spriteY % 8) * 4);
+                var pixelByteAddress = 0x0001_0000 + finalTileAddressOffset + ((spriteX % 8) / 2) + ((spriteY % 8) * 4);
 
                 var tileData = _vram[pixelByteAddress];
 
@@ -280,7 +291,7 @@ internal partial class Ppu
                 var pixelPalNo = sprite.LargePalette switch
                 {
                     true => tileData,
-                    false => (tileData >> (4 * (spriteX & 1))) & 0b1111,
+                    false => (sprite.PaletteNumber << 4) | (tileData >> (4 * (spriteX & 1))) & 0b1111,
                 };
 
                 _objBuffer[lineX].PaletteColor = pixelPalNo;
@@ -316,15 +327,19 @@ internal partial class Ppu
             var scrolledX = x + background.XOffset;
             var gridX = (scrolledX / 8) % 32;
 
+            // First find the entry in the tile map corresponding to the pixel we're processing (x,y)
+            // Note that this is independent of large or small tile modes
             var tileMapAddress = tileMapBase + (gridX * 2); // 2 bytes per tile map entry
-            var tileMap = _vram[tileMapAddress] | (_vram[tileMapAddress + 1] << 8);
-            var tile = tileMap & 0b11_1111_1111;
-            var horizontalFlip = ((tileMap >> 10) & 1) == 1;
-            var verticalFlip = ((tileMap >> 11) & 1) == 1;
-            var paletteNumber = ((tileMap >> 12) & 0b1111) << 4;
+            var tileMapEntry = _vram[tileMapAddress] | (_vram[tileMapAddress + 1] << 8);
+            var tile = tileMapEntry & 0b11_1111_1111;
+            var horizontalFlip = ((tileMapEntry >> 10) & 1) == 1;
+            var verticalFlip = ((tileMapEntry >> 11) & 1) == 1;
+            var paletteNumber = ((tileMapEntry >> 12) & 0b1111) << 4;
 
             var tileX = horizontalFlip ? 7 - (scrolledX % 8) : scrolledX % 8;
             var tileY = verticalFlip ? 7 - (lineScrolled % 8) : lineScrolled % 8;
+
+            // Now find the address of the tile taking into account the size of the screen 
             var tileAddressOffset = (tileX / 2) + (tileY * 4);
             var tileAddress = charMapBase + (tile * 32) + tileAddressOffset; // 32 bytes per tile
             var tileData = _vram[tileAddress];
