@@ -80,10 +80,6 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\first.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "TONC - Second": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\second.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
     "TONC - Hello": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\hello.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -104,6 +100,58 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\key_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - IRQ Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\irq_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Bigmap": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\bigmap.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Blddemo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\bld_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - BM Modes": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\bm_modes.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Brin Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\brin_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - CBB Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\cbb_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - DMA Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\dma_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - OA Combo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\oacombo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Obj Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\obj_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Prio Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\prio_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Sbb Affine": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\sbb_aff.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Sbb Reg": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\sbb_reg.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Second": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\second.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "TONC - SWI Demo": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\swi_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -112,13 +160,25 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\swi_vsync.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "TONC - IRQ Demo": {
+    "TONC - Tmr Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\irq_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\tmr_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "TONC - Obj Demo": {
+    "TONC - TTE Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\obj_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\tte_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - TXT Obj": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\txt_obj.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - TXT SE1": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\txt_se1.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - TXT SE2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\txt_se2.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Panda": {
       "commandName": "Project",

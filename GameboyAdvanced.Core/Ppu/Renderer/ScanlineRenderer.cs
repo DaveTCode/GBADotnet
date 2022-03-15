@@ -128,7 +128,7 @@ internal partial class Ppu
 
             if (bgEntry.ColorIsPaletteIndex)
             {
-                var paletteEntry = (bgEntry.PaletteColor, spriteEntry.PaletteColor, bgEntry.Priority >= spriteEntry.Priority) switch 
+                var paletteEntry = (bgEntry.PaletteColor, spriteEntry.PaletteColor & 0b1111, bgEntry.Priority >= spriteEntry.Priority) switch 
                 {
                     (0, 0, _) => BackdropColor,
                     (0, _, _) => _paletteEntries[0x100 + spriteEntry.PaletteColor],
@@ -141,7 +141,7 @@ internal partial class Ppu
             }
             else
             {
-                if (spriteEntry.Priority <= bgEntry.Priority && spriteEntry.PaletteColor != 0)
+                if (spriteEntry.Priority <= bgEntry.Priority && (spriteEntry.PaletteColor & 0b1111) != 0)
                 {
                     Utils.ColorToRgb(_paletteEntries[0x100 + spriteEntry.PaletteColor], _frameBuffer.AsSpan(fbPtr));
                 }
