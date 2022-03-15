@@ -246,41 +246,42 @@ internal partial class Ppu
                 if (lineX is < 0 or >= Device.WIDTH) continue;
 
                 // Skip pixels if a higher priority sprite already occupies that pixel
-                if (_objBuffer[lineX].Priority < sprite.PriorityRelativeToBg) continue;
+                if (_objBuffer[lineX].Priority <= sprite.PriorityRelativeToBg && _objBuffer[lineX].PaletteColor != 0) continue;
 
-                // Work out which pixel relative to the sized texture we're processing
-                var textureX = sprite.HorizontalFlip ? sprite.Width - ii - 1 : ii;
-                var textureY = sprite.VerticalFlip ? sprite.Height - (_currentLine - loopedY) : _currentLine - loopedY;
-                
+                // Work out which pixel relative to the sprite texture we're processing
+                var spriteX = sprite.HorizontalFlip ? sprite.Width - ii - 1 : ii;
+                var spriteY = sprite.VerticalFlip ? sprite.Height - (_currentLine - loopedY) : _currentLine - loopedY;
+
+                // The sprite is made up of N(>=1) 8*8 tiles in each direction,
+                // work out which of these tiles is in use
+                var spriteGridX = spriteX / 8;
+                var spriteGridY = spriteY / 8;
+
                 // Decide which tile corresponds to that texture coordinate,
                 // this depends on whether we're in 256 color mode and whether
                 // the OAM space is configured for 1D or 2D mapping
-                var tileAddressOffset = (sprite.LargePalette, _dispcnt.OneDimObjCharVramMapping) switch
+                var finalTileNumber = (sprite.LargePalette, _dispcnt.OneDimObjCharVramMapping) switch
                 {
-                    (true, true) => sprite.Tile + (textureY / 8 * (sprite.Width / 4)) + (textureX / 4),
-                    (true, false) => (sprite.Tile & 0xFFFF_FFFE) + (textureY * 4) + (textureX / 4),
-                    (false, true) => sprite.Tile + ((textureY / 8) * (sprite.Width / 8)) + (textureX / 8),
-                    (false, false) => sprite.Tile + (textureY * 4) + (textureX / 8),
+                    (true, true) => sprite.Tile + (spriteGridY * sprite.Width) + spriteGridX,
+                    (true, false) => (sprite.Tile & 0xFFFF_FFFE) + (spriteGridY * 4) + spriteGridX, // TODO - Not sure
+                    (false, true) => sprite.Tile + (spriteGridY * sprite.Width / 8) + spriteGridX,
+                    (false, false) => sprite.Tile + (spriteGridY * 32) + spriteGridX,
                 };
+                finalTileNumber &= 0x3FF; // Wrap around tiles
 
-                tileAddressOffset &= 0x3FF;
-                tileAddressOffset *= 32; // Each tile takes 32 bytes regardless of modes
-                tileAddressOffset += (textureX % 8) / 2 + ((textureY % 8) * 4);
+                var finalTileAddressOffset = finalTileNumber * (sprite.LargePalette ? 64 : 32);
 
-                var tileData = _vram[baseTileAddress + tileAddressOffset];
+                var pixelByteAddress = baseTileAddress + finalTileAddressOffset + ((spriteX % 8) / 2) + ((spriteY % 8) * 4);
+
+                var tileData = _vram[pixelByteAddress];
 
                 // Color 0 in each BG/OBJ palette is transparent so replace with palette 0 color 0
                 // TODO - Not taking into account palette mode in BGxCNT
                 var pixelPalNo = sprite.LargePalette switch
                 {
                     true => tileData,
-                    false => (tileData >> (4 * (textureX & 1))) & 0b1111,
+                    false => (tileData >> (4 * (spriteX & 1))) & 0b1111,
                 };
-
-                if (sprite.Index == 0 && textureY == 1)
-                {
-                    Console.WriteLine($"Sprite {sprite} -> {ii} -> {textureX},{textureY} -> {baseTileAddress + tileAddressOffset:X8} = {tileData & 0b1111},{(tileData >> 4) & 0b1111} = {_paletteEntries[0x100 + pixelPalNo]}");
-                }
 
                 _objBuffer[lineX].PaletteColor = pixelPalNo;
                 _objBuffer[lineX].Priority = sprite.PriorityRelativeToBg;
