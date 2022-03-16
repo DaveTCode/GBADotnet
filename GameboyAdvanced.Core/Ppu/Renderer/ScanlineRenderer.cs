@@ -255,7 +255,7 @@ internal partial class Ppu
                 if (lineX is < 0 or >= Device.WIDTH) continue;
 
                 // Skip pixels if a higher priority sprite already occupies that pixel
-                if (_objBuffer[lineX].Priority <= sprite.PriorityRelativeToBg && _objBuffer[lineX].PaletteColor != 0) continue;
+                if (_objBuffer[lineX].Priority <= sprite.PriorityRelativeToBg && (_objBuffer[lineX].PaletteColor & 0b1111) != 0) continue;
 
                 // Work out which pixel relative to the sprite texture we're processing
                 var spriteX = sprite.HorizontalFlip ? sprite.Width - ii - 1 : ii;
