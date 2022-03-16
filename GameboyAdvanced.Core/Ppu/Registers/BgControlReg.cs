@@ -8,6 +8,27 @@ internal enum BgSize
     Regular64x64 = 0b11,
 }
 
+internal static class BgSizeExtensions
+{
+    internal static int Width(this BgSize size) => size switch
+    {
+        BgSize.Regular32x32 => 256,
+        BgSize.Regular32x64 => 256,
+        BgSize.Regular64x32 => 512,
+        BgSize.Regular64x64 => 512,
+        _ => throw new Exception("Invalid BG size")
+    };
+
+    internal static int Height(this BgSize size) => size switch
+    {
+        BgSize.Regular32x32 => 256,
+        BgSize.Regular32x64 => 512,
+        BgSize.Regular64x32 => 256,
+        BgSize.Regular64x64 => 512,
+        _ => throw new Exception("Invalid BG size")
+    };
+}
+
 internal struct BgControlReg
 {
     /// <summary>

@@ -313,23 +313,30 @@ internal partial class Ppu
 
     private void DrawTextModeScanline(Background background, ref int[] scanlineBuffer)
     {
-        // TODO - Mode 0 only implemented in so far as required for Deadbody cpu tests
-        // 32*32 tiles, 4 bit color depth
-        var charMapBase = background.Control.CharBaseBlock * 0x4000;
-        var lineScrolled = _currentLine + background.YOffset;
-        var gridY = (lineScrolled / 8) % 32;
-        var tileMapBase = (background.Control.ScreenBaseBlock * 0x800) + (gridY * 64);
+        var tileMapBase = background.Control.ScreenBaseBlock * 0x800;
 
-        // TODO - This is horribly inefficient, going through all 240 pixels one at a time
-        //        Could at least do things two at a time since the tile data is the same!
         for (var x = 0; x < Device.WIDTH; x++)
         {
-            var scrolledX = x + background.XOffset;
-            var gridX = (scrolledX / 8) % 32;
+            // Apply the scroll to the x,y screen coordinates to get tilemap coordinates
+            var scrolledY = (_currentLine + background.YOffset) % background.Control.ScreenSize.Height();
+            var scrolledX = (x + background.XOffset) % background.Control.ScreenSize.Width();
 
-            // First find the entry in the tile map corresponding to the pixel we're processing (x,y)
-            // Note that this is independent of large or small tile modes
-            var tileMapAddress = tileMapBase + (gridX * 2); // 2 bytes per tile map entry
+            // Convert the x,y coordinates into which tile coordinates
+            var screenBlockTileX = scrolledX / 8;
+            var screenBlockTileY = scrolledY / 8;
+
+            // If the background is > 32*32 then we need to work out which
+            // screen block is in use so we can apply an offset to the
+            // tilemap address
+            var screenBlockOffset = background.Control.ScreenSize switch
+            {
+                BgSize.Regular32x32 => 0,
+                BgSize.Regular32x64 => (screenBlockTileY / 32) * 2,
+                BgSize.Regular64x32 => (screenBlockTileX / 32),
+                BgSize.Regular64x64 => (screenBlockTileX / 32) + ((screenBlockTileY / 32) * 2),
+            };
+
+            var tileMapAddress = tileMapBase + (screenBlockOffset * 0x800) + ((screenBlockTileY % 32) * 64) + (2 * (screenBlockTileX % 32));
             var tileMapEntry = _vram[tileMapAddress] | (_vram[tileMapAddress + 1] << 8);
             var tile = tileMapEntry & 0b11_1111_1111;
             var horizontalFlip = ((tileMapEntry >> 10) & 1) == 1;
@@ -337,18 +344,20 @@ internal partial class Ppu
             var paletteNumber = ((tileMapEntry >> 12) & 0b1111) << 4;
 
             var tileX = horizontalFlip ? 7 - (scrolledX % 8) : scrolledX % 8;
-            var tileY = verticalFlip ? 7 - (lineScrolled % 8) : lineScrolled % 8;
+            var tileY = verticalFlip ? 7 - (scrolledY % 8) : scrolledY % 8;
 
-            // Now find the address of the tile taking into account the size of the screen 
-            var tileAddressOffset = (tileX / 2) + (tileY * 4);
-            var tileAddress = charMapBase + (tile * 32) + tileAddressOffset; // 32 bytes per tile
-            var tileData = _vram[tileAddress];
-            var pixelPalIx = (tileData >> (4 * (tileX & 1))) & 0b1111;
-            // Color 0 in each BG/OBJ palette is transparent so replace with palette 0 color 0
-            // TODO - Not taking into account palette mode in BGxCNT
-            var pixelPalNo = (pixelPalIx == 0) ? 0 : (paletteNumber | pixelPalIx);
-
-            scanlineBuffer[x] = pixelPalNo;
+            if (background.Control.LargePalette)
+            {
+                var tileAddress = (background.Control.CharBaseBlock * 0x4000) + (tile * 64) + tileX + (tileY * 8);
+                scanlineBuffer[x] = _vram[tileAddress];
+            }
+            else
+            {
+                var tileAddress = (background.Control.CharBaseBlock * 0x4000) + (tile * 32) + (tileX / 2) + (tileY * 4);
+                var pixelPalIx = (_vram[tileAddress] >> (4 * (tileX & 1))) & 0b1111;
+                var pixelPalNo = (pixelPalIx == 0) ? 0 : (paletteNumber | pixelPalIx);
+                scanlineBuffer[x] = pixelPalNo;
+            }
         }
     }
 
