@@ -14,6 +14,7 @@ internal partial class Ppu
 {
     private const int CyclesPerDot = 4;
     private const int CyclesPerVisibleLine = CyclesPerDot * Device.WIDTH; // 960
+    private const int HBlankFlagCycles = 1006; // Note this is more than the number of cycles in the visible line
     private const int HBlankDots = 68;
     private const int CyclesPerHBlank = CyclesPerDot * HBlankDots; // 272
     private const int CyclesPerLine = CyclesPerVisibleLine + CyclesPerHBlank; // 1232
@@ -109,7 +110,7 @@ internal partial class Ppu
     internal bool CanVBlankDma() => _dispstat.VBlankFlag;
 
     // TODO - Not sure what the behaviour here is if accessing OAM while the bit on dispcnt isn't set, does it pause DMA or write nothing?
-    internal bool CanHBlankDma() => _dispstat.HBlankFlag;
+    internal bool CanHBlankDma() => _dispstat.HBlankFlag && !_dispstat.VBlankFlag;
 
     /// <summary>
     /// Step the PPU by a single master clock cycle.
@@ -122,7 +123,7 @@ internal partial class Ppu
     {
         _currentLineCycles++;
 
-        if (_currentLineCycles == CyclesPerVisibleLine)
+        if (_currentLineCycles == HBlankFlagCycles)
         {
             if (_currentLine < Device.HEIGHT)
             {
