@@ -12,9 +12,11 @@ internal unsafe class TimerController
 {
     private readonly BaseDebugger _debugger;
     private readonly InterruptInterconnect _interruptInterconnect;
-    private readonly TimerRegister[] _timers = new TimerRegister[4] { new TimerRegister(0), new TimerRegister(1), new TimerRegister(2), new TimerRegister(3) };
+    private readonly TimerRegister[] _timers = new TimerRegister[4]
+    {
+        new TimerRegister(0), new TimerRegister(1), new TimerRegister(2), new TimerRegister(3)
+    };
     private readonly int[] _timerSteps = new int[4];
-    private delegate*<TimerController, void> _timerFunction = &StepNoop;
 
     internal TimerController(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
     {
@@ -24,7 +26,52 @@ internal unsafe class TimerController
 
     internal void Step()
     {
-        _timerFunction(this);
+        var timerReloaded = new bool[4];
+
+        // TODO - Very inefficient timer implementation ticking on each clock cycle, shown to take up 20% of cpu time and could be offloaded to scheduler
+        for (var ix = 0; ix < _timers.Length; ix++)
+        {
+            if (_timers[ix].Start || _timers[ix].CyclesToStop > 0)
+            {
+                // Emulate startup delay
+                if (_timers[ix].CyclesToStart > 0)
+                {
+                    _timers[ix].CyclesToStart--;
+                    continue;
+                }
+
+                if (_timers[ix].ReloadNeedsLatch)
+                {
+                    // The timer latches the reload value the cycle before it actually wraps
+                    // Thanks to Fleroviux for working this out
+                    _timers[ix].ReloadLatch = _timers[ix].Reload;
+                    _timers[ix].ReloadNeedsLatch = false;
+                }
+
+                // Emulate stop delay (from register write there's one more tick)
+                if (_timers[ix].CyclesToStop > 0)
+                {
+                    _timers[ix].CyclesToStop--;
+                }
+
+                if (_timers[ix].CountUpTiming && ix > 0) // Count up timing on TIMER0 is ignored (TODO - is it? Or does it hang?)
+                {
+                    if (timerReloaded[ix - 1])
+                    {
+                        timerReloaded[ix] = TickTimer(ref _timers[ix], ix);
+                    }
+                }
+                else
+                {
+                    _timerSteps[ix]--;
+                    if (_timerSteps[ix] == 0)
+                    {
+                        _timerSteps[ix] = _timers[ix].PrescalerSelection.Cycles();
+                        timerReloaded[ix] = TickTimer(ref _timers[ix], ix);
+                    }
+                }
+            }
+        }
     }
 
     internal void Reset()
@@ -35,49 +82,13 @@ internal unsafe class TimerController
         }
     }
 
-    internal static void StepNoop(TimerController _) { }
-
-    internal static void StepOp(TimerController ctrl)
-    {
-        // TODO - How to avoid this for loop when no timers enabled?
-        for (var ix = 0; ix < ctrl._timers.Length; ix++)
-        {
-            if (ctrl._timers[ix].Start)
-            {
-                // Emulate startup delay
-                if (ctrl._timers[ix].CyclesToStart > 0)
-                {
-                    ctrl._timers[ix].CyclesToStart--;
-                    continue;
-                }
-
-                if (ctrl._timers[ix].CountUpTiming && ix > 0) // Count up timing on TIMER0 is ignored (TODO - is it? Or does it hang?)
-                {
-                    if (ctrl._timers[ix - 1].Start && ctrl._timers[ix - 1].Counter == ctrl._timers[ix - 1].Reload)
-                    {
-                        ctrl.TickTimer(ref ctrl._timers[ix], ix);
-                    }
-                }
-                else
-                {
-                    ctrl._timerSteps[ix]--;
-                    if (ctrl._timerSteps[ix] == 0)
-                    {
-                        ctrl._timerSteps[ix] = ctrl._timers[ix].PrescalerSelection.Cycles();
-                        ctrl.TickTimer(ref ctrl._timers[ix], ix);
-                    }
-                }
-            }
-        }
-    }
-
-    private void TickTimer(ref TimerRegister timer, int ix)
+    private bool TickTimer(ref TimerRegister timer, int ix)
     {
         timer.Counter++;
 
         if (timer.Counter == 0)
         {
-            timer.Counter = timer.Reload;
+            timer.Counter = timer.ReloadLatch;
 
             if (timer.IrqEnabled)
             {
@@ -90,7 +101,11 @@ internal unsafe class TimerController
                     _ => throw new Exception("Invalid timer ix"),
                 });
             }
+
+            return true;
         }
+
+        return false;
     }
 
     internal byte ReadByte(uint address)
@@ -122,6 +137,7 @@ internal unsafe class TimerController
         {
             case TM0CNT_L:
                 _timers[0].Reload = value;
+                _timers[0].ReloadNeedsLatch = true;
                 break;
             case TM0CNT_H:
                 _timers[0].UpdateControl(value);
@@ -129,6 +145,7 @@ internal unsafe class TimerController
                 break;
             case TM1CNT_L:
                 _timers[1].Reload = value;
+                _timers[1].ReloadNeedsLatch = true;
                 break;
             case TM1CNT_H:
                 _timers[1].UpdateControl(value);
@@ -136,6 +153,7 @@ internal unsafe class TimerController
                 break;
             case TM2CNT_L:
                 _timers[2].Reload = value;
+                _timers[2].ReloadNeedsLatch = true;
                 break;
             case TM2CNT_H:
                 _timers[2].UpdateControl(value);
@@ -143,6 +161,7 @@ internal unsafe class TimerController
                 break;
             case TM3CNT_L:
                 _timers[3].Reload = value;
+                _timers[3].ReloadNeedsLatch = true;
                 break;
             case TM3CNT_H:
                 _timers[3].UpdateControl(value);
@@ -151,22 +170,6 @@ internal unsafe class TimerController
             default:
                 throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not mapped for timers");
         }
-
-        CheckEnableTimerFunction();
-    }
-
-    internal void CheckEnableTimerFunction()
-    {
-        for (var ii = 0; ii < 4; ii++)
-        {
-            if (_timers[ii].Start)
-            {
-                _timerFunction = &StepOp;
-                return;
-            }
-        }
-
-        _timerFunction = &StepNoop;
     }
 
     internal void WriteWord(uint address, uint value)

@@ -1,26 +1,32 @@
 ﻿namespace GameboyAdvanced.Core.Timer;
 
 internal struct TimerRegister
-{ 
+{
     internal int Index;
     internal ushort Reload;
+    internal bool ReloadNeedsLatch;
+    internal ushort ReloadLatch;
     internal ushort Counter;
     internal TimerPrescaler PrescalerSelection;
     internal bool CountUpTiming;
     internal bool IrqEnabled;
     internal bool Start;
     internal int CyclesToStart;
+    internal int CyclesToStop;
 
     public TimerRegister(int index)
     {
         Index = index;
         Reload = 0;
+        ReloadNeedsLatch = false;
+        ReloadLatch = 0;
         Counter = 0;
         PrescalerSelection = TimerPrescaler.F_1;
         CountUpTiming = false;
         IrqEnabled = false;
         Start = false;
         CyclesToStart = 0;
+        CyclesToStop = 0;
     }
 
     internal ushort ReadControl() => (ushort)(
@@ -37,24 +43,36 @@ internal struct TimerRegister
 
         var oldStart = Start;
         Start = (value & (1 << 7)) == (1 << 7);
-        if (Start)
+        if (Start && !oldStart)
         {
-            if (!oldStart)
-            {
-                Counter = Reload;
-                CyclesToStart = 2; // 2 cycle startup delay inc this cycle?
-            }
+            Counter = Reload;
+            CyclesToStart = 2; // 2 cycle startup delay
         }
+        else if (!Start && oldStart)
+        {
+            CyclesToStop = 1; // 1 cycle delay for register write to stop timer
+        }
+    }
+
+    internal void SetReload(ushort value)
+    {
+        Reload = value;
+        ReloadNeedsLatch = true;
     }
 
     internal void Reset()
     {
         Reload = 0;
-        Counter= 0;
+        ReloadNeedsLatch = false;
+        ReloadLatch = 0;
+        Counter = 0;
         PrescalerSelection = TimerPrescaler.F_1;
         CountUpTiming = false;
         IrqEnabled = false;
         Start = false;
         CyclesToStart = 0;
+        CyclesToStop = 0;
     }
+
+    public override string ToString() => $"{Index} - Reload {Reload:X4} - Control {ReadControl():X4} - Counter {Counter:X4}";
 }
