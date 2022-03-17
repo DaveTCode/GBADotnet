@@ -264,6 +264,38 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\unsafe\\unsafe.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "NBA - IRQ Delay": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\cpu\\irqdelay\\irqdelay.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - DMA - Burst into tears": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\dma\\burst-into-tears\\burst-into-tears.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - DMA - Latch": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\dma\\latch\\latch.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - DMA - Start Delay": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\dma\\start-delay\\start-delay.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - Haltcnt": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\haltcnt\\haltcnt.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - PPU - Basic Timing": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\ppu\\basic-timing\\basic-timing.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - Timer - Start Stop": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\timer\\start-stop\\start-stop.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - Timer - Reload": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\timer\\reload\\reload.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Doooooooom": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Doom (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
