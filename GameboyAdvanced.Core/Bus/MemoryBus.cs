@@ -355,7 +355,6 @@ internal partial class MemoryBus
                 return _waitControl.SRAMWaitControl;
             default:
                 return 0;
-                // TODO - throw new ArgumentOutOfRangeException(nameof(address));
         }
     }
 
@@ -447,8 +446,7 @@ internal partial class MemoryBus
                 _gamePak.WriteSRam(unalignedAddress, (byte)(value >> shift));
                 return _waitControl.SRAMWaitControl;
             default:
-                return 0; // TODO - Just hacking this in for now because mgba test suite writes to 0x04FFF780 during startup
-                // throw new ArgumentOutOfRangeException(nameof(address));
+                return 0;
         }
     }
 
@@ -546,8 +544,7 @@ internal partial class MemoryBus
                 _gamePak.WriteSRam(unalignedAddress, (byte)(value >> shift));
                 return _waitControl.SRAMWaitControl;
             default:
-                return 0; // TODO - Just hacking this in for now because mgba test suite writes to 0x04FFF780 during startup
-                // throw new ArgumentOutOfRangeException(nameof(unalignedAddress));
+                return 0;
         }
     }
 }
