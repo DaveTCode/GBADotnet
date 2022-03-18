@@ -230,8 +230,10 @@ internal partial class Ppu
 
         foreach (var sprite in _sprites)
         {
-            // Check if the sprite is just disabled
-            if (sprite.ObjDisable && sprite.RotationScalingFlag) continue;
+            // Check if the sprite is just disabled (affine sprites can't be
+            // disabled but we force the value to false so no check required
+            // here)
+            if (sprite.ObjDisable) continue;
 
             // Sprites that have gone too far beyond the edge of the screen loop back around
             var loopedX = sprite.X >= Device.WIDTH ? sprite.X - 512 : sprite.X;
@@ -258,8 +260,19 @@ internal partial class Ppu
                 if (_objBuffer[lineX].Priority <= sprite.PriorityRelativeToBg && (_objBuffer[lineX].PaletteColor & 0b1111) != 0) continue;
 
                 // Work out which pixel relative to the sprite texture we're processing
-                var spriteX = sprite.HorizontalFlip ? sprite.Width - ii - 1 : ii;
-                var spriteY = sprite.VerticalFlip ? sprite.Height - (_currentLine - loopedY) : _currentLine - loopedY;
+                var spriteX = sprite.HorizontalFlip && !sprite.IsAffine ? sprite.Width - ii - 1 : ii;
+                var spriteY = sprite.VerticalFlip && !sprite.IsAffine ? sprite.Height - (_currentLine - loopedY) : _currentLine - loopedY;
+
+                if (sprite.IsAffine)
+                {
+                    spriteX -= (sprite.Width / 2);
+                    spriteY -= (sprite.Height / 2);
+                    _spriteAffineTransforms[sprite.AffineGroup].TransformVector(ref spriteX, ref spriteY);
+                    spriteX += (sprite.Width / 2);
+                    spriteY += (sprite.Height / 2);
+
+                    if (spriteX >= sprite.Width || spriteX < 0 || spriteY >= sprite.Height || spriteY < 0) continue;
+                }
 
                 // The sprite is made up of N(>=1) 8*8 tiles in each direction,
                 // work out which of these tiles is in use

@@ -1,15 +1,25 @@
-﻿namespace GameboyAdvanced.Core.Ppu;
+﻿using System.Runtime.CompilerServices;
 
-internal struct SpriteRotation
+namespace GameboyAdvanced.Core.Ppu;
+
+internal struct AffineTransform
 {
-    internal int PA;
-    internal int PB;
-    internal int PC;
-    internal int PD;
+    internal short PA;
+    internal short PB;
+    internal short PC;
+    internal short PD;
 
     internal void Reset()
     {
         PA = PB = PC = PD = 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void TransformVector(ref int x, ref int y)
+    {
+        var newX = ((x * PA) + (y * PB)) >> 8;
+        y = ((x * PC) + (y * PD)) >> 8;
+        x = newX;
     }
 
     public override string ToString() => $"{PA},{PB},{PC},{PD}";
@@ -19,7 +29,7 @@ internal partial class Ppu
 {
     private readonly ushort[] _oam = new ushort[0x200]; // 1KB
     private readonly Sprite[] _sprites = new Sprite[128]; // OBJ0-127
-    private readonly SpriteRotation[] _spriteRotations = new SpriteRotation[32];
+    private readonly AffineTransform[] _spriteAffineTransforms = new AffineTransform[32];
 
     internal byte ReadOamByte(uint address) => 
         (byte)(ReadOamHalfWord(address) >> (int)(8 * (address & 0b1)));
@@ -52,16 +62,16 @@ internal partial class Ppu
                 switch (groupItem)
                 {
                     case 0x06:
-                        _spriteRotations[group].PA = value;
+                        _spriteAffineTransforms[group].PA = (short)value;
                         break;
                     case 0x0E:
-                        _spriteRotations[group].PB = value;
+                        _spriteAffineTransforms[group].PB = (short)value;
                         break;
                     case 0x16:
-                        _spriteRotations[group].PC = value;
+                        _spriteAffineTransforms[group].PC = (short)value;
                         break;
                     case 0x1E:
-                        _spriteRotations[group].PD = value;
+                        _spriteAffineTransforms[group].PD = (short)value;
                         break;
                 }
 

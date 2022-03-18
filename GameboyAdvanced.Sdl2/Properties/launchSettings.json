@@ -136,6 +136,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\obj_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - Obj Aff Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\obj_aff.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "TONC - Prio Demo": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\prio_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"

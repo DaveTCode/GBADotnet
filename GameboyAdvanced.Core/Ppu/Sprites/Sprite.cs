@@ -21,8 +21,8 @@ internal class Sprite
     internal int Index;
     internal int X;
     internal int Y;
-    internal bool RotationScalingFlag;
-    internal int RotationScalingParameter;
+    internal bool IsAffine;
+    internal int AffineGroup;
     internal bool DoubleSize;
     internal bool ObjDisable;
     internal SpriteMode ObjMode;
@@ -53,8 +53,8 @@ internal class Sprite
     internal void UpdateAttr1(ushort value)
     {
         Y = value & 0b1111_1111;
-        RotationScalingFlag = ((value >> 8) & 0b1) == 0b1;
-        if (RotationScalingFlag)
+        IsAffine = ((value >> 8) & 0b1) == 0b1;
+        if (IsAffine)
         {
             DoubleSize = ((value >> 9) & 0b1) == 0b1;
             ObjDisable = false;
@@ -74,7 +74,7 @@ internal class Sprite
     internal void UpdateAttr2(ushort value)
     {
         X = value & 0b1_1111_1111;
-        RotationScalingParameter = (value >> 9) & 0b1_1111;
+        AffineGroup = (value >> 9) & 0b1_1111;
         HorizontalFlip = ((value >> 12) & 0b1) == 0b1;
         VerticalFlip = ((value >> 13) & 0b1) == 0b1;
         SpriteSize = (value >> 14) & 0b11;
