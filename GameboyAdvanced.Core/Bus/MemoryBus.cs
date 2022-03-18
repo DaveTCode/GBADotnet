@@ -88,7 +88,7 @@ internal partial class MemoryBus
                     uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.ReadRegisterByte(address, D),
                     uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => _apu.ReadByte(address, D),
                     uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadByte(address),
-                    uint _ when address is >= 0x0400_0100 and <= 0x0400_0111 => _timerController.ReadByte(address),
+                    uint _ when address is >= 0x0400_0100 and <= 0x0400_010F => _timerController.ReadByte(address),
                     uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => _serialController.ReadByte(address),
                     uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.ReadByte(address),
                     uint _ when address is >= 0x0400_0134 and <= 0x0400_015A => _serialController.ReadByte(address),
@@ -152,7 +152,7 @@ internal partial class MemoryBus
                     uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.ReadRegisterHalfWord(alignedAddress, D),
                     uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8 => _apu.ReadHalfWord(alignedAddress, D),
                     uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadHalfWord(alignedAddress, D),
-                    uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.ReadHalfWord(alignedAddress),
+                    uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_010E => _timerController.ReadHalfWord(alignedAddress),
                     uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C => _serialController.ReadHalfWord(alignedAddress),
                     uint _ when alignedAddress is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.ReadHalfWord(alignedAddress),
                     uint _ when alignedAddress is >= 0x0400_0134 and <= 0x0400_015A => _serialController.ReadHalfWord(alignedAddress),
@@ -221,7 +221,7 @@ internal partial class MemoryBus
                     uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_0056 => (uint)(_ppu.ReadRegisterHalfWord(alignedAddress, D) | (_ppu.ReadRegisterHalfWord(alignedAddress + 2, D) << 16)),
                     uint _ when alignedAddress is >= 0x0400_0060 and <= 0x0400_00A8 => _apu.ReadWord(alignedAddress, D),
                     uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadWord(alignedAddress, D),
-                    uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0110 => _timerController.ReadWord(alignedAddress),
+                    uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_010E => _timerController.ReadWord(alignedAddress),
                     uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C => _serialController.ReadWord(alignedAddress),
                     uint _ when alignedAddress is >= 0x0400_0130 and <= 0x0400_0132 => (uint)(_gamepad.ReadHalfWord(alignedAddress) | (_gamepad.ReadHalfWord(alignedAddress + 2) << 16)),
                     uint _ when alignedAddress is >= 0x0400_0134 and <= 0x0400_015A => _serialController.ReadWord(alignedAddress),
@@ -291,7 +291,7 @@ internal partial class MemoryBus
                     case uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE:
                         _dma.WriteByte(address, value);
                         return 0;
-                    case uint _ when address is >= 0x0400_0100 and <= 0x0400_0111:
+                    case uint _ when address is >= 0x0400_0100 and <= 0x0400_010F:
                         _timerController.WriteByte(address, value);
                         return 0;
                     case uint _ when address is >= 0x0400_0120 and <= 0x0400_012C:
@@ -386,7 +386,7 @@ internal partial class MemoryBus
                     case uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE:
                         _dma.WriteHalfWord(alignedAddress, value);
                         return 0;
-                    case uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0110:
+                    case uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_010E:
                         _timerController.WriteHalfWord(alignedAddress, value);
                         return 0;
                     case uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C:
@@ -480,7 +480,7 @@ internal partial class MemoryBus
                     case uint _ when alignedAddress is >= 0x0400_00B0 and <= 0x0400_00DE:
                         _dma.WriteWord(alignedAddress, value);
                         return 0;
-                    case uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_0110:
+                    case uint _ when alignedAddress is >= 0x0400_0100 and <= 0x0400_010E:
                         _timerController.WriteWord(alignedAddress, value);
                         return 0;
                     case uint _ when alignedAddress is >= 0x0400_0120 and <= 0x0400_012C:
