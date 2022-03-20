@@ -2,7 +2,7 @@
 
 namespace GameboyAdvanced.Core.Bus;
 
-internal class Bios
+public class Bios
 {
     private readonly byte[] _bios = new byte[0x4000];
 

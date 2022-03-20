@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Ppu;
 
-internal struct Window
+public struct Window
 {
     internal int Index;
     internal int X1;

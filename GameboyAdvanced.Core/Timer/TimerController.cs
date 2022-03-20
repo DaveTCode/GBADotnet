@@ -8,7 +8,7 @@ namespace GameboyAdvanced.Core.Timer;
 /// The timer controller subsystem ticks on each clock cycle and is responsible 
 /// for incrementing/decrementing timers and determining when to fire IRQs
 /// </summary>
-internal unsafe class TimerController
+public unsafe class TimerController
 {
     private readonly BaseDebugger _debugger;
     private readonly InterruptInterconnect _interruptInterconnect;

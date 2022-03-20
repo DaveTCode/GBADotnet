@@ -9,7 +9,7 @@ namespace GameboyAdvanced.Core.Interrupts;
 /// GBA component but is handled as one because the implementation are specific
 /// to the GBA.
 /// </summary>
-internal class InterruptRegisters
+public class InterruptRegisters
 {
     private struct InterruptRegister
     {

@@ -1,12 +1,12 @@
 ﻿namespace GameboyAdvanced.Core.Ppu;
 
-internal partial class Ppu
+public partial class Ppu
 {
     /// <summary>
     /// Palette entries correspond to a single 16 bit entry in the palette and are
     /// pre-computed to cache the values and reduce costs of rendering.
     /// </summary>
-    internal struct PaletteEntry
+    public struct PaletteEntry
     {
         internal byte R;
         internal byte G;

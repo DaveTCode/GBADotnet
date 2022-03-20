@@ -15,7 +15,7 @@ namespace GameboyAdvanced.Core.Bus;
 /// It is responsible for all the memory mapped requests and determining how 
 /// many wait states should be injected.
 /// </summary>
-internal partial class MemoryBus
+public partial class MemoryBus
 {
     private readonly Prefetcher _prefetcher;
     private readonly BaseDebugger _debugger;
@@ -32,6 +32,7 @@ internal partial class MemoryBus
     private readonly byte[] _onChipWRam = new byte[0x8000];
     private readonly WaitControl _waitControl;
     private InternalMemoryControl _intMemoryControl;
+    internal HaltMode HaltMode;
 
     internal MemoryBus(
         byte[] bios,
@@ -266,9 +267,6 @@ internal partial class MemoryBus
 
     internal int WriteByte(uint address, byte value, int seq)
     {
-#if DEBUG
-        _debugger.Log("W {0:X8}={1:X8}", address, value);
-#endif
         switch (address)
         {
             case uint _ when address <= 0x0000_3FFF:
@@ -304,7 +302,10 @@ internal partial class MemoryBus
                         _serialController.WriteByte(address, value);
                         return 0;
                     case WAITCNT:
-                        _waitControl.Set(value); // TODO - Setting byte value into waitcontrol
+                        _waitControl.SetByte1(value);
+                        return 0;
+                    case WAITCNT + 1:
+                        _waitControl.SetByte2(value);
                         return 0;
                     case IME:
                     case IE:
@@ -314,13 +315,12 @@ internal partial class MemoryBus
                     case POSTFLG:
                         return 0; // TODO - Handle writing to POSTFLG during BIOS
                     case HALTCNT:
-                        return 0; // TODO - Ignoring writes to HALTCNT as it's only so far used in mgba suite
-                    case UNDOCUMENTED_410: // "The BIOS writes the 8bit value 0FFh to this address. Purpose Unknown." - No$ GbaTek
+                        HaltMode = (HaltMode)((value >> 7) & 0b1);
                         return 0;
                     case uint _ when (address & 0xFF00FFFF) == INTMEMCTRL:
                         throw new NotImplementedException("Can't set int memory control as byte or wait control for WRAM will get locked up at 15");
                     default:
-                        return 0; // TODO - Is this correct?
+                        return 0;
                 };
             case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 _ppu.WriteByte(address, value);
@@ -361,9 +361,6 @@ internal partial class MemoryBus
     internal int WriteHalfWord(uint unalignedAddress, ushort value, int seq)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFE;
-#if DEBUG
-        _debugger.Log("W {0:X8}={1:X8}", unalignedAddress, value);
-#endif
         switch (alignedAddress)
         {
             case uint _ when alignedAddress <= 0x0000_3FFF:
@@ -399,6 +396,7 @@ internal partial class MemoryBus
                         _serialController.WriteHalfWord(alignedAddress, value);
                         return 0;
                     case POSTFLG:
+                        HaltMode = (HaltMode)((value >> 15) & 0b1);
                         return 0; // TODO - Handle writing to POSTFLG during BIOS
                     case WAITCNT:
                         _waitControl.Set(value);
@@ -453,9 +451,6 @@ internal partial class MemoryBus
     internal int WriteWord(uint unalignedAddress, uint value, int seq)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFC;
-#if DEBUG
-        _debugger.Log("W {0:X8}={1:X8}", unalignedAddress, value);
-#endif
 
         switch (alignedAddress)
         {
@@ -494,6 +489,7 @@ internal partial class MemoryBus
                         _serialController.WriteWord(alignedAddress, value);
                         return 0;
                     case POSTFLG:
+                        HaltMode = (HaltMode)((value >> 15) & 0b1);
                         return 0; // TODO - Handle writing to POSTFLG during BIOS
                     case WAITCNT:
                         _waitControl.Set((ushort)value);

@@ -17,7 +17,7 @@ namespace GameboyAdvanced.Core.Ppu;
 /// in regular (also known as text) mode which means they use the X/YOffset
 /// insteda of RefPointX/Y and friends.
 /// </summary>
-internal struct Background
+public struct Background
 {
     /// <summary>
     /// Just used to disambiguate backgrounds for debugging
@@ -78,5 +78,31 @@ internal struct Background
         Dmx = 0;
         Dy = 0;
         Dmy = 0;
+    }
+
+    internal void UpdateReferencePointX(byte value, int byteIndex, uint mask)
+    {
+        var newVal = (RefPointX & mask) | (uint)(value << (byteIndex * 8));
+
+        // 28 bit signed integers, so if 27th bit is set then make negative
+        if ((newVal & (1 << 27)) == (1 << 27))
+        {
+            newVal |= 0xF000_0000;
+        }
+
+        RefPointX = (int)newVal;
+    }
+
+    internal void UpdateReferencePointY(byte value, int byteIndex, uint mask)
+    {
+        var newVal = (RefPointY & mask) | (uint)(value << (byteIndex * 8));
+
+        // 28 bit signed integers, so if 27th bit is set then make negative
+        if ((newVal & (1 << 27)) == (1 << 27))
+        {
+            newVal |= 0xF000_0000;
+        }
+
+        RefPointY = (int)newVal;
     }
 }

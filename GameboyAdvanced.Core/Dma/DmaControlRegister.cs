@@ -24,7 +24,7 @@ internal enum StartTiming
     Special = 0b11,
 }
 
-internal struct DmaControlRegister
+public struct DmaControlRegister
 {
     private readonly int _dmaChannelId;
     internal DestAddressCtrl DestAddressCtrl;

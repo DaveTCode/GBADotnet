@@ -6,7 +6,7 @@
 /// 
 /// Partially writable.
 /// </summary>
-internal struct GeneralLcdStatus
+public struct GeneralLcdStatus
 {
     internal bool VBlankFlag;
     internal bool HBlankFlag;
@@ -29,9 +29,14 @@ internal struct GeneralLcdStatus
 
     internal void Update(ushort value)
     {
+        UpdateB1((byte)value);
+        VCountSetting = (ushort)(value >> 8);
+    }
+
+    internal void UpdateB1(byte value)
+    {
         VBlankIrqEnable = (value & 0b1000) == 0b1000;
         HBlankIrqEnable = (value & 0b1_0000) == 0b1_0000;
         VCounterIrqEnable = (value & 0b10_0000) == 0b10_0000;
-        VCountSetting = (ushort)(value >> 8);
     }
 }

@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace GameboyAdvanced.Core;
 
-internal enum BusWidth
+public enum BusWidth
 {
     Byte = 0x1,
     HalfWord = 0x2,
@@ -26,20 +26,20 @@ internal enum BusWidth
 /// The execute unit uses the value in DecodedOpcode to execute the 
 /// instruction.
 /// </summary>
-internal struct Pipeline
+public struct Pipeline
 {
     /// <summary>
     /// If R15 is set on a cycle then we need to know so that we know not to 
     /// increment the address bus/R15 during pipeline step.
     /// </summary>
-    internal bool ClearedThisCycle;
+    public bool ClearedThisCycle;
 
-    internal uint? FetchedOpcode;
-    internal uint? FetchedOpcodeAddress;
-    internal uint? DecodedOpcode;
-    internal uint? DecodedOpcodeAddress;
-    internal uint? CurrentInstruction;
-    internal uint? CurrentInstructionAddress;
+    public uint? FetchedOpcode;
+    public uint? FetchedOpcodeAddress;
+    public uint? DecodedOpcode;
+    public uint? DecodedOpcodeAddress;
+    public uint? CurrentInstruction;
+    public uint? CurrentInstructionAddress;
 
     public Pipeline()
     {
@@ -65,22 +65,22 @@ public unsafe class Core
 {
     internal readonly BaseDebugger Debugger;
     private readonly InterruptRegisters _interruptRegisters;
-    internal ulong Cycles;
+    public ulong Cycles;
     internal readonly MemoryBus Bus;
-    internal CPSR Cpsr;
-    internal readonly CPSR[] Spsr = new CPSR[6];
+    public CPSR Cpsr;
+    public readonly CPSR[] Spsr = new CPSR[6];
 
     // Current registers (irrespective of mode)
-    internal readonly uint[] R = new uint[16];
+    public readonly uint[] R = new uint[16];
 
-    private readonly uint[] _spBanks = new uint[6];
-    private readonly uint[] _lrBanks = new uint[6];
-    private readonly uint[] _fiqHiRegs = new uint[5];
+    public readonly uint[] _spBanks = new uint[6];
+    public readonly uint[] _lrBanks = new uint[6];
+    public readonly uint[] _fiqHiRegs = new uint[5];
 
     /// <summary>
     /// The 32 bit address bus value, set the cycle before it is used
     /// </summary>
-    internal uint A;
+    public uint A;
 
     /// <summary>
     /// We track whether or not A/R[15] need incrementing at the end of the 
@@ -89,25 +89,25 @@ public unsafe class Core
     /// It is set to MAS when nOPC is true on address read and set to 0
     /// by instructions which then overwrite A (LDR/SWP).
     /// </summary>
-    internal uint AIncrement;
+    public uint AIncrement;
 
     /// <summary>
     /// The 32 bit data bus value (DIN/DOUT not split here), set by 
     /// the memory fetch unit at the start of a cycle.
     /// </summary>
-    internal uint D;
+    public uint D;
 
     /// <summary>
     /// Represents MAS[1:0] and is set the cycle before it is used to the
     /// amount of data that will be requested during a memory fetch
     /// </summary>
-    internal BusWidth MAS;
+    public BusWidth MAS;
 
     /// <summary>
     /// nMREQ is set low when a memory request will occur on a cycle and high
     /// when it will not (e.g. an I cycle)
     /// </summary>
-    internal bool nMREQ;
+    public bool nMREQ;
 
     /// <summary>
     /// SEQ is set high when a memory request will be sequential and low when
@@ -117,21 +117,21 @@ public unsafe class Core
     /// Note that an int is used (with 1 being SEQ and 0 being not SEQ) to provide
     /// rapid wait state array indexing.
     /// </summary>
-    internal int SEQ;
+    public int SEQ;
 
     /// <summary>
     /// nOPC (not Opcode Fetch) is set low when a memory fetch is for an opcode
     /// and set high when it is not. This is particularly relevant to e.g. bios
     /// memory requests which only allow reads when nOPC is low.
     /// </summary>
-    internal bool nOPC;
+    public bool nOPC;
 
     /// <summary>
     /// nRW is set high when the memory unit should perform a write of D to [A]
     /// on the next cycle and set low when the memory unit should perform a 
     /// read of [A] into D on the next cycle.
     /// </summary>
-    internal bool nRW;
+    public bool nRW;
 
     /// <summary>
     /// Rather than emulating the nWAIT signal as a flag we instead set 
@@ -141,12 +141,12 @@ public unsafe class Core
     /// This is set by the memory unit when reading/writing to the bus if the
     /// bus returns that the component requires wait states (e.g. GamePak)
     /// </summary>
-    internal int WaitStates;
+    public int WaitStates;
 
     /// <summary>
     /// Contains the current state of the 3 stage pipeline
     /// </summary>
-    internal Pipeline Pipeline = new();
+    public Pipeline Pipeline = new();
 
     /// <summary>
     /// Whilst the memory and decode units will always execute the same logic

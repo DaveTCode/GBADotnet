@@ -7,7 +7,7 @@ namespace GameboyAdvanced.Core.Serial;
 /// <summary>
 /// TODO - Not actually implemented any of this but some roms appear to expect register reads to work
 /// </summary>
-internal class SerialController
+public class SerialController
 {
     private readonly BaseDebugger _debugger;
     private readonly InterruptInterconnect _interruptInterconnect;
@@ -38,12 +38,10 @@ internal class SerialController
         _ => throw new Exception($"Serial controller doesn't map address {address:X8} for halfword reads"), // TODO - Not 100% sure this is right
     };
 
-    internal uint ReadWord(uint address) => address switch
+    internal uint ReadWord(uint address)
     {
-        JOY_RECV => 0x0,
-        JOY_TRANS => 0x0,
-        _ => throw new Exception($"Serial controller doesn't map address {address:X8} for word reads"),
-    };
+        return (uint)(ReadHalfWord(address) | (ReadHalfWord(address + 2) << 16));
+    }
 
     internal void WriteByte(uint address, byte value)
     {

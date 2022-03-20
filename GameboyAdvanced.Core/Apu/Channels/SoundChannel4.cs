@@ -5,7 +5,7 @@ namespace GameboyAdvanced.Core.Apu.Channels;
 /// <summary>
 /// Channel 4 is used to produce white noise at various frequencies.
 /// </summary>
-internal class SoundChannel4 : GBSoundChannel
+public class SoundChannel4 : GBSoundChannel
 {
     private readonly Envelope _envelope = new();
 

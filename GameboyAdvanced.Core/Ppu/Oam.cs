@@ -2,7 +2,7 @@
 
 namespace GameboyAdvanced.Core.Ppu;
 
-internal struct AffineTransform
+public struct AffineTransform
 {
     internal short PA;
     internal short PB;
@@ -25,7 +25,7 @@ internal struct AffineTransform
     public override string ToString() => $"{PA},{PB},{PC},{PD}";
 }
 
-internal partial class Ppu
+public partial class Ppu
 {
     private readonly ushort[] _oam = new ushort[0x200]; // 1KB
     private readonly Sprite[] _sprites = new Sprite[128]; // OBJ0-127

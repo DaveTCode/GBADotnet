@@ -10,7 +10,7 @@ namespace GameboyAdvanced.Core.Ppu;
 /// This class both encapsulates the state of the PPU and provides 
 /// functionality for rendering the current state into a bitmap
 /// </summary>
-internal partial class Ppu
+public partial class Ppu
 {
     private const int CyclesPerDot = 4;
     private const int CyclesPerVisibleLine = CyclesPerDot * Device.WIDTH; // 960
@@ -128,6 +128,9 @@ internal partial class Ppu
             if (_currentLine < Device.HEIGHT)
             {
                 DrawCurrentScanline();
+
+                // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
+                DrawSpritesOnLine((int)_dispcnt.BgMode >= 3);
             }
             _dispstat.HBlankFlag = true;
             if (_dispstat.HBlankIrqEnable)
@@ -170,146 +173,261 @@ internal partial class Ppu
         }
     }
 
-    internal void WriteRegisterByte(uint address, byte value) => throw new NotImplementedException("Writing byte wide values to PPU register not implemented");
-
-    internal void WriteRegisterHalfWord(uint address, ushort value)
+    internal void WriteRegisterByte(uint address, byte value)
     {
-        // TODO - Some of these writes won't be valid depending on the PPU state
         switch (address)
         {
             case DISPCNT:
-                _dispcnt.Update(value);
+                _dispcnt.UpdateB1(value);
+                break;
+            case DISPCNT + 1:
+                _dispcnt.UpdateB2(value);
                 break;
             case GREENSWAP:
-                _greenSwap = value;
+                _greenSwap = (ushort)((_greenSwap & 0xFF00) | value);
+                break;
+            case GREENSWAP + 1:
+                _greenSwap = (ushort)((_greenSwap & 0x00FF) | (value << 8));
                 break;
             case DISPSTAT:
-                _dispstat.Update(value);
+                _dispstat.UpdateB1(value);
+                break;
+            case DISPSTAT + 1:
+                _dispstat.VCountSetting = value;
                 break;
             case BG0CNT:
-                _backgrounds[0].Control.Update(value);
+                _backgrounds[0].Control.UpdateB1(value);
+                break;
+            case BG0CNT + 1:
+                _backgrounds[0].Control.UpdateB2(value);
                 break;
             case BG1CNT:
-                _backgrounds[1].Control.Update(value);
+                _backgrounds[1].Control.UpdateB1(value);
+                break;
+            case BG1CNT + 1:
+                _backgrounds[1].Control.UpdateB2(value);
                 break;
             case BG2CNT:
-                _backgrounds[2].Control.Update(value);
+                _backgrounds[2].Control.UpdateB1(value);
+                break;
+            case BG2CNT + 1:
+                _backgrounds[2].Control.UpdateB2(value);
                 break;
             case BG3CNT:
-                _backgrounds[3].Control.Update(value);
+                _backgrounds[3].Control.UpdateB1(value);
+                break;
+            case BG3CNT + 1:
+                _backgrounds[3].Control.UpdateB2(value);
                 break;
             case BG0HOFS:
-                _backgrounds[0].XOffset = value & 0x1FF;
+                _backgrounds[0].XOffset = (_backgrounds[0].XOffset & 0xFF00) | value;
+                break;
+            case BG0HOFS + 1:
+                _backgrounds[0].XOffset = (_backgrounds[0].XOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG0VOFS:
-                _backgrounds[0].YOffset = value & 0x1FF;
+                _backgrounds[0].YOffset = (_backgrounds[0].YOffset & 0xFF00) | value;
+                break;
+            case BG0VOFS + 1:
+                _backgrounds[0].YOffset = (_backgrounds[0].YOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG1HOFS:
-                _backgrounds[1].XOffset = value & 0x1FF;
+                _backgrounds[1].XOffset = (_backgrounds[1].XOffset & 0xFF00) | value;
+                break;
+            case BG1HOFS + 1:
+                _backgrounds[1].XOffset = (_backgrounds[1].XOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG1VOFS:
-                _backgrounds[1].YOffset = value & 0x1FF;
+                _backgrounds[1].YOffset = (_backgrounds[1].YOffset & 0xFF00) | value;
+                break;
+            case BG1VOFS + 1:
+                _backgrounds[1].YOffset = (_backgrounds[1].YOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG2HOFS:
-                _backgrounds[2].XOffset = value & 0x1FF;
+                _backgrounds[2].XOffset = (_backgrounds[2].XOffset & 0xFF00) | value;
+                break;
+            case BG2HOFS + 1:
+                _backgrounds[2].XOffset = (_backgrounds[2].XOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG2VOFS:
-                _backgrounds[2].YOffset = value & 0x1FF;
+                _backgrounds[2].YOffset = (_backgrounds[2].YOffset & 0xFF00) | value;
+                break;
+            case BG2VOFS + 1:
+                _backgrounds[2].YOffset = (_backgrounds[2].YOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG3HOFS:
-                _backgrounds[3].XOffset = value & 0x1FF;
+                _backgrounds[3].XOffset = (_backgrounds[3].XOffset & 0xFF00) | value;
+                break;
+            case BG3HOFS + 1:
+                _backgrounds[3].XOffset = (_backgrounds[3].XOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG3VOFS:
-                _backgrounds[3].YOffset = value & 0x1FF;
+                _backgrounds[3].YOffset = (_backgrounds[3].YOffset & 0xFF00) | value;
+                break;
+            case BG3VOFS + 1:
+                _backgrounds[3].YOffset = (_backgrounds[3].YOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG2PA:
-                _backgrounds[2].Dx = value;
+                _backgrounds[2].Dx = (_backgrounds[2].Dx & 0xFF00) | value;
+                break;
+            case BG2PA + 1:
+                _backgrounds[2].Dx = (_backgrounds[2].Dx & 0x00FF) | (value << 8);
                 break;
             case BG2PB:
-                _backgrounds[2].Dmx = value;
+                _backgrounds[2].Dmx = (_backgrounds[2].Dmx & 0xFF00) | value;
+                break;
+            case BG2PB + 1:
+                _backgrounds[2].Dmx = (_backgrounds[2].Dmx & 0x00FF) | (value << 8);
                 break;
             case BG2PC:
-                _backgrounds[2].Dy = value;
+                _backgrounds[2].Dy = (_backgrounds[2].Dy & 0xFF00) | value;
+                break;
+            case BG2PC + 1:
+                _backgrounds[2].Dy = (_backgrounds[2].Dy & 0x00FF) | (value << 8);
                 break;
             case BG2PD:
-                _backgrounds[2].Dmy = value;
+                _backgrounds[2].Dmy = (_backgrounds[2].Dmy & 0xFF00) | value;
+                break;
+            case BG2PD + 1:
+                _backgrounds[2].Dmy = (_backgrounds[2].Dmy & 0x00FF) | (value << 8);
                 break;
             case BG2X_L:
-                _backgrounds[2].RefPointX = (int)((_backgrounds[2].RefPointX & 0xFFFF_0000) | value);
+                _backgrounds[2].UpdateReferencePointX(value, 0, 0xFFFF_FF00);
+                break;
+            case BG2X_L + 1:
+                _backgrounds[2].UpdateReferencePointX(value, 1, 0xFFFF_00FF);
                 break;
             case BG2X_H:
-                _backgrounds[2].RefPointX = (int)((_backgrounds[2].RefPointX & 0x0000_FFFF) | (value << 16)); // TODO - Mask to 12 bits?
-                _backgrounds[2].RefPointX = (_backgrounds[2].RefPointX << 4) >> 4;
+                _backgrounds[2].UpdateReferencePointX(value, 2, 0xFF00_FFFF);
+                break;
+            case BG2X_H + 1:
+                _backgrounds[2].UpdateReferencePointX(value, 3, 0x00FF_FFFF);
                 break;
             case BG2Y_L:
-                _backgrounds[2].RefPointY = (int)((_backgrounds[2].RefPointY & 0xFFFF_0000) | value);
+                _backgrounds[2].UpdateReferencePointY(value, 0, 0xFFFF_FF00);
+                break;
+            case BG2Y_L + 1:
+                _backgrounds[2].UpdateReferencePointY(value, 1, 0xFFFF_00FF);
                 break;
             case BG2Y_H:
-                _backgrounds[2].RefPointY = (int)((_backgrounds[2].RefPointY & 0x0000_FFFF) | (value << 16)); // TODO - Mask to 12 bits?
-                _backgrounds[2].RefPointY = (_backgrounds[2].RefPointY << 4) >> 4;
+                _backgrounds[2].UpdateReferencePointY(value, 2, 0xFF00_FFFF);
+                break;
+            case BG2Y_H + 1:
+                _backgrounds[2].UpdateReferencePointY(value, 3, 0x00FF_FFFF);
                 break;
             case BG3PA:
-                _backgrounds[3].Dx = value;
+                _backgrounds[3].Dx = (_backgrounds[3].Dx & 0xFF00) | value;
+                break;
+            case BG3PA + 1:
+                _backgrounds[3].Dx = (_backgrounds[3].Dx & 0x00FF) | (value << 8);
                 break;
             case BG3PB:
-                _backgrounds[3].Dmx = value;
+                _backgrounds[3].Dmx = (_backgrounds[3].Dmx & 0xFF00) | value;
+                break;
+            case BG3PB + 1:
+                _backgrounds[3].Dmx = (_backgrounds[3].Dmx & 0x00FF) | (value << 8);
                 break;
             case BG3PC:
-                _backgrounds[3].Dy = value;
+                _backgrounds[3].Dy = (_backgrounds[3].Dy & 0xFF00) | value;
+                break;
+            case BG3PC + 1:
+                _backgrounds[3].Dy = (_backgrounds[3].Dy & 0x00FF) | (value << 8);
                 break;
             case BG3PD:
-                _backgrounds[3].Dmy = value;
+                _backgrounds[3].Dmy = (_backgrounds[3].Dmy & 0xFF00) | value;
+                break;
+            case BG3PD + 1:
+                _backgrounds[3].Dmy = (_backgrounds[3].Dmy & 0x00FF) | (value << 8);
                 break;
             case BG3X_L:
-                _backgrounds[3].RefPointX = (int)((_backgrounds[3].RefPointX & 0xFFFF_0000) | value);
+                _backgrounds[3].UpdateReferencePointX(value, 0, 0xFFFF_FF00);
+                break;
+            case BG3X_L + 1:
+                _backgrounds[3].UpdateReferencePointX(value, 1, 0xFFFF_00FF);
                 break;
             case BG3X_H:
-                _backgrounds[3].RefPointX = (int)((_backgrounds[3].RefPointX & 0x0000_FFFF) | (value << 16)); // TODO - Mask to 12 bits?
-                _backgrounds[3].RefPointX = (_backgrounds[3].RefPointX << 4) >> 4;
+                _backgrounds[3].UpdateReferencePointX(value, 2, 0xFF00_FFFF);
+                break;
+            case BG3X_H + 1:
+                _backgrounds[3].UpdateReferencePointX(value, 3, 0x00FF_FFFF);
                 break;
             case BG3Y_L:
-                _backgrounds[3].RefPointY = (int)((_backgrounds[3].RefPointY & 0xFFFF_0000) | value);
+                _backgrounds[3].UpdateReferencePointY(value, 0, 0xFFFF_FF00);
+                break;
+            case BG3Y_L + 1:
+                _backgrounds[3].UpdateReferencePointY(value, 1, 0xFFFF_00FF);
                 break;
             case BG3Y_H:
-                _backgrounds[3].RefPointY = (int)((_backgrounds[3].RefPointY & 0x0000_FFFF) | (value << 16)); // TODO - Mask to 12 bits?
-                _backgrounds[3].RefPointY = (_backgrounds[3].RefPointY << 4) >> 4;
+                _backgrounds[3].UpdateReferencePointY(value, 2, 0xFF00_FFFF);
+                break;
+            case BG3Y_H + 1:
+                _backgrounds[3].UpdateReferencePointY(value, 3, 0x00FF_FFFF);
                 break;
             case WIN0H:
-                _windows[0].X1 = value >> 8;
-                _windows[0].X2 = (value & 0xFF);
+                _windows[0].X2 = value;
+                break;
+            case WIN0H + 1:
+                _windows[0].X1 = value;
                 break;
             case WIN1H:
-                _windows[1].X1 = value >> 8;
-                _windows[1].X2 = (value & 0xFF);
+                _windows[1].X2 = value;
+                break;
+            case WIN1H + 1:
+                _windows[1].X1 = value;
                 break;
             case WIN0V:
-                _windows[0].Y1 = value >> 8;
-                _windows[0].Y2 = (value & 0xFF);
+                _windows[0].Y2 = value;
+                break;
+            case WIN0V + 1:
+                _windows[0].Y1 = value;
                 break;
             case WIN1V:
-                _windows[1].Y1 = value >> 8;
-                _windows[1].Y2 = (value & 0xFF);
+                _windows[1].Y2 = value;
+                break;
+            case WIN1V + 1:
+                _windows[1].Y1 = value;
                 break;
             case WININ:
-                _winIn.Set(value);
+                _winIn.UpdateB1(value);
+                break;
+            case WININ + 1:
+                _winIn.UpdateB2(value);
                 break;
             case WINOUT:
-                _winOut.Set(value);
+                _winOut.UpdateB1(value);
+                break;
+            case WINOUT + 1:
+                _winOut.UpdateB2(value);
                 break;
             case MOSAIC:
-                _mosaic.Set(value);
+                _mosaic.UpdateB1(value);
+                break;
+            case MOSAIC + 1:
+                _mosaic.UpdateB2(value);
                 break;
             case BLDCNT:
-                _bldcnt.Set(value);
+                _bldcnt.UpdateB1(value);
+                break;
+            case BLDCNT + 1:
+                _bldcnt.UpdateB2(value);
                 break;
             case BLDALPHA:
-                _bldalpha.Set(value);
+                _bldalpha.UpdateB1(value);
+                break;
+            case BLDALPHA + 1:
+                _bldalpha.UpdateB2(value);
                 break;
             case BLDY:
                 break; // TODO - Implement BLDY
             default:
                 return; // TODO - Make sure behaviour on unknown writes is ok
         }
+    }
+
+    internal void WriteRegisterHalfWord(uint address, ushort value)
+    {
+        WriteRegisterByte(address, (byte)value);
+        WriteRegisterByte(address + 1, (byte)(value >> 8));
     }
 
     internal byte ReadRegisterByte(uint address, uint openbus) => 

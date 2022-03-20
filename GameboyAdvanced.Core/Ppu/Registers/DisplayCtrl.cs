@@ -12,7 +12,7 @@ internal enum BgMode
     Prohibited7 = 0b111,
 }
 
-internal struct DisplayCtrl
+public struct DisplayCtrl
 {
     internal BgMode BgMode;
     internal bool IsCGB;
@@ -48,20 +48,30 @@ internal struct DisplayCtrl
 
     internal void Update(ushort value)
     {
+        UpdateB1((byte)value);
+        UpdateB2((byte)(value >> 8));
+    }
+
+    internal void UpdateB1(byte value)
+    {
         BgMode = (BgMode)(value & 0b111);
         IsCGB = (value & 0b1000) == 0b1000;
         Frame1Select = (value & 0b1_0000) == 0b1_0000;
         AllowOamDuringHblank = (value & 0b10_0000) == 0b10_0000;
         OneDimObjCharVramMapping = (value & 0b100_0000) == 0b100_0000;
         ForcedBlank = (value & 0b1000_0000) == 0b1000_0000;
-        ScreenDisplayBg[0] = (value & 0b1_0000_0000) == 0b1_0000_0000;
-        ScreenDisplayBg[1] = (value & 0b10_0000_0000) == 0b10_0000_0000;
-        ScreenDisplayBg[2] = (value & 0b100_0000_0000) == 0b100_0000_0000;
-        ScreenDisplayBg[3] = (value & 0b1000_0000_0000) == 0b1000_0000_0000;
-        ScreenDisplayObj = (value & 0b1_0000_0000_0000) == 0b1_0000_0000_0000;
-        Window0Display = (value & 0b10_0000_0000_0000) == 0b10_0000_0000_0000;
-        Window1Display = (value & 0b100_0000_0000_0000) == 0b100_0000_0000_0000;
-        ObjWindowDisplay = (value & 0b1000_0000_0000_0000) == 0b1000_0000_0000_0000;
+    }
+
+    internal void UpdateB2(byte value)
+    {
+        ScreenDisplayBg[0] = (value & 0b1) == 0b1;
+        ScreenDisplayBg[1] = (value & 0b10) == 0b10;
+        ScreenDisplayBg[2] = (value & 0b100) == 0b100;
+        ScreenDisplayBg[3] = (value & 0b1000) == 0b1000;
+        ScreenDisplayObj = (value & 0b1_0000) == 0b1_0000;
+        Window0Display = (value & 0b10_0000) == 0b10_0000;
+        Window1Display = (value & 0b100_0000) == 0b100_0000;
+        ObjWindowDisplay = (value & 0b1000_0000) == 0b1000_0000;
     }
 
     internal ushort Read() => (ushort)

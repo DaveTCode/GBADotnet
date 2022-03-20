@@ -8,7 +8,7 @@ namespace GameboyAdvanced.Core.Ppu;
 /// Historical artifact of emulator from before scanline renderering was 
 /// implemented.
 /// </summary>
-internal partial class Ppu
+public partial class Ppu
 {
     internal void RenderFrame()
     {

@@ -2,7 +2,7 @@
 
 namespace GameboyAdvanced.Core.Apu.Channels;
 
-internal abstract class ToneChannel : GBSoundChannel
+public abstract class ToneChannel : GBSoundChannel
 {
     readonly protected Envelope _envelope = new();
 

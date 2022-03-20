@@ -8,7 +8,7 @@ namespace GameboyAdvanced.Core.Ppu;
 /// This particular renderer does that by rendering a single scanline at a
 /// time and is called at the start of each visible hblank.
 /// </summary>
-internal partial class Ppu
+public partial class Ppu
 {
     /// <summary>
     /// Whilst iterating over the set of sprites we populate a list of 
@@ -49,62 +49,54 @@ internal partial class Ppu
                 }
 
                 CombineBackgroundsInScanline();
-
-                DrawSpritesOnLine(false);
                 break;
             case BgMode.Video1:
                 // Background 0-1 are text mode, 2-3 are affine
-                for (var ii = 0; ii < 2; ii++)
+                for (var ii = 0; ii < 4; ii++)
                 {
                     if (_dispcnt.ScreenDisplayBg[ii])
                     {
-                        DrawTextModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
+                        if (ii < 2)
+                        {
+                            DrawTextModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
+                        }
+                        else
+                        {
+                            DrawAffineModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
+                        }
                     }
                 }
 
-                // TODO - Handle affine backgrounds
                 CombineBackgroundsInScanline();
-
-                DrawSpritesOnLine(false);
                 break;
             case BgMode.Video2:
                 for (var ii = 0; ii < 4; ii++)
                 {
                     if (_dispcnt.ScreenDisplayBg[ii])
                     {
-                        // TODO - Handle affine backgrounds
+                        DrawAffineModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
                     }
-
-                    // TODO - How to combine the backgrounds?
                 }
 
                 CombineBackgroundsInScanline();
-
-                DrawSpritesOnLine(false);
                 break;
             case BgMode.Video3:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode3CurrentScanline();
                 }
-
-                DrawSpritesOnLine(true);
                 break;
             case BgMode.Video4:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode4CurrentScanline();
                 }
-
-                DrawSpritesOnLine(true);
                 break;
             case BgMode.Video5:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode5CurrentScanline();
                 }
-
-                DrawSpritesOnLine(true);
                 break;
             case BgMode.Prohibited6:
             case BgMode.Prohibited7:
@@ -217,9 +209,6 @@ internal partial class Ppu
 
     private void DrawSpritesOnLine(bool bitmapMode)
     {
-        // Check if OBJs are disabled globally on the PPU
-        if (!_dispcnt.ScreenDisplayObj) return;
-
         // Clear the previous scanlines obj buffer
         for (var ii = 0; ii < Device.WIDTH; ii++)
         {
@@ -227,6 +216,9 @@ internal partial class Ppu
             _objBuffer[ii].Priority = 4;
             _objBuffer[ii].PixelMode = SpriteMode.Normal;
         }
+
+        // Check if OBJs are disabled globally on the PPU
+        if (!_dispcnt.ScreenDisplayObj) return;
 
         foreach (var sprite in _sprites)
         {
@@ -324,6 +316,51 @@ internal partial class Ppu
         }
     }
 
+    private void DrawAffineModeScanline(Background background, ref int[] scanlineBuffer)
+    {
+        var tileMapBaseAddress = background.Control.ScreenBaseBlock * 0x800;
+        var tileBaseAddress = background.Control.CharBaseBlock * 0x4000;
+        var (size, blockWidth) = background.Control.ScreenSize switch
+        {
+            BgSize.Regular32x32 => (128, 16),
+            BgSize.Regular64x32 => (256, 32),
+            BgSize.Regular32x64 => (512, 64),
+            BgSize.Regular64x64 => (1024, 128),
+            _ => throw new Exception("Invalid bg size")
+        };
+        var baseRefX = background.RefPointX + (background.Dmx * _currentLine);
+        var baseRefY = background.RefPointY + (background.Dmy * _currentLine);
+
+        for (var pixel = 0; pixel < Device.WIDTH; pixel++)
+        {
+            var xBase = baseRefX >> 8;
+            var yBase = baseRefY >> 8;
+            baseRefX += background.Dx;
+            baseRefY += background.Dy;
+
+            // Affine backgrounds can either make things outside the area transparent or wrap for overflow
+            if (background.Control.DisplayAreaOverflow)
+            {
+                if (xBase >= size) xBase %= size;
+                else if (xBase < 0) xBase = size + (xBase % size);
+
+                if (yBase >= size) yBase %= size;
+                else if (yBase < 0) yBase = size + (yBase % size);
+            }
+            else if (xBase < 0 || xBase >= size || yBase < 0 || yBase >= size)
+            {
+                scanlineBuffer[pixel] = 0;
+                continue;
+            }
+
+            var tile = _vram[tileMapBaseAddress + ((yBase / 8) * blockWidth) + (xBase / 8)];
+            var tileAddress = tileBaseAddress + (tile * 64); // All affine backgrounds use 8bpp tiles
+            tileAddress += ((yBase % 8) * 8) + (xBase % 8);
+            var paletteIndex = _vram[tileAddress];
+            scanlineBuffer[pixel] = paletteIndex;
+        }
+    }
+
     private void DrawTextModeScanline(Background background, ref int[] scanlineBuffer)
     {
         var tileMapBase = background.Control.ScreenBaseBlock * 0x800;
@@ -347,6 +384,7 @@ internal partial class Ppu
                 BgSize.Regular32x64 => (screenBlockTileY / 32) * 2,
                 BgSize.Regular64x32 => (screenBlockTileX / 32),
                 BgSize.Regular64x64 => (screenBlockTileX / 32) + ((screenBlockTileY / 32) * 2),
+                _ => throw new Exception("Invalid bg size")
             };
 
             var tileMapAddress = tileMapBase + (screenBlockOffset * 0x800) + ((screenBlockTileY % 32) * 64) + (2 * (screenBlockTileX % 32));

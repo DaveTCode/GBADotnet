@@ -2,7 +2,7 @@
 
 namespace GameboyAdvanced.Core.Apu;
 
-internal class SoundControlRegister
+public class SoundControlRegister
 {
     internal int Sound1to4MasterVolumeRight;
     internal int Sound1to4MasterVolumeLeft;

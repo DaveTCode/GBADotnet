@@ -34,7 +34,7 @@ internal static class CPSRModeExtensions
     };
 }
 
-internal struct CPSR
+public struct CPSR
 {
     internal bool SignFlag;
     internal bool ZeroFlag;

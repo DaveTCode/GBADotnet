@@ -4,7 +4,7 @@
 /// Sound channel 2 is another square wave channel with a volume envelope but 
 /// unlike channel 1 it has no sweep unit.
 /// </summary>
-internal class SoundChannel2 : ToneChannel
+public class SoundChannel2 : ToneChannel
 {
     internal SoundChannel2() : base(2) 
     {

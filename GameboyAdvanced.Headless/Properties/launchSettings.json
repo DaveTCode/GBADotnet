@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "Aging Cartridge": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "ARM Wrestler": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler-gba-fixed.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -11,6 +15,34 @@
     "Marie - Open Bus Bios": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\biosOpenBus.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Openbuster": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\openbuster.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Zayd - Prefetch Abuse": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\prefetch-abuse-idleafter.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Zayd - DMA Slow": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmaslow.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Zayd - DMA Medium": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmamedium.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Zayd - DMA Medium 2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmamedium2.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Zayd - DMA Fast": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmafast.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Return Address": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\retAddr.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Beeg": {
       "commandName": "Project",
@@ -48,10 +80,6 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\first.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "TONC - Second": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\second.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
     "TONC - Hello": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\hello.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -72,6 +100,62 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\key_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - IRQ Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\irq_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Bigmap": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\bigmap.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Blddemo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\bld_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - BM Modes": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\bm_modes.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Brin Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\brin_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - CBB Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\cbb_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - DMA Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\dma_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - OA Combo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\oacombo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Obj Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\obj_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Obj Aff Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\obj_aff.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Prio Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\prio_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Sbb Affine": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\sbb_aff.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Sbb Reg": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\sbb_reg.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Second": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\second.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "TONC - SWI Demo": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\swi_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -80,9 +164,25 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\swi_vsync.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "TONC - IRQ Demo": {
+    "TONC - Tmr Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\irq_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\tmr_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - TTE Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\tte_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - TXT Obj": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\txt_obj.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - TXT SE1": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\txt_se1.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - TXT SE2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\txt_se2.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Panda": {
       "commandName": "Project",
@@ -168,6 +268,38 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\unsafe\\unsafe.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "NBA - IRQ Delay": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\cpu\\irqdelay\\irqdelay.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - DMA - Burst into tears": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\dma\\burst-into-tears\\burst-into-tears.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - DMA - Latch": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\dma\\latch\\latch.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - DMA - Start Delay": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\dma\\start-delay\\start-delay.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - Haltcnt": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\haltcnt\\haltcnt.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - PPU - Basic Timing": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\ppu\\basic-timing\\basic-timing.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - Timer - Start Stop": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\timer\\start-stop\\start-stop.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - Timer - Reload": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\timer\\reload\\reload.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Doooooooom": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Doom (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -191,6 +323,10 @@
     "Super Mario Advance (U)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Mario Advance (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Super Monkey Ball (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Monkey Ball Jr (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     }
   }
 }

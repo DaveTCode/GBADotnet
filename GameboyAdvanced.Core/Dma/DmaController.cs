@@ -4,7 +4,7 @@ using GameboyAdvanced.Core.Interrupts;
 
 namespace GameboyAdvanced.Core.Dma;
 
-internal class DmaController
+public class DmaController
 {
     private readonly MemoryBus _bus;
     private readonly BaseDebugger _debugger;
@@ -84,13 +84,13 @@ internal class DmaController
                         throw new Exception($"Invalid DMA start timing {_dmaDataUnit.Channels[ii].ControlReg.StartTiming}");
                 }
 
-                // DMA takes 2 I cycles to start
+                // DMA takes 2 cycles to start and then 1 cycle before writing starts
                 // TODO - Lots about this I'm not sure about, No$ docs say 4I cycles if both src/dest in gamepak but I bet that's not at the start
                 // TODO - Do these cycles cause paused CPU? Right now I say no. Do they count down on all channels at the same time? No for now.
-                if (_dmaDataUnit.Channels[ii].ClocksToStart > 1)
+                if (_dmaDataUnit.Channels[ii].ClocksToStart > 0)
                 {
                     _dmaDataUnit.Channels[ii].ClocksToStart--;
-                    return true;
+                    return _dmaDataUnit.Channels[ii].ClocksToStart == 0;
                 }
 
                 // DMA takes 2S cycles per read (apart from the first which is a pair of N cycles)

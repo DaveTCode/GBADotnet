@@ -10,7 +10,7 @@ namespace GameboyAdvanced.Core.Dma;
 /// This is done because the Memory bus needs access to the data unit for writes but the
 /// controller also needs access back to the bus for read/write during a DMA.
 /// </summary>
-internal class DmaDataUnit
+public class DmaDataUnit
 {
     internal readonly DmaChannel[] Channels = new DmaChannel[4]
     {

@@ -16,7 +16,7 @@ internal enum SpriteShape
     Prohibited,
 }
 
-internal class Sprite
+public class Sprite
 {
     internal int Index;
     internal int X;

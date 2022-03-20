@@ -29,7 +29,7 @@ internal static class BgSizeExtensions
     };
 }
 
-internal struct BgControlReg
+public struct BgControlReg
 {
     /// <summary>
     /// Priority of BG against sprites and other BGs. highest priority is 
@@ -82,12 +82,22 @@ internal struct BgControlReg
 
     internal void Update(ushort value)
     {
+        UpdateB1((byte)value);
+        UpdateB2((byte)value);
+    }
+
+    internal void UpdateB1(byte value)
+    {
         BgPriority = value & 0b11;
         CharBaseBlock = (value >> 2) & 0b11;
-        IsMosaic = ((value >> 7) & 0b1) == 0b1;
+        IsMosaic = ((value >> 6) & 0b1) == 0b1;
         LargePalette = ((value >> 7) & 0b1) == 0b1;
-        ScreenBaseBlock = (value >> 8) & 0b1_1111;
-        DisplayAreaOverflow = ((value >> 13) & 0b1) == 0b1;
-        ScreenSize = (BgSize)((value >> 14) & 0b11);
+    }
+
+    internal void UpdateB2(byte value)
+    {
+        ScreenBaseBlock = value & 0b1_1111;
+        DisplayAreaOverflow = ((value >> 5) & 0b1) == 0b1;
+        ScreenSize = (BgSize)((value >> 6) & 0b11);
     }
 }

@@ -4,7 +4,7 @@ using GameboyAdvanced.Core.Interrupts;
 
 namespace GameboyAdvanced.Core.Input;
 
-internal class Gamepad
+public class Gamepad
 {
     private readonly Dictionary<Key, bool> _keyIrq = new()
     {

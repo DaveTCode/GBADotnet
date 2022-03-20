@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Apu.Units;
 
-internal class Envelope
+public class Envelope
 {
     internal int EnvelopeStepTime;
 

@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Ppu.Registers;
 
-internal struct BldAlpha
+public struct BldAlpha
 {
     private ushort _raw;
     internal int EVACoefficient;
@@ -13,12 +13,19 @@ internal struct BldAlpha
         EVBCoefficient = 0;
     }
 
-    internal void Set(ushort val)
+    internal void UpdateB1(byte val)
     {
-        _raw = (ushort)(val & 0b0001_1111_0001_1111);
+        _raw = (ushort)((_raw & 0xFFFF_0000) | val);
+        _raw &= 0b0001_1111_0001_1111;
         var evaBase = val & 0b1_1111;
         EVACoefficient = evaBase >= 16 ? 16 : evaBase;
-        var evbBase = (val >> 8) & 0b1_1111;
+    }
+
+    internal void UpdateB2(byte val)
+    {
+        _raw = (ushort)((_raw & 0x0000_FFFF) | (ushort)(val << 8));
+        _raw &= 0b0001_1111_0001_1111;
+        var evbBase = val & 0b1_1111;
         EVBCoefficient = evbBase >= 16 ? 16 : evbBase;
     }
 

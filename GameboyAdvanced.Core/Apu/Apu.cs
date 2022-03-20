@@ -4,7 +4,7 @@ using static GameboyAdvanced.Core.IORegs;
 
 namespace GameboyAdvanced.Core.Apu;
 
-internal class Apu
+public class Apu
 {
     private readonly BaseDebugger _debugger;
 

@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Apu.Channels;
 
-internal abstract class BaseChannel
+public abstract class BaseChannel
 {
     internal int Index;
 
@@ -14,7 +14,7 @@ internal abstract class BaseChannel
     internal abstract void Reset();
 }
 
-internal abstract class GBSoundChannel : BaseChannel
+public abstract class GBSoundChannel : BaseChannel
 {
     protected bool _lengthFlag;
     protected bool _restartScheduled;

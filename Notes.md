@@ -126,9 +126,9 @@ how the pipeline is wired up to the data bus.
 
 - Memory tests are intermittent at 1552/1552 DMA0 load from SRAM mirror seems to be the one which is inconsistent
 - IO register tests all pass including open bus and unused registers
-- Timing Tests are 1025/2020 and seem to be working quite well, all timed operations pass against IWRAM so the ops themselves take the right number of cycles. Most remaining issues are with prefetch unit
+- Timing Tests are 1095/2020 and seem to be working quite well, all timed operations pass against IWRAM so the ops themselves take the right number of cycles. Most remaining issues are with prefetch unit although MUL operations seem to have wrong number of cycles as do LDMIA across rom boundary
 - Timer IRQ tests are 36/90 but I'm not really sure what the different tests are doing. I don't implement any sort of IRQ delay either so this is all a bit suspect.
-- Timer Count up tests are 398/936 now that it's been implemented. Having looked into what these actually do though.
+- Timer Count up tests are 164/936 now that it's been implemented. Having looked into what these actually do though.
 - Shifter tests all pass
 - Carry tests all pass
 - Multiply long tests are failing on carry flag checks which nobody knows how to pass
@@ -137,7 +137,7 @@ how the pipeline is wired up to the data bus.
 	- Failures are Imm W R+0x10/+IWRAM/EWRAM both only from DMA channel 0 where expected value is 0 but I'm setting something (8 failures)
 	- HB1 W -ROM/EWRAM (and IWRAM) on all channels _except_ 0 (6) failures
 - MISC Edge test cases hangs for a while then hits 0/10
-- Video tests aren't really useful tests per se and I haven't checked them against mgba
+- Video tests are passing Base mode 3/4, Obj transforms and layer toggle but the oam update delay isn't implemented (presumably OAM sprites latch the line before like NES)
 
 
 ## Which games test which features?
@@ -147,3 +147,4 @@ how the pipeline is wired up to the data bus.
 - Kirby also uses all 4 backgrounds with blending on the initial screens as well as lots of kirby sprites
 - Donkey Kong uses x scrolling on a BG to scroll clouds on title screen
 - Super Monkey Ball Jr seems to use 256 color mode and 256*256 size screen during logo screens
+- Super monkey ball (After failed save) uses large palette sprites and crashes due to out of bounds vram access. Large palette sprites are probs broken

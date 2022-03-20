@@ -3,7 +3,7 @@
 /// <summary>
 /// Sound Channel 3 plays a wave buffer of 4 bit samples
 /// </summary>
-internal class SoundChannel3 : GBSoundChannel
+public class SoundChannel3 : GBSoundChannel
 {
     private readonly byte[][] _waveRamBanks = new byte[2][];
 

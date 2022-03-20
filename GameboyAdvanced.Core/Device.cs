@@ -21,18 +21,18 @@ public unsafe class Device
 
     public readonly BaseDebugger Debugger;
 
-    internal readonly MemoryBus Bus;
-    private readonly Core _cpu;
-    private readonly DmaDataUnit _dmaData;
-    private readonly DmaController _dmaCtrl;
-    private readonly GamePak _gamepak;
-    private readonly Gamepad _gamepad;
-    private readonly Ppu.Ppu _ppu;
-    private readonly Apu.Apu _apu;
-    private readonly TimerController _timerController;
-    private readonly InterruptRegisters _interruptRegisters;
-    private readonly InterruptInterconnect _interruptInterconnect;
-    private readonly SerialController _serialController;
+    public readonly MemoryBus Bus;
+    public readonly Core Cpu;
+    public readonly DmaDataUnit DmaData;
+    public readonly DmaController DmaCtrl;
+    public readonly GamePak Gamepak;
+    public readonly Gamepad Gamepad;
+    public readonly Ppu.Ppu Ppu;
+    public readonly Apu.Apu Apu;
+    public readonly TimerController TimerController;
+    public readonly InterruptRegisters InterruptRegisters;
+    public readonly InterruptInterconnect InterruptInterconnect;
+    public readonly SerialController SerialController;
 
     /// <summary>
     /// Constructs a device which can be used to exectue a rom by running 
@@ -61,48 +61,58 @@ public unsafe class Device
     /// </param>
     public Device(byte[] bios, GamePak rom, BaseDebugger debugger, bool skipBios)
     {
-        _gamepak = rom;
-        _interruptRegisters = new InterruptRegisters();
-        _interruptInterconnect = new InterruptInterconnect(debugger, _interruptRegisters);
-        _gamepad = new Gamepad(debugger, _interruptInterconnect);
-        _timerController = new TimerController(debugger, _interruptInterconnect);
-        _ppu = new Ppu.Ppu(debugger, _interruptInterconnect);
-        _apu = new Apu.Apu(debugger);
-        _dmaData = new DmaDataUnit();
-        _serialController = new SerialController(debugger, _interruptInterconnect);
-        Bus = new MemoryBus(bios, _gamepad, _gamepak, _ppu, _apu, _dmaData, _timerController, _interruptRegisters, _serialController, debugger, skipBios);
-        _cpu = new Core(Bus, skipBios, debugger, _interruptRegisters);
-        _dmaCtrl = new DmaController(Bus, debugger, _dmaData, _interruptInterconnect, _ppu, _cpu);
+        Gamepak = rom;
+        InterruptRegisters = new InterruptRegisters();
+        InterruptInterconnect = new InterruptInterconnect(debugger, InterruptRegisters);
+        Gamepad = new Gamepad(debugger, InterruptInterconnect);
+        TimerController = new TimerController(debugger, InterruptInterconnect);
+        Ppu = new Ppu.Ppu(debugger, InterruptInterconnect);
+        Apu = new Apu.Apu(debugger);
+        DmaData = new DmaDataUnit();
+        SerialController = new SerialController(debugger, InterruptInterconnect);
+        Bus = new MemoryBus(bios, Gamepad, Gamepak, Ppu, Apu, DmaData, TimerController, InterruptRegisters, SerialController, debugger, skipBios);
+        Cpu = new Core(Bus, skipBios, debugger, InterruptRegisters);
+        DmaCtrl = new DmaController(Bus, debugger, DmaData, InterruptInterconnect, Ppu, Cpu);
         Debugger = debugger;
     }
 
     public void RunCycle(bool skipBreakpoints=false)
     {
-        _cpu.Cycles++;
+        Cpu.Cycles++;
 #if DEBUG
-        if (!skipBreakpoints && Debugger.CheckBreakpoints(_cpu))
+        if (!skipBreakpoints && Debugger.CheckBreakpoints(Cpu))
         {
             throw new BreakpointException();
         }
 #endif
-        _timerController.Step();
-        if (!_dmaCtrl.Step())
+        TimerController.Step();
+        if (!DmaCtrl.Step())
         {
             // Only step the CPU unit if the DMA is inactive
-            _cpu.Clock();
+            if (Bus.HaltMode == HaltMode.None)
+            {
+                Cpu.Clock();
+            }
+            else
+            {
+                if (InterruptRegisters.CpuShouldIrq)
+                {
+                    Bus.HaltMode = HaltMode.None;
+                }
+            }
         }
-        _ppu.Step();
+        Ppu.Step();
     }
 
     public void Reset(bool skipBios)
     {
-        _cpu.Reset(skipBios);
+        Cpu.Reset(skipBios);
         Bus.Reset(skipBios);
-        _ppu.Reset();
-        _dmaCtrl.Reset();
-        _dmaData.Reset();
-        _timerController.Reset();
-        _gamepad.Reset();
+        Ppu.Reset();
+        DmaCtrl.Reset();
+        DmaData.Reset();
+        TimerController.Reset();
+        Gamepad.Reset();
     }
 
     public void RunFrame()
@@ -113,11 +123,11 @@ public unsafe class Device
         }
     }
 
-    public byte[] GetFrame() => _ppu.GetFrame();
+    public byte[] GetFrame() => Ppu.GetFrame();
 
-    public void PressKey(Key key) => _gamepad.PressKey(key);
+    public void PressKey(Key key) => Gamepad.PressKey(key);
 
-    public void ReleaseKey(Key key) => _gamepad.ReleaseKey(key);
+    public void ReleaseKey(Key key) => Gamepad.ReleaseKey(key);
 
     public uint InspectWord(uint address)
     {
@@ -137,7 +147,7 @@ public unsafe class Device
         return Bus.ReadByte(address, 0, 0, 0, 0, ref waitStates);
     }
 
-    public string LoadedRomName() => _gamepak.GameTitle;
+    public string LoadedRomName() => Gamepak.GameTitle;
 
-    public override string ToString() => _cpu.ToString();
+    public override string ToString() => Cpu.ToString();
 }

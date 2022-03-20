@@ -4,7 +4,7 @@
 /// This struct represents the undocumented register mirrored across 0x04xx0800
 /// which contains the wait states for WRAM
 /// </summary>
-internal struct InternalMemoryControl
+public struct InternalMemoryControl
 {
     private const uint Mask = 0b1111_1111_0000_0000_0000_0000_0010_1111;
     private uint _raw;

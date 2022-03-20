@@ -6,7 +6,7 @@ namespace GameboyAdvanced.Core.Apu.Channels;
 /// Sound channel 1 is common between GB and GBA and is a square wave channel
 /// with frequency sweep and volume envelope functionality.
 /// </summary>
-internal class SoundChannel1 : ToneChannel
+public class SoundChannel1 : ToneChannel
 {
     private readonly SweepUnit _sweepUnit = new();
 

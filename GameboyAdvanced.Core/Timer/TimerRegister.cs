@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Timer;
 
-internal struct TimerRegister
+public struct TimerRegister
 {
     internal int Index;
     internal ushort Reload;

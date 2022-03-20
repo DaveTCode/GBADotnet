@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Apu.Units;
 
-internal class SweepUnit
+public class SweepUnit
 {
     internal int NumberOfSweepShift;
     internal bool IsDecrease;

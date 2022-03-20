@@ -84,14 +84,6 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\hello.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "TONC - M3 Demo": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m3_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
-    "TONC - Octtest": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\octtest.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
     "TONC - Pageflip": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\pageflip.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -128,6 +120,22 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\dma_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - M3 Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m3_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - M7 Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m7_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - M7 Demo MB": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m7_demo_mb.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - M7 Ex": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m7_ex.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "TONC - OA Combo": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\oacombo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -139,6 +147,10 @@
     "TONC - Obj Aff Demo": {
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\obj_aff.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Octtest": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\octtest.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Prio Demo": {
       "commandName": "Project",

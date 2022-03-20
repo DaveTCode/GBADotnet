@@ -28,7 +28,7 @@ internal enum Interrupt
 /// In practice all this is doing is setting the appropriate bit to 1 on the 
 /// IF register but to help with ownership concerns the two functions are split.
 /// </summary>
-internal class InterruptInterconnect
+public class InterruptInterconnect
 {
     private readonly BaseDebugger _debugger;
     private readonly InterruptRegisters _registers;

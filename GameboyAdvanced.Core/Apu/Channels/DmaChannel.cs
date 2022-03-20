@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Apu.Channels;
 
-internal class DmaChannel : BaseChannel
+public class DmaChannel : BaseChannel
 {
     internal bool FullVolume;
     internal bool EnableRight;

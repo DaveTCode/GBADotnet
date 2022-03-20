@@ -13,7 +13,7 @@ namespace GameboyAdvanced.Core.Bus;
 /// or A lies in another region. Internally the prefetch unit stores 8 16 bit
 /// values in a circular buffer.
 /// </summary>
-internal class Prefetcher
+public class Prefetcher
 {
     private uint _currentPreFetchBase;
     private ulong _cycleBurstStart;

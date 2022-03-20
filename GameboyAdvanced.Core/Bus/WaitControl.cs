@@ -18,7 +18,7 @@ internal enum PhiOutput
 /// 
 /// TODO - Not actually using these wait timings anywhere yet, assuming defaults in memory bus
 /// </summary>
-internal class WaitControl
+public class WaitControl
 {
     internal int SRAMWaitControl;
     internal int[] WaitState0 = new int[2];
@@ -43,16 +43,26 @@ internal class WaitControl
 
     internal void Set(ushort value)
     {
+        SetByte1((byte)value);
+        SetByte2((byte)(value >> 8));
+    }
+
+    internal void SetByte1(byte value)
+    {
         SRAMWaitControl = value & 0b11;
         WaitState0[0] = WaitStatesNFromBitVal((value >> 2) & 0b11);
         WaitState0[1] = ((value >> 4) & 0b1) == 0 ? 2 : 1;
         WaitState1[0] = WaitStatesNFromBitVal((value >> 5) & 0b11);
         WaitState1[1] = ((value >> 7) & 0b1) == 0 ? 4 : 1;
-        WaitState2[0] = WaitStatesNFromBitVal((value >> 8) & 0b11);
-        WaitState2[1] = ((value >> 10) & 0b1) == 0 ? 8 : 1;
-        PhiTerminalOutput = (PhiOutput)((value >> 11) & 0b11);
-        EnableGamepakPrefetch = ((value >> 14) & 0b1) == 0b1;
-        GamepakIsCGB = ((value >> 15) & 0b1) == 0b1;
+    }
+
+    internal void SetByte2(byte value)
+    {
+        WaitState2[0] = WaitStatesNFromBitVal(value & 0b11);
+        WaitState2[1] = ((value >> 2) & 0b1) == 0 ? 8 : 1;
+        PhiTerminalOutput = (PhiOutput)((value >> 3) & 0b11);
+        EnableGamepakPrefetch = ((value >> 6) & 0b1) == 0b1;
+        GamepakIsCGB = ((value >> 7) & 0b1) == 0b1;
     }
 
     internal ushort Get() => (ushort)(SRAMWaitControl |
