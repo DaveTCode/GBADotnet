@@ -88,22 +88,24 @@ internal static unsafe class MultiplyUtils
     internal static void MultiplyCycle(Core core, uint instruction)
     {
         _currentCycles++;
+        core.SEQ = 0;
 
         if (_currentCycles == _requiredCycles)
         {
             core.R[_destinationReg] = _multiplyResult;
             Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
-            core.SEQ = 1;
-        }
-        else
-        {
-            core.SEQ = 0;
+
+            if (_destinationReg == 15)
+            {
+                core.ClearPipeline();
+            }
         }
     }
 
     internal static void MultiplyCycleWFlags(Core core, uint instruction)
     {
         _currentCycles++;
+        core.SEQ = 0;
 
         if (_currentCycles == _requiredCycles)
         {
@@ -111,11 +113,11 @@ internal static unsafe class MultiplyUtils
             ALU.SetZeroSignFlags(ref core.Cpsr, _multiplyResult);
             // TODO - The carry flag is set to a meaningless value. Ok, but what.
             Core.ResetMemoryUnitForOpcodeFetch(core, instruction);
-            core.SEQ = 1;
-        }
-        else
-        {
-            core.SEQ = 0;
+
+            if (_destinationReg == 15)
+            {
+                core.ClearPipeline();
+            }
         }
     }
 }
