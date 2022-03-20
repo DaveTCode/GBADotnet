@@ -234,7 +234,6 @@ public partial class MemoryBus
                     _ => D, // Open bus
                 };
             case uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF:
-                waitStates += 1; // TODO - Adding a single wait state here because it's 2 memory accesses over PPU 16 bit bus
                 return (uint)(_ppu.ReadHalfWord(alignedAddress) | (_ppu.ReadHalfWord(alignedAddress + 2) << 16));
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
                 // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
@@ -509,7 +508,7 @@ public partial class MemoryBus
             case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 _ppu.WriteHalfWord(alignedAddress, (ushort)value);
                 _ppu.WriteHalfWord(alignedAddress + 2, (ushort)(value >> 16));
-                return 1; // 1 cycle extra as 16 bit bus
+                return 0;
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
                 _prefetcher.Reset();
                 // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"

@@ -604,7 +604,7 @@ internal unsafe static class Thumb
         }
 
         core.nOPC = true;
-        core.SEQ = LdmStmUtils._storeLoadMultiplePopCount > 1 ? 1 : 0;
+        core.SEQ = 0;
         core.MAS = BusWidth.Word;
         core.A = initialAddress;
         core.AIncrement = 0;
