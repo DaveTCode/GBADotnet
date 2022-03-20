@@ -312,9 +312,21 @@
       "commandName": "Project",
       "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\timer\\reload\\reload.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Breath of Fire": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Breath of Fire (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Breath of Fire II": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Breath of Fire II (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Doooooooom": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Doom (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Final Fantasy Tactics Advanced": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Final Fantasy - Tactics Advanced.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Final Fantasy 6": {
       "commandName": "Project",
@@ -332,6 +344,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Kirby & The Amazing Mirror (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "OpenLara": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\OpenLara.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Super Mario Advance (U)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Mario Advance (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -339,6 +355,10 @@
     "Super Monkey Ball (U)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Monkey Ball Jr (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Tony Hawk's Pro Skater 2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tony Hawk_s Pro Skater 2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     }
   }
 }

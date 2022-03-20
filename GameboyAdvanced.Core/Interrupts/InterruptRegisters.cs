@@ -44,7 +44,7 @@ public class InterruptRegisters
             (_keypad ? (1u << 12) : 0u) |
             (_gamepak ? (1u << 13) : 0u));
 
-        internal void Set(ushort val)
+        internal void SetB1(byte val)
         {
             _lcdVBlank = ((val & (1u << 0)) == 1u << 0);
             _lcdHBlank = ((val & (1u << 1)) == 1u << 1);
@@ -54,12 +54,16 @@ public class InterruptRegisters
             _timer2Overflow = ((val & (1u << 5)) == 1u << 5);
             _timer3Overflow = ((val & (1u << 6)) == 1u << 6);
             _serialComms = ((val & (1u << 7)) == 1u << 7);
-            _dma0 = ((val & (1u << 8)) == 1u << 8);
-            _dma1 = ((val & (1u << 9)) == 1u << 9);
-            _dma2 = ((val & (1u << 10)) == 1u << 10);
-            _dma3 = ((val & (1u << 11)) == 1u << 11);
-            _keypad = ((val & (1u << 12)) == 1u << 12);
-            _gamepak = ((val & (1u << 13)) == 1u << 13);
+        }
+
+        internal void SetB2(byte val)
+        {
+            _dma0 = ((val & (1u << 0)) == 1u << 8);
+            _dma1 = ((val & (1u << 1)) == 1u << 9);
+            _dma2 = ((val & (1u << 2)) == 1u << 10);
+            _dma3 = ((val & (1u << 3)) == 1u << 11);
+            _keypad = ((val & (1u << 4)) == 1u << 12);
+            _gamepak = ((val & (1u << 5)) == 1u << 13);
         }
 
         internal void Set(Interrupt interrupt)
@@ -121,14 +125,16 @@ public class InterruptRegisters
     {
         CpuShouldIrq = false;
         _interruptMasterEnable = false;
-        _interruptEnable.Set((ushort)0);
-        _interruptRequest.Set(0xFFFF);
+        _interruptEnable.Set(0);
+        _interruptRequest.SetB1(0xFF);
+        _interruptRequest.SetB2(0xFF);
     }
 
     internal void RaiseInterrupt(Interrupt interrupt)
     {
         var newVal = (ushort)(_interruptRequest.Get() | (ushort)interrupt);
-        _interruptRequest.Set(newVal);
+        _interruptRequest.SetB1((byte)newVal);
+        _interruptRequest.SetB2((byte)(newVal >> 8));
         UpdateCpuShouldIrq();
     }
 
@@ -137,14 +143,15 @@ public class InterruptRegisters
         CpuShouldIrq = _interruptMasterEnable && (_interruptEnable.Get() & _interruptRequest.Get()) != 0;
     }
 
-    internal byte ReadByte(uint _) => throw new NotImplementedException("Byte reads from interrupt registers not implemented");
+    internal byte ReadByte(uint address) => (byte)(ReadHalfWord(address & 0xFFFF_FFFE) >> (int)(8 * (address & 1)));
 
     internal ushort ReadHalfWord(uint address) => address switch
     {
         IE => _interruptEnable.Get(),
         IF => _interruptRequest.Get(),
         IME => (ushort)(_interruptMasterEnable ? 1 : 0u),
-        _ => 0, // TODO - Think it's this and not open bus
+        IME + 2 => 0, // TODO - Is this tested?
+        _ => throw new Exception("Invalid read from interrupt registers")
     };
 
     internal uint ReadWord(uint address) =>
@@ -152,30 +159,40 @@ public class InterruptRegisters
 
     internal void WriteByte(uint address, byte val)
     {
-        var hwVal = (ushort)(val | (val << 8));
-        var hwAddress = address & 0xFFFF_FFFE;
-        WriteHalfWord(hwAddress, hwVal); // TODO - Is this correct? That's how I think 16 bit address buses work when writing bytes to them
-    }
-
-    internal void WriteHalfWord(uint address, ushort val)
-    {
         switch (address)
         {
             case IE:
-                _interruptEnable.Set(val);
+                _interruptEnable.SetB1(val);
+                break;
+            case IE + 1:
+                _interruptEnable.SetB2(val);
                 break;
             case IF:
-                var newVal = (ushort)(_interruptRequest.Get() & ~val);
-                _interruptRequest.Set(newVal);
+                var currentB1 = (byte)(_interruptRequest.Get());
+                var newValB1 = (byte)(currentB1 & ~val);
+                _interruptRequest.SetB1(newValB1);
+                break;
+            case IF + 1:
+                var currentB2 = (byte)(_interruptRequest.Get() >> 8);
+                var newValB2 = (byte)(currentB2 & ~val);
+                _interruptRequest.SetB1(newValB2);
                 break;
             case IME:
                 _interruptMasterEnable = (val & 0b1) == 0b1;
+                break;
+            case IME + 1:
                 break;
             default:
                 break;
         }
 
         UpdateCpuShouldIrq();
+    }
+
+    internal void WriteHalfWord(uint address, ushort val)
+    {
+        WriteByte(address, (byte)val);
+        WriteByte(address + 1, (byte)(val >> 8));
     }
 
     internal void WriteWord(uint address, uint val)
