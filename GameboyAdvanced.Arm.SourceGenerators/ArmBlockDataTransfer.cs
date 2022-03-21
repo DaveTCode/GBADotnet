@@ -68,6 +68,20 @@ LdmStmUtils._writebackRegister = (int)rn;"
                                 var nextAction = load ? "LdmStmUtils.LdmRegisterReadCycle" : "LdmStmUtils.StmRegisterWriteCycle";
                                 var immediateNextActionStatement = load ? "" : $"{nextAction}(core, instruction);";
                                 var userModeStr = userMode ? "LdmStmUtils._useBank0Regs = true;" : "";
+                                var emptyRlistWriteback = (up, writeback) switch
+                                {
+                                    (true, _) => "LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rn] + 0x40);",
+                                    (false, _) => "LdmStmUtils._storeLoadMutipleFinalWritebackValue = (uint)(core.R[rn] - 0x40);",
+                                };
+                                var emptyListInitialAddressValue = (up, pre) switch
+                                {
+                                    (true, true) => "core.R[rn] + 4", // Pre-increment
+                                    (false, true) => "(uint)(core.R[rn] - 0x40)", // Pre-decrement
+                                    (true, false) => "core.R[rn]", // Post-increment
+                                    (false, false) => "(uint)(core.R[rn] - 0x3C)", // Post-decrement
+                                };
+                                emptyListInitialAddressValue += (load) ? ";" : " - 4;";
+
                                 var func = $@"
 static partial void {funcName}(Core core, uint instruction)
 {{
@@ -94,18 +108,19 @@ static partial void {funcName}(Core core, uint instruction)
     {writebackStr}
     if (LdmStmUtils._storeLoadMultiplePopCount == 0)
     {{
-        LdmStmUtils._storeLoadMutipleFinalWritebackValue = core.R[rn] + 0x40;
+        {emptyRlistWriteback}
         LdmStmUtils._storeLoadMultiplePopCount = 1;
         LdmStmUtils._storeLoadMultipleState[0] = 15;
+        core.A = {emptyListInitialAddressValue}
     }}
     else
     {{
         {finalWritebackValue}
+        core.A = {initialAddressValue}
     }}
-    core.A = {initialAddressValue}
     core.AIncrement = 0;
 
-    {immediateNextActionStatement};
+    {immediateNextActionStatement}
 }}
 
 ";
