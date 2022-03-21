@@ -45,13 +45,14 @@ internal static class LdmStmUtils
     /// </summary>
     internal static void StmRegisterWriteCycle(Core core, uint _)
     {
+        core.SEQ = _storeLoadMultiplePtr == 0 ? 0 : 1;
+
         if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount)
         {
             Core.ResetMemoryUnitForOpcodeFetch(core, _);
         }
         else
         {
-            core.SEQ = 1;
             core.A += 4;
             core.D = _useBank0Regs
                 ? core.GetUserModeRegister((int)_storeLoadMultipleState[_storeLoadMultiplePtr])
@@ -156,7 +157,7 @@ internal static class LdmStmUtils
 
         _cachedLdmValue = core.D;
         core.A += 4;
-        core.SEQ = 1;
+        core.SEQ = _storeLoadMultiplePtr == 0 ? 0 : 1;
 
         if (_storeLoadMultiplePtr == _storeLoadMultiplePopCount - 1)
         {

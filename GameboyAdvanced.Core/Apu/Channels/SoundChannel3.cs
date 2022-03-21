@@ -15,8 +15,6 @@ public class SoundChannel3 : GBSoundChannel
     private int _volume;
     private bool _force75PctVolume;
     private int _sampleRate;
-    private bool _lengthFlag;
-    private bool _restartScheduled;
 
     internal SoundChannel3() : base(3)
     {
