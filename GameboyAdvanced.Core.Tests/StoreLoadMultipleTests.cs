@@ -65,7 +65,6 @@ public class StoreLoadMultipleTests
         {
             Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, 0, ref waitStates));
         }
-        Assert.Equal(2u + 2 + 6, cpu.Cycles); // 2 for pipeline + 2N + (1-n)S cycles
     }
 
     [Fact]
@@ -110,7 +109,6 @@ public class StoreLoadMultipleTests
         {
             Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, 0, ref waitStates));
         }
-        Assert.Equal(2u + 2 + 6, cpu.Cycles); // 2 for pipeline + 2N + (1-n)S cycles
     }
 
     [Fact]
@@ -155,7 +153,5 @@ public class StoreLoadMultipleTests
         Assert.False(cpu.nOPC);
         Assert.False(cpu.nMREQ);
         Assert.Equal(0, cpu.SEQ);
-
-        Assert.Equal(2u + 1 + 1 + 7, cpu.Cycles); // 2 for pipeline + 1I + 1N + nS
     }
 }

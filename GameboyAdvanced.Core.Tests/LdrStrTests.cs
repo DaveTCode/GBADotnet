@@ -57,7 +57,5 @@ public class LdrStrTests
         Assert.False(cpu.nOPC);
         Assert.False(cpu.nMREQ);
         Assert.Equal(0, cpu.SEQ);
-        
-        Assert.Equal(2u + 3, cpu.Cycles); // 1 for pipeline + 2N + 1S cycles
     }
 }

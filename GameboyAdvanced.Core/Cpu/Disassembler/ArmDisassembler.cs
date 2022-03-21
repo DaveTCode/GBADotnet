@@ -29,37 +29,145 @@ internal static class ArmDisassembler
             _ => throw new Exception("Invalid state"),
         };
 
-        var instructionStr = instruction switch
+        // Naturally we use a different method of decoding the arm instruction
+        // here to the jump table in the main code, just because I wanted to
+        // see what the code looked like both ways.
+        var instructionStr = ((instruction & (1 << 27)) == 0) switch
         {
-            var i when ((i >> 22) & 0b11_1111) == 0 && ((i >> 4) & 0b1111) == 0b1001 => DisassembleArmMultiply(core, i),
-            var i when ((i >> 23) & 0b1_1111) == 1 && ((i >> 4) & 0b1111) == 0b1001 => DisassembleArmMultiplyLong(core, i),
-            var i when ((i >> 23) & 0b1_1111) == 0b0_0010 && ((i >> 20) & 0b11) == 0b00 && ((i >> 4) & 0b1111_1111) == 0b0000_1001 => DisassembleArmSingleDataSwap(core, i),
-            var i when ((i >> 4) & 0b1111_1111_1111_1111_1111_1111) == 0b0001_0010_1111_1111_1111_0001 => DisassembleArmBranchEx(core, i),
-            var i when ((i >> 25) & 0b111) == 0b000 && ((i >> 22) & 0b1) == 0 && ((i >> 7) & 0b1_1111) == 0b0_0001 && ((i >> 4) & 0b1) == 1 => DisassembleArmHalfWordRegOffset (core, i),
-            var i when ((i >> 25) & 0b111) == 0b000 && ((i >> 22) & 0b1) == 1 && ((i >> 7) & 0b1) == 1 && ((i >> 4) & 0b1) == 1 => DisassembleArmHalfWordImmOffset(core, i),
-            var i when ((i >> 23) & 0b1_1111) == 0b0_0010 => DisassemblePsr(core, i),
-            var i when ((i >> 23) & 0b1_1111) == 0b0_0110 => DisassemblePsr(core, i),
-            var i when ((i >> 26) & 0b11) == 0b00 => DisassembleArmDataOp(core, i),
-            var i when ((i >> 26) & 0b11) == 0b01 => ((i >> 4) & 0b1) switch
+            // 0b0___
+            true => ((instruction & (1 << 26)) == 0) switch
             {
-                0b0 => DisassembleArmSingleDataTransfer(core, i),
-                0b1 => "Undefined",
-                _ => throw new Exception(),
+                // 0b00__
+                true => instruction switch
+                {
+                    var i when ((i >> 22) & 0b11_1111) == 0b00_0000 && ((i >> 4) & 0b1111) == 0b1001 => DisassembleArmMultiply(core, i),
+                    var i when ((i >> 22) & 0b11_1111) == 0b00_0010 && ((i >> 4) & 0b1111) == 0b1001 => DisassembleArmMultiplyLong(core, i),
+                    var i when ((i >> 20) & 0b1111_1011) == 0b0001_0000 && ((i >> 4) & 0b1111_1111) == 0b0000_1001 => DisassembleArmSingleDataSwap(core, i),
+                    var i when ((i >> 4) & 0b1111_1111_1111_1111_1111_1111) == 0b0001_0010_1111_1111_1111_0001 => DisassembleArmBranchEx(core, i),
+                    var i when (((i >> 25) & 0b111) == 0b000) && (((i >> 22) & 0b1) == 0b0) && (((i >> 4) & 0b1111_1001) == 0b0000_1001) => DisassembleArmHalfWordRegOffset(core, i),
+                    var i when (((i >> 25) & 0b111) == 0b000) && (((i >> 22) & 0b1) == 0b1) && (((i >> 4) & 0b1001) == 0b1001) => DisassembleArmHalfWordImmOffset(core, i),
+                    _ => DisassemblyArmDataOpOrPsr(core, instruction),
+                },
+                // 0b01__
+                false => ((instruction & (1 << 4)) == 0) switch
+                {
+                    // Both single data transfer and undefined use 0b011 as first 3, can only disambiguate with bit 4
+                    false => DisassembleArmSingleDataTransfer(core, instruction),
+                    true => "Undefined", // Explicit undefined instruction area
+                }
             },
-            var i when ((i >> 25) & 0b111) == 0b100 => DisassembleArmBlockDataTransfer(core, i),
-            var i when ((i >> 25) & 0b111) == 0b101 => DisassembleArmBranch(core, i),
-            var i when ((i >> 25) & 0b111) == 0b110 => DisassembleArmCoProcessorDataTransfer(core, i),
-            var i when ((i >> 24) & 0b1111) == 0b1110 => ((i >> 4) & 0b1) switch
+            // 0b1___
+            false => ((instruction & (1 << 26)) == 0) switch
             {
-                0b0 => DisassembleArmCoprocessorDataOp(core, i),
-                0b1 => DisassembleArmCoprocessorRegTransfer(core, i),
-                _ => throw new Exception(),
-            },
-            var i when ((i >> 24) & 0b1111) == 0b1111 => DisassembleArmSwi(core, i),
-            _ => throw new Exception($"Invalid instruction {instruction:X8}"),
+                // 0b10__
+                true => ((instruction & (1 << 25)) == 0) switch
+                {
+                    // 0b100
+                    true => DisassembleArmBlockDataTransfer(core, instruction),
+                    // 0b101
+                    false => DisassembleArmBranch(core, instruction),
+                },
+                // 0b11__
+                false => ((instruction & (1 << 25)) == 0) switch
+                {
+                    // 0b110_
+                    true => DisassembleArmCoProcessorDataTransfer(core, instruction),
+                    // 0b111
+                    false => ((instruction & (1 << 24)) == 0) switch
+                    {
+                        // 0b1110
+                        true => ((instruction & (1 << 4)) == 0) switch
+                        {
+                            false => DisassembleArmCoprocessorDataOp(core, instruction),
+                            true => DisassembleArmCoprocessorRegTransfer(core, instruction),
+                        },
+                        // 0b1111
+                        false => DisassembleArmSwi(core, instruction),
+                    }
+                }
+            }
         };
 
         return string.Format(instructionStr, condString);
+    }
+
+    private static string DisassemblyArmDataOpOrPsr(Core core, uint instruction)
+    {
+        var imm = ((instruction >> 25) & 0b1) == 1;
+        var opcode = ((instruction >> 21) & 0b1111);
+        var s = ((instruction >> 20) & 0b1) == 1;
+        var rn = (instruction >> 16) & 0b1111;
+        var rd = (instruction >> 12) & 0b1111;
+        var op2 = instruction & 0b1111_1111_1111;
+
+        var opcodeStr = opcode switch
+        {
+            0 => "AND",
+            1 => "EOR",
+            2 => "SUB",
+            3 => "RSB",
+            4 => "ADD",
+            5 => "ADC",
+            6 => "SBC",
+            7 => "RSC",
+            8 => "TST",
+            9 => "TEQ",
+            10 => "CMP",
+            11 => "CMN",
+            12 => "ORR",
+            13 => "MOV",
+            14 => "BIC",
+            15 => "MVN",
+            _ => throw new Exception(),
+        };
+
+        // MSR/MRS are encoded as TST/CMN/CMP/TEQ without S flag set
+        if (opcode is 8 or 9 or 10 or 11 && !s)
+        {
+            return DisassemblePsr(core, instruction);
+        }
+
+        if (s) opcodeStr += "S";
+
+        string operand2;
+
+        if (imm)
+        {
+            var i = op2 & 0b1111_1111;
+            var r = (op2 >> 8) & 0b1111;
+            operand2 = $"#{Shifter.RORInternal(i, (byte)(r * 2)):X}";
+        }
+        else
+        {
+            var rm = op2 & 0b1111;
+            var useReg = ((op2 >> 4) & 0b1) == 1;
+            var shiftType = ((op2 >> 5) & 0b11) switch
+            {
+                0b00 => "LSL",
+                0b01 => "LSR",
+                0b10 => "ASR",
+                0b11 => "ROR",
+                _ => throw new Exception()
+            };
+
+            if (useReg)
+            {
+                var rs = (op2 >> 8) & 0b1111;
+                operand2 = $"{RString(rm)},{shiftType} {RString(rs)}";
+            }
+            else
+            {
+                var amount = (op2 >> 7) & 0b1_1111;
+                operand2 = $"{RString(rm)},{shiftType} #{amount:X}";
+            }
+        }
+
+        return opcodeStr switch
+        {
+            var _ when opcodeStr[..3] is "TST" or "TEQ" or "CMP" or "CMN" => $"{opcodeStr[..3]}{{0}} {RString(rn)}, {operand2}",
+            var _ when opcodeStr is "MOV" or "MVN" => $"{opcodeStr}{{0}} {RString(rd)}, {operand2}",
+            _ => $"{opcodeStr}{{0}} {RString(rd)}, {RString(rn)}, {operand2}",
+        };
     }
 
     private static string DisassemblePsr(Core core, uint instruction)
@@ -68,7 +176,7 @@ internal static class ArmDisassembler
         var sourceSpsr = ((instruction >> 22) & 0b1) == 0b1;
 
         var sourceStr = sourceSpsr
-            ? "spsr_" + core.Cpsr.Mode.ToString() 
+            ? "spsr_" + core.Cpsr.Mode.ToString()
             : "cpsr";
 
         if (isMsr)
@@ -84,18 +192,18 @@ internal static class ArmDisassembler
                 var rot = (instruction >> 8) & 0b1111;
                 var val = Shifter.RORNoFlagsIncRRX(imm, (byte)rot, ref core.Cpsr);
 
-                return $"MSR {sourceStr}, #{val:X8}";
+                return $"MSR{{0}} {sourceStr}, #{val:X8}";
             }
             else
             {
                 var rm = instruction & 0b1111;
-                return $"MSR {sourceStr}, {RString(rm)}={core.R[rm]:X8}";
+                return $"MSR{{0}} {sourceStr}, {RString(rm)}={core.R[rm]:X8}";
             }
         }
         else
         {
             var rd = (instruction >> 12) & 0b1111;
-            return $"MRS {RString(rd)}, {sourceStr}";
+            return $"MRS{{0}} {RString(rd)}, {sourceStr}";
         }
     }
 
@@ -138,7 +246,7 @@ internal static class ArmDisassembler
         var w = ((instruction >> 21) & 0b1) == 0b1;
         var l = ((instruction >> 20) & 0b1) == 0b1;
 
-        return (l) ? "LDR" : "STR";
+        return (l) ? $"LDR{{0}}" : $"STR{{0}}";
     }
 
     private static string DisassembleArmHalfWordImmOffset(Core core, uint instruction)
@@ -152,30 +260,58 @@ internal static class ArmDisassembler
         var rm = instruction & 0b1111;
         var sh = ((instruction >> 5) & 0b11);
 
-        if (l) return "LDRH"; 
-        else return "STRH"; // TODO - Proper disassembly
+        if (l) return $"LDRH{{0}}";
+        else return $"STRH{{0}}"; // TODO - Proper disassembly
     }
 
     private static string DisassembleArmHalfWordRegOffset(Core core, uint instruction)
     {
         var l = ((instruction >> 20) & 0b1) == 0b1;
-        if (l) return "LDRH";
-        else return "STRH"; // TODO - Proper disassembly
+        if (l) return $"LDRH{{0}}";
+        else return $"STRH{{0}}"; // TODO - Proper disassembly
     }
 
-    private static string DisassembleArmSingleDataSwap(Core core, uint instruction)
+    private static string DisassembleArmSingleDataSwap(Core _, uint instruction)
     {
-        return "SWP"; // TODO
+        var b = ((instruction >> 22) & 0b1) == 0b1 ? "B" : "";
+        var rn = (instruction >> 16) & 0b1111;
+        var rd = (instruction >> 12) & 0b1111;
+        var rm = instruction & 0b1111;
+        
+        return $"SWP{b}{{0}} {RString(rd)},{RString(rm)},[{RString(rn)}]";
     }
 
     private static string DisassembleArmMultiplyLong(Core core, uint instruction)
     {
-        return "MULL"; // TODO
+        var u = ((instruction >> 22) & 0b1) == 1;
+        var a = ((instruction >> 21) & 0b1) == 1;
+        var s = ((instruction >> 20) & 0b1) == 1 ? "S" : "";
+        var rdHi = (instruction >> 16) & 0b1111;
+        var rdLo = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+
+        return (u, a) switch
+        {
+            (true, true) => $"SMLAL{{0}}{s} {RString(rdLo)},{RString(rdHi)},{RString(rm)},{RString(rs)} ; {RString(rdHi)},{RString(rdLo)}:={(long)core.R[rm]}*{(long)core.R[rs]}+{(long)((core.R[rdHi] << 32) | core.R[rdLo])}",
+            (true, false) => $"SMULL{{0}}{s} {RString(rdLo)},{RString(rdHi)},{RString(rm)},{RString(rs)} ; {RString(rdHi)},{RString(rdLo)}:={(long)core.R[rm]}*{(long)core.R[rs]}",
+            (false, true) => $"UMLAL{{0}}{s} {RString(rdLo)},{RString(rdHi)},{RString(rm)},{RString(rs)} ; {RString(rdHi)},{RString(rdLo)}:={core.R[rm]:X8}*{core.R[rs]:X8}+{(core.R[rdHi] << 32) | core.R[rdLo]}",
+            (false, false) => $"UMULL{{0}}{s} {RString(rdLo)},{RString(rdHi)},{RString(rm)},{RString(rs)} ; {RString(rdHi)},{RString(rdLo)}:={core.R[rm]:X8}*{core.R[rs]:X8}",
+        };
     }
 
     private static string DisassembleArmMultiply(Core core, uint instruction)
     {
-        return "MUL"; // TODO
+        var a = ((instruction >> 21) & 0b1) == 1;
+        var s = ((instruction >> 20) & 0b1) == 1 ? "S" : "";
+        var rd = (instruction >> 16) & 0b1111;
+        var rn = (instruction >> 12) & 0b1111;
+        var rs = (instruction >> 8) & 0b1111;
+        var rm = instruction & 0b1111;
+
+        return a
+            ? $"MLA{{0}}{s} {RString(rd)},{RString(rm)},{RString(rs)},{RString(rn)} ; {RString(rd)}:={core.R[rm]:X8}*{core.R[rs]:X8}+{core.R[rn]:X8}"
+            : $"MUL{{0}}{s} {RString(rd)},{RString(rm)},{RString(rs)} ; {RString(rd)}:={core.R[rm]:X8}*{core.R[rs]:X8}";
     }
 
     internal static string DisassembleArmSwi(Core _core, uint instruction)
@@ -229,93 +365,14 @@ internal static class ArmDisassembler
             _ => "Invalid Bios function"
         };
 
-        return $"SWI #{biosFunctionIx << 16:X6} = {biosFunctionName}";
+        return $"SWI{{0}} #{biosFunctionIx << 16:X6} = {biosFunctionName}";
     }
 
-    private static string DisassembleArmCoProcessorDataTransfer(Core core, uint instruction)
-    {
-        throw new NotImplementedException();
-    }
+    private static string DisassembleArmCoProcessorDataTransfer(Core core, uint instruction) => "Coprocessor Data Transfer";
 
     private static string DisassembleArmCoprocessorRegTransfer(Core core, uint instruction) => "Coprocessor Reg Transfer";
 
-    private static string DisassembleArmCoprocessorDataOp(Core core, uint instruction)
-    {
-        throw new NotImplementedException();
-    }
-
-    private static string DisassembleArmDataOp(Core core, uint instruction)
-    {
-        var imm = ((instruction >> 25) & 0b1) == 1;
-        var opcode = ((instruction >> 21) & 0b1111);
-        var s = ((instruction >> 20) & 0b1) == 1;
-        var rn = (instruction >> 16) & 0b1111;
-        var rd = (instruction >> 12) & 0b1111;
-        var op2 = instruction & 0b1111_1111_1111;
-
-        var opcodeStr = opcode switch
-        {
-            0 => "AND",
-            1 => "EOR",
-            2 => "SUB",
-            3 => "RSB",
-            4 => "ADD",
-            5 => "ADC",
-            6 => "SBC",
-            7 => "RSC",
-            8 => "TST",
-            9 => "TEQ",
-            10 => "CMP",
-            11 => "CMN",
-            12 => "ORR",
-            13 => "MOV",
-            14 => "BIC",
-            15 => "MVN",
-            _ => throw new Exception(),
-        };
-
-        if (s) opcodeStr += "S";
-
-        string operand2;
-
-        if (imm)
-        {
-            var i = op2 & 0b1111_1111;
-            var r = (op2 >> 8) & 0b1111;
-            operand2 = $"#{Shifter.RORNoFlagsIncRRX(i, (byte)(r * 2), ref core.Cpsr):X}";
-        }
-        else
-        {
-            var rm = op2 & 0b1111;
-            var useReg = ((op2 >> 4) & 0b1) == 1;
-            var shiftType = ((op2 >> 5) & 0b11) switch
-            {
-                0b00 => "LSL",
-                0b01 => "LSR",
-                0b10 => "ASR",
-                0b11 => "ROR",
-                _ => throw new Exception()
-            };
-
-            if (useReg)
-            {
-                var rs = (op2 >> 8) & 0b1111;
-                operand2 = $"{RString(rm)},{shiftType} {RString(rs)}";
-            }
-            else
-            {
-                var amount = (op2 >> 7) & 0b1_1111;
-                operand2 = $"{RString(rm)},{shiftType} #{amount:X}";
-            }
-        }
-
-        return opcodeStr switch
-        {
-            var _ when opcodeStr[..3] is "TST" or "TEQ" or "CMP" or "CMN" => $"{opcodeStr[..3]}{{0}} {RString(rn)},{operand2}",
-            var _ when opcodeStr is "MOV" or "MVN" => $"{opcodeStr}{{0}} {RString(rd)},{operand2}",
-            _ => $"{opcodeStr}{{0}} {RString(rd)},{RString(rn)},{operand2}",
-        };
-    }
+    private static string DisassembleArmCoprocessorDataOp(Core core, uint instruction) => "Coprocessor Data Operation";
 
     private static string DisassembleArmBranch(Core core, uint instruction)
     {
@@ -323,7 +380,7 @@ internal static class ArmDisassembler
 
         var offset = ((int)((instruction & 0xFF_FFFF) << 8)) >> 6;
 
-        return $"{name} #{core.R[15] + offset:X8}";
+        return $"{name} #{(core.R[15] + offset):X8}";
     }
 
     private static string DisassembleArmBranchEx(Core core, uint instruction)

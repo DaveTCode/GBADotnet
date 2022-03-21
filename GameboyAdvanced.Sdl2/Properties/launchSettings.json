@@ -348,6 +348,14 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\OpenLara.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Rhythm Tengoku": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Rhythm Tengoku (Japan).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Sword of Mana": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Sword of Mana (USA, Australia).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Super Mario Advance (U)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Mario Advance (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"

@@ -60,8 +60,6 @@ public class SwpTests
         Assert.Equal(0xABCD_EFFFu, cpu.R[1]);
         Assert.Equal(0xFEED_BEEFu, cpu.R[2]);
         Assert.Equal(0xFEED_BEEFu, cpu.Bus.ReadWord(0x0300_1000, 0, 0, 0, 0, ref waitStates));
-
-        Assert.Equal(2u + 4, cpu.Cycles); // 2 for pipeline + 1S + 2N + 1I cycles to execute
     }
 
     [Fact]
@@ -99,7 +97,5 @@ public class SwpTests
         Assert.Equal(0x0000_00FEu, cpu.R[1]);
         Assert.Equal(0xFEED_BEEFu, cpu.R[2]);
         Assert.Equal(0xABCD_EFEFu, cpu.Bus.ReadWord(0x0300_1000, 0, 0, 0, 0, ref waitStates));
-
-        Assert.Equal(2u + 4, cpu.Cycles); // 2 for pipeline + 1S + 2N + 1I cycles to execute
     }
 }
