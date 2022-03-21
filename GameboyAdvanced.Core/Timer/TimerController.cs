@@ -129,14 +129,16 @@ public unsafe class TimerController
 
     internal uint ReadWord(uint address) => (uint)(ReadHalfWord(address) | (ReadHalfWord(address + 2) << 16));
 
-    internal void WriteByte(uint _address, byte _value) => throw new NotImplementedException("Write byte not implemented for timer registers");
-
-    internal void WriteHalfWord(uint address, ushort value)
+    internal void WriteByte(uint address, byte value)
     {
         switch (address)
         {
             case TM0CNT_L:
-                _timers[0].Reload = value;
+                _timers[0].Reload = (ushort)((_timers[0].Reload & 0xFF00) | value);
+                _timers[0].ReloadNeedsLatch = true;
+                break;
+            case TM0CNT_L + 1:
+                _timers[0].Reload = (ushort)((_timers[0].Reload & 0x00FF) | (value << 8));
                 _timers[0].ReloadNeedsLatch = true;
                 break;
             case TM0CNT_H:
@@ -144,7 +146,11 @@ public unsafe class TimerController
                 _timerSteps[0] = _timers[0].PrescalerSelection.Cycles();
                 break;
             case TM1CNT_L:
-                _timers[1].Reload = value;
+                _timers[1].Reload = (ushort)((_timers[1].Reload & 0xFF00) | value);
+                _timers[1].ReloadNeedsLatch = true;
+                break;
+            case TM1CNT_L + 1:
+                _timers[1].Reload = (ushort)((_timers[1].Reload & 0x00FF) | (value << 8));
                 _timers[1].ReloadNeedsLatch = true;
                 break;
             case TM1CNT_H:
@@ -152,7 +158,11 @@ public unsafe class TimerController
                 _timerSteps[1] = _timers[1].PrescalerSelection.Cycles();
                 break;
             case TM2CNT_L:
-                _timers[2].Reload = value;
+                _timers[2].Reload = (ushort)((_timers[2].Reload & 0xFF00) | value);
+                _timers[2].ReloadNeedsLatch = true;
+                break;
+            case TM2CNT_L + 1:
+                _timers[2].Reload = (ushort)((_timers[2].Reload & 0x00FF) | (value << 8));
                 _timers[2].ReloadNeedsLatch = true;
                 break;
             case TM2CNT_H:
@@ -160,7 +170,11 @@ public unsafe class TimerController
                 _timerSteps[2] = _timers[2].PrescalerSelection.Cycles();
                 break;
             case TM3CNT_L:
-                _timers[3].Reload = value;
+                _timers[3].Reload = (ushort)((_timers[3].Reload & 0xFF00) | value);
+                _timers[3].ReloadNeedsLatch = true;
+                break;
+            case TM3CNT_L + 1:
+                _timers[3].Reload = (ushort)((_timers[3].Reload & 0x00FF) | (value << 8));
                 _timers[3].ReloadNeedsLatch = true;
                 break;
             case TM3CNT_H:
@@ -168,8 +182,14 @@ public unsafe class TimerController
                 _timerSteps[3] = _timers[3].PrescalerSelection.Cycles();
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} not mapped for timers");
+                break;
         }
+    }
+
+    internal void WriteHalfWord(uint address, ushort value)
+    {
+        WriteByte(address, (byte)value);
+        WriteByte(address + 1, (byte)(value >> 8));
     }
 
     internal void WriteWord(uint address, uint value)
