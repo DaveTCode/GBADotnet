@@ -991,6 +991,6 @@
     "Zelda - the Minish Cap": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Zelda - the Minish Cap.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
-  },
+    }
+  }
 }

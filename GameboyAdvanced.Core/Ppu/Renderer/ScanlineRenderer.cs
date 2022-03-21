@@ -191,7 +191,7 @@ public partial class Ppu
                 if (_dispcnt.ScreenDisplayBg[sortedBgIxs[bgIx]] && _scanlineBgBuffer[sortedBgIxs[bgIx]][x] != 0)
                 {
                     _bgBuffer[x].PaletteColor = _scanlineBgBuffer[sortedBgIxs[bgIx]][x];
-                    _bgBuffer[x].Priority = _backgrounds[bgIx].Control.BgPriority;
+                    _bgBuffer[x].Priority = _backgrounds[sortedBgIxs[bgIx]].Control.BgPriority;
                     _bgBuffer[x].ColorIsPaletteIndex = true;
                     filledPixel = true;
                     break; // This was the highest priority pixel
@@ -296,11 +296,10 @@ public partial class Ppu
                 var tileData = _vram[pixelByteAddress];
 
                 // Color 0 in each BG/OBJ palette is transparent so replace with palette 0 color 0
-                // TODO - Not taking into account palette mode in BGxCNT
                 var pixelPalNo = sprite.LargePalette switch
                 {
                     true => tileData,
-                    false => (sprite.PaletteNumber << 4) | (tileData >> (4 * (spriteX & 1))) & 0b1111,
+                    false => (sprite.PaletteNumber << 4) | ((tileData >> (4 * (spriteX & 1))) & 0b1111),
                 };
 
                 _objBuffer[lineX].PaletteColor = pixelPalNo;
@@ -448,6 +447,7 @@ public partial class Ppu
 
     private void DrawBgMode5CurrentScanline()
     {
+        // Screen is 160*128 in this mode, the rest gets backdrop color
         var baseAddress = _dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
 
         var vramPtrBase = baseAddress + (_currentLine * 320);
@@ -455,9 +455,19 @@ public partial class Ppu
         {
             var vramPtr = vramPtrBase + (col * 2);
             var hw = _vram[vramPtr] | (_vram[vramPtr + 1] << 8);
-            _bgBuffer[col].PaletteColor = hw;
-            _bgBuffer[col].Priority = _backgrounds[2].Control.BgPriority;
-            _bgBuffer[col].ColorIsPaletteIndex = false;
+
+            if (col >= 160 || _currentLine >= 128)
+            {
+                _bgBuffer[col].PaletteColor = 0;
+                _bgBuffer[col].Priority = 0;
+                _bgBuffer[col].ColorIsPaletteIndex = true;
+            }
+            else
+            {
+                _bgBuffer[col].PaletteColor = hw;
+                _bgBuffer[col].Priority = _backgrounds[2].Control.BgPriority;
+                _bgBuffer[col].ColorIsPaletteIndex = false;
+            }
         }
     }
 }
