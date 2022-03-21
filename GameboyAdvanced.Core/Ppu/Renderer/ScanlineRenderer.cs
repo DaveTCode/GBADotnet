@@ -231,17 +231,21 @@ public partial class Ppu
             var loopedX = sprite.X >= Device.WIDTH ? sprite.X - 512 : sprite.X;
             var loopedY = sprite.Y >= Device.HEIGHT ? sprite.Y - 256 : sprite.Y;
 
-            // Check if the sprite falls within the scanline
-            if (loopedY > _currentLine) continue;
-            if (loopedY + sprite.Height <= _currentLine) continue;
-
             // TODO - Double check this behaviour, do we skip prohibited mode sprites
             if (sprite.ObjMode == SpriteMode.Prohibited) continue;
 
             // TODO - Implement window mode sprites instead of skipping them
             if (sprite.ObjMode == SpriteMode.ObjWindow) continue;
 
-            for (var ii = 0; ii < sprite.Width; ii++)
+            // Affine double size sprites are contained with a double size bounding box
+            var spriteWidth = (sprite.IsAffine && sprite.DoubleSize) ? sprite.Width * 2 : sprite.Width;
+            var spriteHeight = (sprite.IsAffine && sprite.DoubleSize) ? sprite.Height * 2 : sprite.Height;
+
+            // Check if the sprite falls within the scanline (counting the bounding box)
+            if (loopedY > _currentLine) continue;
+            if (loopedY + spriteHeight <= _currentLine) continue;
+
+            for (var ii = 0; ii < spriteWidth; ii++)
             {
                 var lineX = loopedX + ii;
 
@@ -257,8 +261,8 @@ public partial class Ppu
 
                 if (sprite.IsAffine)
                 {
-                    spriteX -= (sprite.Width / 2);
-                    spriteY -= (sprite.Height / 2);
+                    spriteX -= (spriteWidth / 2);
+                    spriteY -= (spriteHeight / 2);
                     _spriteAffineTransforms[sprite.AffineGroup].TransformVector(ref spriteX, ref spriteY);
                     spriteX += (sprite.Width / 2);
                     spriteY += (sprite.Height / 2);
@@ -302,6 +306,11 @@ public partial class Ppu
                 _objBuffer[lineX].PaletteColor = pixelPalNo;
                 _objBuffer[lineX].Priority = sprite.PriorityRelativeToBg;
                 _objBuffer[lineX].PixelMode = sprite.ObjMode;
+
+                if (sprite.Index == 0)
+                {
+                    var a = 1;
+                }
             }
         }
     }
