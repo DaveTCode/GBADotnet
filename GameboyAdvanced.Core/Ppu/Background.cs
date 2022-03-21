@@ -48,10 +48,10 @@ public struct Background
     // but unused on all backgrounds
     internal int RefPointX;
     internal int RefPointY;
-    internal int Dx;
-    internal int Dmx;
-    internal int Dy;
-    internal int Dmy;
+    internal short Dx;
+    internal short Dmx;
+    internal short Dy;
+    internal short Dmy;
 
     internal Background(int index)
     {

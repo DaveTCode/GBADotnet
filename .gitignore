@@ -9,3 +9,4 @@ roms/real/*
 /GameboyAdvanced.Blazor
 /GameboyAdvanced.Web
 roms/
+**/publish

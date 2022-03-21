@@ -306,11 +306,6 @@ public partial class Ppu
                 _objBuffer[lineX].PaletteColor = pixelPalNo;
                 _objBuffer[lineX].Priority = sprite.PriorityRelativeToBg;
                 _objBuffer[lineX].PixelMode = sprite.ObjMode;
-
-                if (sprite.Index == 0)
-                {
-                    var a = 1;
-                }
             }
         }
     }

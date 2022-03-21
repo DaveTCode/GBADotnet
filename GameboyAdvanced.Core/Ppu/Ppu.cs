@@ -268,28 +268,28 @@ public partial class Ppu
                 _backgrounds[3].YOffset = (_backgrounds[3].YOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG2PA:
-                _backgrounds[2].Dx = (_backgrounds[2].Dx & 0xFF00) | value;
+                _backgrounds[2].Dx = (short)((_backgrounds[2].Dx & 0xFF00) | value);
                 break;
             case BG2PA + 1:
-                _backgrounds[2].Dx = (_backgrounds[2].Dx & 0x00FF) | (value << 8);
+                _backgrounds[2].Dx = (short)((_backgrounds[2].Dx & 0x00FF) | (value << 8));
                 break;
             case BG2PB:
-                _backgrounds[2].Dmx = (_backgrounds[2].Dmx & 0xFF00) | value;
+                _backgrounds[2].Dmx = (short)((_backgrounds[2].Dmx & 0xFF00) | value);
                 break;
             case BG2PB + 1:
-                _backgrounds[2].Dmx = (_backgrounds[2].Dmx & 0x00FF) | (value << 8);
+                _backgrounds[2].Dmx = (short)((_backgrounds[2].Dmx & 0x00FF) | (value << 8));
                 break;
             case BG2PC:
-                _backgrounds[2].Dy = (_backgrounds[2].Dy & 0xFF00) | value;
+                _backgrounds[2].Dy = (short)((_backgrounds[2].Dy & 0xFF00) | value);
                 break;
             case BG2PC + 1:
-                _backgrounds[2].Dy = (_backgrounds[2].Dy & 0x00FF) | (value << 8);
+                _backgrounds[2].Dy = (short)((_backgrounds[2].Dy & 0x00FF) | (value << 8));
                 break;
             case BG2PD:
-                _backgrounds[2].Dmy = (_backgrounds[2].Dmy & 0xFF00) | value;
+                _backgrounds[2].Dmy = (short)((_backgrounds[2].Dmy & 0xFF00) | value);
                 break;
             case BG2PD + 1:
-                _backgrounds[2].Dmy = (_backgrounds[2].Dmy & 0x00FF) | (value << 8);
+                _backgrounds[2].Dmy = (short)((_backgrounds[2].Dmy & 0x00FF) | (value << 8));
                 break;
             case BG2X_L:
                 _backgrounds[2].UpdateReferencePointX(value, 0, 0xFFFF_FF00);
@@ -316,28 +316,28 @@ public partial class Ppu
                 _backgrounds[2].UpdateReferencePointY(value, 3, 0x00FF_FFFF);
                 break;
             case BG3PA:
-                _backgrounds[3].Dx = (_backgrounds[3].Dx & 0xFF00) | value;
+                _backgrounds[3].Dx = (short)((_backgrounds[3].Dx & 0xFF00) | value);
                 break;
             case BG3PA + 1:
-                _backgrounds[3].Dx = (_backgrounds[3].Dx & 0x00FF) | (value << 8);
+                _backgrounds[3].Dx = (short)((_backgrounds[3].Dx & 0x00FF) | (value << 8));
                 break;
             case BG3PB:
-                _backgrounds[3].Dmx = (_backgrounds[3].Dmx & 0xFF00) | value;
+                _backgrounds[3].Dmx = (short)((_backgrounds[3].Dmx & 0xFF00) | value);
                 break;
             case BG3PB + 1:
-                _backgrounds[3].Dmx = (_backgrounds[3].Dmx & 0x00FF) | (value << 8);
+                _backgrounds[3].Dmx = (short)((_backgrounds[3].Dmx & 0x00FF) | (value << 8));
                 break;
             case BG3PC:
-                _backgrounds[3].Dy = (_backgrounds[3].Dy & 0xFF00) | value;
+                _backgrounds[3].Dy = (short)((_backgrounds[3].Dy & 0xFF00) | value);
                 break;
             case BG3PC + 1:
-                _backgrounds[3].Dy = (_backgrounds[3].Dy & 0x00FF) | (value << 8);
+                _backgrounds[3].Dy = (short)((_backgrounds[3].Dy & 0x00FF) | (value << 8));
                 break;
             case BG3PD:
-                _backgrounds[3].Dmy = (_backgrounds[3].Dmy & 0xFF00) | value;
+                _backgrounds[3].Dmy = (short)((_backgrounds[3].Dmy & 0xFF00) | value);
                 break;
             case BG3PD + 1:
-                _backgrounds[3].Dmy = (_backgrounds[3].Dmy & 0x00FF) | (value << 8);
+                _backgrounds[3].Dmy = (short)((_backgrounds[3].Dmy & 0x00FF) | (value << 8));
                 break;
             case BG3X_L:
                 _backgrounds[3].UpdateReferencePointX(value, 0, 0xFFFF_FF00);

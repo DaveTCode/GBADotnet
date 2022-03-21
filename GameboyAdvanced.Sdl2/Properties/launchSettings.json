@@ -2,371 +2,995 @@
   "profiles": {
     "Aging Cartridge": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "ARM Wrestler": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler-gba-fixed.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler-gba-fixed.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Open Bus Bios Misaligned": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\openbus_bios_misaligned.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\openbus\\openbus_bios_misaligned.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Marie - Open Bus Bios": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\biosOpenBus.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\openbus\\biosOpenBus.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Openbuster": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\openbus\\openbuster.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\openbus\\openbuster.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Zayd - Prefetch Abuse": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\prefetch-abuse-idleafter.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\zayd\\prefetch-abuse-idleafter.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Zayd - DMA Slow": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmaslow.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\zayd\\dmaslow.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Zayd - DMA Medium": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmamedium.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\zayd\\dmamedium.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Zayd - DMA Medium 2": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmamedium2.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\zayd\\dmamedium2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Zayd - DMA Fast": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\zayd\\dmafast.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\zayd\\dmafast.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Return Address": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\retAddr.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\retAddr.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Beeg": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\beeg.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\beeg.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "DenSinH - Thumb Any": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\DenSinH\\THUMB_Any.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\DenSinH\\THUMB_Any.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "DenSinH - Thumb Data Processing": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\DenSinH\\THUMB_DataProcessing.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\DenSinH\\THUMB_DataProcessing.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "DenSinH - Arm Any": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\DenSinH\\Arm_Any.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\DenSinH\\Arm_Any.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "DenSinH - Arm Data Processing": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\DenSinH\\Arm_DataProcessing.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\DenSinH\\Arm_DataProcessing.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "CPU Test": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\cpu_test\\CPUTest.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\cpu_test\\CPUTest.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "mgba": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\mgba\\suite.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\mgba\\suite.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "mgba-cutdown": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\suite.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\suite.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - First": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\first.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\first.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Hello": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\hello.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\hello.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Pageflip": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\pageflip.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\pageflip.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Key Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\key_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\key_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - IRQ Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\irq_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\irq_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Bigmap": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\bigmap.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\bigmap.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Blddemo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\bld_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\bld_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - BM Modes": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\bm_modes.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\bm_modes.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Brin Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\brin_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\brin_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - CBB Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\cbb_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\cbb_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - DMA Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\dma_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\dma_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - M3 Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m3_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\m3_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - M7 Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m7_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\m7_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - M7 Demo MB": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m7_demo_mb.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\m7_demo_mb.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - M7 Ex": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\m7_ex.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\m7_ex.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - OA Combo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\oacombo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\oacombo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Obj Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\obj_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\obj_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Obj Aff Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\obj_aff.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\obj_aff.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Octtest": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\octtest.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\octtest.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Prio Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\prio_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\prio_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Sbb Affine": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\sbb_aff.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\sbb_aff.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Sbb Reg": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\sbb_reg.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\sbb_reg.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Second": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\second.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\second.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - SWI Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\swi_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\swi_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - SWI VSync": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\swi_vsync.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\swi_vsync.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - Tmr Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\tmr_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\tmr_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - TTE Demo": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\tte_demo.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\tte_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - TXT Obj": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\txt_obj.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\txt_obj.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - TXT SE1": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\txt_se1.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\txt_se1.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "TONC - TXT SE2": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\tonc\\txt_se2.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\txt_se2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Panda": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\panda.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\panda.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Hello World": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\HelloWorld\\HelloWorld.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\HelloWorld\\HelloWorld.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - LCD - BGMode0": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\BG\\BGMode0\\BGMode0.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\BG\\BGMode0\\BGMode0.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Fast Line": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\FastLine\\FastLine.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\FastLine\\FastLine.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Fast Line Clip": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\FastLineClip\\FastLineClip.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\FastLineClip\\FastLineClip.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Cylinder Map": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\CylinderMap\\CylinderMap.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\CylinderMap\\CylinderMap.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Myst": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\Myst\\Myst.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\Myst\\Myst.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - BigBuckBunny": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\Video\\BigBuckBunny\\BigBuckBunny.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\Video\\BigBuckBunny\\BigBuckBunny.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Timers": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\Timers\\Timers.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\Timers\\Timers.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Bios - ArcTan": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\BIOS\\Arithmetic\\ARCTAN\\BIOSARCTAN.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\BIOS\\Arithmetic\\ARCTAN\\BIOSARCTAN.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Bios - Div": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\BIOS\\Arithmetic\\DIV\\BIOSDIV.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\BIOS\\Arithmetic\\DIV\\BIOSDIV.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Bios - Sqrt": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\PeterLemon\\BIOS\\Arithmetic\\SQRT\\BIOSSQRT.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\BIOS\\Arithmetic\\SQRT\\BIOSSQRT.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - Arm.gba": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\arm\\arm.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\arm\\arm.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - Thumb.gba": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\thumb\\thumb.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\thumb\\thumb.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - Memory": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\memory\\memory.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\memory\\memory.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - NES": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\nes\\nes.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\nes\\nes.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - PPU - Hello": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\ppu\\hello.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\ppu\\hello.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - PPU - Shades": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\ppu\\shades.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\ppu\\shades.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - PPU - Stripes": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\ppu\\stripes.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\ppu\\stripes.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - Bios": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\bios\\bios.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\bios\\bios.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - Unsafe": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\jsmolka\\unsafe\\unsafe.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\unsafe\\unsafe.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "NBA - IRQ Delay": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\cpu\\irqdelay\\irqdelay.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\cpu\\irqdelay\\irqdelay.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "NBA - DMA - Burst into tears": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\dma\\burst-into-tears\\burst-into-tears.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\dma\\burst-into-tears\\burst-into-tears.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "NBA - DMA - Latch": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\dma\\latch\\latch.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\dma\\latch\\latch.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "NBA - DMA - Start Delay": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\dma\\start-delay\\start-delay.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\dma\\start-delay\\start-delay.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "NBA - Haltcnt": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\haltcnt\\haltcnt.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\haltcnt\\haltcnt.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "NBA - PPU - Basic Timing": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\ppu\\basic-timing\\basic-timing.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\ppu\\basic-timing\\basic-timing.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "NBA - Timer - Start Stop": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\timer\\start-stop\\start-stop.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\timer\\start-stop\\start-stop.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "NBA - Timer - Reload": {
       "commandName": "Project",
-      "commandLineArgs": "--rom ..\\..\\..\\..\\roms\\test\\nba\\timer\\reload\\reload.gba --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\timer\\reload\\reload.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Breath of Fire": {
+    "Advance Wars 2 - Black Hole Rising (USA, Australia)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Advance Wars 2 - Black Hole Rising (USA, Australia).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Advanced Wars": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Advanced Wars.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Aero the Acrobat - Rascal Rival Revenge": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Aero the Acrobat - Rascal Rival Revenge.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Alien Hominid": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Alien Hominid.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Astro Boy - Omega Factor": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Astro Boy - Omega Factor.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Atari Anniversary Advance (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Atari Anniversary Advance (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Banjo Kazooie - Grunty_s Revenge": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Banjo Kazooie - Grunty_s Revenge.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Banjo Pilot": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Banjo Pilot.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Bomber-Man Tournament": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Bomber-Man Tournament.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Bomberman Max 2 - Blue (E)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Bomberman Max 2 - Blue (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Bomberman Max 2 - Red (E)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Bomberman Max 2 - Red (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Breath of Fire (E)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Breath of Fire (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Breath of Fire II": {
+    "Breath of Fire II (USA)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Breath of Fire II (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Doooooooom": {
+    "Broken Sword - the Shadow of the Templars": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Broken Sword - the Shadow of the Templars.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Car Battler Joe (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Car Battler Joe (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Castlevania - Aria of Sorrow (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Castlevania - Aria of Sorrow (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Castlevania - Circle of the Moon": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Castlevania - Circle of the Moon.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Castlevania - Harmony Of Dissonance": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Castlevania - Harmony Of Dissonance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Chu Chu Rocket!": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Chu Chu Rocket!.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Crash Bandicoot - Purple Riptos Rampage": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Crash Bandicoot - Purple Riptos Rampage.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Crash Bandicoot - the Huge Adventure": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Crash Bandicoot - the Huge Adventure.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Crash Bandicoot 2 - N-Tranced": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Crash Bandicoot 2 - N-Tranced.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Denki Blocks! (USA) (En,Es)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Denki Blocks! (USA) (En,Es).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Densetsu no Stafy 2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Densetsu no Stafy 2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Densetsu no Stafy 3": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Densetsu no Stafy 3.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Densetsu no Stafy": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Densetsu no Stafy.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Disney_s Kim Possible 2 - Drakken_s Demise (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Disney_s Kim Possible 2 - Drakken_s Demise (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Donkey Kong - King of Swing": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Donkey Kong - King of Swing.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Donkey Kong Country 2 (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Donkey Kong Country 2 (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Donkey Kong Country 3": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Donkey Kong Country 3.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Donkey Kong Country": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Donkey Kong Country.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Doom (USA, Europe)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Doom (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Final Fantasy Tactics Advanced": {
+    "Dr. Mario _ Puzzle League": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Dr. Mario _ Puzzle League.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Drill Dozer": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Drill Dozer.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Duke Nukem Advance (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Duke Nukem Advance (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Ecks vs. Sever (E)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Ecks vs. Sever (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "F-Zero - Maximum Velocity (USA, Europe)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\F-Zero - Maximum Velocity (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "F-Zero 2 - GP Legend": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\F-Zero 2 - GP Legend.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Final Fantasy - Tactics Advanced": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Final Fantasy - Tactics Advanced.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Final Fantasy 6": {
+    "Final Fantasy 1 + 2 - Dawn of Souls": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Final Fantasy 1 + 2 - Dawn of Souls.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Final Fantasy 4 Advance": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Final Fantasy 4 Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Final Fantasy 5 Advance": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Final Fantasy 5 Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Final Fantasy 6 Advance": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Final Fantasy 6 Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Final Fight One (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Final Fight One (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Fire Emblem - the Sacred Stones": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Fire Emblem - the Sacred Stones.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Fire Emblem": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Fire Emblem.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Frogger_s Adventure - Temple of the Frog": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Frogger_s Adventure - Temple of the Frog.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Frogger_s Adventures 2 - The Lost Wand (E)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Frogger_s Adventures 2 - The Lost Wand (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Game _ Watch Gallery Advance": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Game _ Watch Gallery Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "gba_bios.bin": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\gba_bios.bin --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Golden Sun - The Lost Age (USA, Europe)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Golden Sun - The Lost Age (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Golden Sun": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Golden Sun.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Gradius Galaxies (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Gradius Galaxies (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Grand Theft Auto Advance": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Grand Theft Auto Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Kirby - Nightmare in Dream Land (USA)": {
+    "Gunstar Super Heroes": {
       "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Kirby - Nightmare in Dream Land (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Gunstar Super Heroes.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Hamtaro - Ham-Ham Games (Europe) (En,Fr,De,Es,It)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Hamtaro - Ham-Ham Games (Europe) (En,Fr,De,Es,It).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Harvest Moon - Friends of Mineral Town": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Harvest Moon - Friends of Mineral Town.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Harvest Moon - More Friends of Mineral Town (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Harvest Moon - More Friends of Mineral Town (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Karnaaj Rally (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Karnaaj Rally (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "King of Fighters EX 2 - Howling Blood": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\King of Fighters EX 2 - Howling Blood.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "King of Fighters EX, The - NeoBlood (U) (V1.1)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\King of Fighters EX, The - NeoBlood (U) (V1.1).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Kingdom Hearts - Chain of Memories": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Kingdom Hearts - Chain of Memories.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Kirby & The Amazing Mirror (USA)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Kirby & The Amazing Mirror (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Kirby - Nightmare in Dream Land (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Kirby - Nightmare in Dream Land (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Klonoa - Empire of Dreams": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Klonoa - Empire of Dreams.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Klonoa 2 - Dream Champ Tournament": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Klonoa 2 - Dream Champ Tournament.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Konami Krazy Racers (Europe)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Konami Krazy Racers (Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Kuru Kuru Kururin": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Kuru Kuru Kururin.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Kururin Paradise (Japan)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Kururin Paradise (Japan).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Legend of Zelda, The - A Link to the Past _ Four Swords (USA, Australia)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Legend of Zelda, The - A Link to the Past _ Four Swords (USA, Australia).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "LEGO - Star Wars - the Video Game": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\LEGO - Star Wars - the Video Game.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "LEGO - Star Wars 2 - the Original Trilogy": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\LEGO - Star Wars 2 - the Original Trilogy.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Lilo _ Stitch": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Lilo _ Stitch.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Lord of the Rings 2 - the Two Towers": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Lord of the Rings 2 - the Two Towers.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Lord of the Rings 3 - Return of the King": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Lord of the Rings 3 - Return of the King.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Lunar Legend (U) [!]": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Lunar Legend (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mario Advanced - Mario Bros. 2 + Mario Classic": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Advanced - Mario Bros. 2 + Mario Classic.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mario Advanced 2 - Mario World": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Advanced 2 - Mario World.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mario Advanced 4 - Mario Bros. 3": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Advanced 4 - Mario Bros. 3.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mario and Luigi - Superstar Saga": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario and Luigi - Superstar Saga.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mario Golf - Advance Tour": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Golf - Advance Tour.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mario Kart - Super Circuit": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Kart - Super Circuit.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mario Tennis - Power Tour": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Tennis - Power Tour.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mario vs. Donkey Kong": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario vs. Donkey Kong.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Max Payne (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Max Payne (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Medal of Honor - Infiltrator (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Medal of Honor - Infiltrator (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man - Zero 2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man - Zero 2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man - Zero 3": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man - Zero 3.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man - Zero 4": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man - Zero 4.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man and Bass": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man and Bass.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man Battle Network 2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man Battle Network 2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man Battle Network 3 - Blue": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man Battle Network 3 - Blue.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man Battle Network 3 - White": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man Battle Network 3 - White.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man Battle Network 4 - Blue Moon": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man Battle Network 4 - Blue Moon.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man Battle Network 4 - Red Sun": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man Battle Network 4 - Red Sun.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man Battle Network 5 - Team Colonel": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man Battle Network 5 - Team Colonel.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man Battle Network 5 - Team Proto-Man": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man Battle Network 5 - Team Proto-Man.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man Battle Network 6 - Cybeast Falzar": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man Battle Network 6 - Cybeast Falzar.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man Battle Network 6 - Cybeast Gregar": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man Battle Network 6 - Cybeast Gregar.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mega-Man Battle Network": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mega-Man Battle Network.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Megaman Zero (USA, Europe)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Megaman Zero (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Metal Slug Advance": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Metal Slug Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Metroid - Fusion": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Metroid - Fusion.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Metroid - Zero Mission": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Metroid - Zero Mission.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Monkey Ball Jr.": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Monkey Ball Jr..gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Monster Rancher Advance (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Monster Rancher Advance (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Monster Rancher Advance 2 (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Monster Rancher Advance 2 (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mortal Kombat - Deadly Alliance (USA) (En,Fr,De,Es,It)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mortal Kombat - Deadly Alliance (USA) (En,Fr,De,Es,It).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Mother 3 (J) [T+Eng]": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mother 3 (J) [T+Eng].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Ninja Cop": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Ninja Cop.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "OpenLara": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\OpenLara.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Rhythm Tengoku": {
+    "Pac-Man Collection": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pac-Man Collection.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Pocky _ Rocky with Becky": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pocky _ Rocky with Becky.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Pokemon - Emerald Version (USA, Europe)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon - Emerald Version (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Pokemon - Fire Red": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon - Fire Red.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Pokemon - Leaf Green Version (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon - Leaf Green Version (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Pokemon - Ruby Version (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon - Ruby Version (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Pokemon - Sapphire Version (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon - Sapphire Version (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Pokemon Mystery Dungeon - Red Rescue Team": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon Mystery Dungeon - Red Rescue Team.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Pokemon Pinball - Ruby _ Sapphire (E)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon Pinball - Ruby _ Sapphire (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Puyo Pop": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Puyo Pop.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Puzzle Fighter 2 Turbo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Puzzle Fighter 2 Turbo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Racing Gears Advance (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Racing Gears Advance (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Ray-Man 3 - Hoodlum Havoc": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Ray-Man 3 - Hoodlum Havoc.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Ray-Man Advance": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Ray-Man Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Rhythm Tengoku (Japan)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Rhythm Tengoku (Japan).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Sword of Mana": {
+    "Riviera - The Promised Land (U)": {
       "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Sword of Mana (USA, Australia).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Riviera - The Promised Land (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Super Mario Advance (U)": {
+    "Sonic Advance 2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Sonic Advance 2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Sonic Advance 3 (USA) (En,Ja,Fr,De,Es,It)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Sonic Advance 3 (USA) (En,Ja,Fr,De,Es,It).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Sonic Advance": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Sonic Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Sonic Battle": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Sonic Battle.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Sonic Pinball Party (USA) (En,Ja,Fr,De,Es,It)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Sonic Pinball Party (USA) (En,Ja,Fr,De,Es,It).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Spider-Man - Mysterio_s Menace (U) [!]": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Spider-Man - Mysterio_s Menace (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Spyro - Season of Ice": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Spyro - Season of Ice.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Spyro 2 - Season of Flame": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Spyro 2 - Season of Flame.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Spyro 3 - Attack of the Rhynocs": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Spyro 3 - Attack of the Rhynocs.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Spyro Orange - the Cortex Conspiracy": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Spyro Orange - the Cortex Conspiracy.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Street Fighter Alpha 3 (E) [!]": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Street Fighter Alpha 3 (E) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Summon Night - Swordcraft Story 2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Summon Night - Swordcraft Story 2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Summon Night - Swordcraft Story": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Summon Night - Swordcraft Story.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Super Bust-A-Move (USA) (En,Fr,Es)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Bust-A-Move (USA) (En,Fr,Es).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Super Dodge Ball Advance (Europe)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Dodge Ball Advance (Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Super Ghouls _N Ghosts (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Ghouls _N Ghosts (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Super Mario Advance (U) [!]": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Mario Advance (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Super Monkey Ball (U)": {
+    "Super Mario Advance 3 - Yoshi_s Island (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Mario Advance 3 - Yoshi_s Island (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Super Monkey Ball Jr (U) [!]": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Monkey Ball Jr (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Tony Hawk's Pro Skater 2": {
+    "Super Robot Taisen - Original Generation 2 (U) [!]": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Robot Taisen - Original Generation 2 (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Super Street Fighter II Turbo - Revival (E) [!]": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Super Street Fighter II Turbo - Revival (E) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Sword of Mana (USA, Australia)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Sword of Mana (USA, Australia).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Tactics Ogre - the Knight of Lodis": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tactics Ogre - the Knight of Lodis.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Tales of Phantasia (USA, Australia)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tales of Phantasia (USA, Australia).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Tekken Advance (U) [!]": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tekken Advance (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TMNT (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\TMNT (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Tony Hawk_s Downhill Jam": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tony Hawk_s Downhill Jam.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Tony Hawk_s Pro Skater 2": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tony Hawk_s Pro Skater 2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    }
-  }
+    },
+    "Tony Hawk_s Pro Skater 3 (U) [!]": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tony Hawk_s Pro Skater 3 (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Tony Hawk_s Pro Skater 4": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tony Hawk_s Pro Skater 4.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Tony Hawk_s Underground (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tony Hawk_s Underground (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Tony Hawk_s Underground 2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tony Hawk_s Underground 2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Turbo Turtle Adventure (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Turbo Turtle Adventure (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Ultimate Brain Games (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Ultimate Brain Games (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Ultimate Card Games (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Ultimate Card Games (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "V-Rally 3 (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\V-Rally 3 (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Virtua Tennis (U)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Virtua Tennis (U).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Wade Hixton_s Counter Punch (USA, Europe)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Wade Hixton_s Counter Punch (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Wario Land 4 (UE) [!]": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Wario Land 4 (UE) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Wario Ware Inc.": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Wario Ware Inc..gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Yggdra Union - We_ll Never Fight Alone (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Yggdra Union - We_ll Never Fight Alone (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!]": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Zelda - the Minish Cap": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Zelda - the Minish Cap.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+  },
 }
