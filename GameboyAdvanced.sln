@@ -25,8 +25,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Sdl2", "Gam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Arm.SourceGenerators", "GameboyAdvanced.Arm.SourceGenerators\GameboyAdvanced.Arm.SourceGenerators.csproj", "{408F4745-6CA1-46FE-A11D-63A3A6661942}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.BlazorClient", "GameboyAdvanced.Blazor\GameboyAdvanced.BlazorClient.csproj", "{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.Headless", "GameboyAdvanced.Headless\GameboyAdvanced.Headless.csproj", "{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}"
 EndProject
 Global
@@ -59,10 +57,6 @@ Global
 		{408F4745-6CA1-46FE-A11D-63A3A6661942}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{408F4745-6CA1-46FE-A11D-63A3A6661942}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{408F4745-6CA1-46FE-A11D-63A3A6661942}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9D6BF4C0-9D5B-45C4-8994-866934DE3DD0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54E75BDD-C1EE-4F44-BABB-052BA02AEF89}.Release|Any CPU.ActiveCfg = Release|Any CPU

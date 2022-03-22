@@ -78,19 +78,19 @@ public partial class Ppu
             case BgMode.Video3:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
-                    DrawBgMode3CurrentScanline();
+                    DrawBgMode3CurrentScanline(ref _scanlineBgBuffer[2]);
                 }
                 break;
             case BgMode.Video4:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
-                    DrawBgMode4CurrentScanline();
+                    DrawBgMode4CurrentScanline(ref _scanlineBgBuffer[2]);
                 }
                 break;
             case BgMode.Video5:
                 if (_dispcnt.ScreenDisplayBg[2])
                 {
-                    DrawBgMode5CurrentScanline();
+                    DrawBgMode5CurrentScanline(ref _scanlineBgBuffer[2]);
                 }
                 break;
             case BgMode.Prohibited6:
@@ -107,6 +107,7 @@ public partial class Ppu
     private void CombineBackgroundsAndSprites(int[] sortedBgIxs)
     {
         var fbPtr = _currentLine * Device.WIDTH * 4;
+        var usingPaletteIndex = !(_dispcnt.BgMode is BgMode.Video3 or BgMode.Video5);
 
         for (var x = 0; x < Device.WIDTH; x++)
         {
@@ -132,7 +133,7 @@ public partial class Ppu
                     {
                         _bgBuffer[x].PaletteColor = _scanlineBgBuffer[sortedBgIxs[bgIx]][x];
                         _bgBuffer[x].Priority = _backgrounds[sortedBgIxs[bgIx]].Control.BgPriority;
-                        _bgBuffer[x].ColorIsPaletteIndex = true;
+                        _bgBuffer[x].ColorIsPaletteIndex = usingPaletteIndex;
                         filledBgPixel = true;
                         break; // This was the highest priority pixel
                     }
@@ -143,7 +144,7 @@ public partial class Ppu
             {
                 _bgBuffer[x].PaletteColor = 0;
                 _bgBuffer[x].Priority = 4;
-                _bgBuffer[x].ColorIsPaletteIndex = true;
+                _bgBuffer[x].ColorIsPaletteIndex = usingPaletteIndex;
             }
 
             var bgEntry = _bgBuffer[x];
@@ -427,20 +428,18 @@ public partial class Ppu
 
     // TODO - Handle affine transformations in bitmap BG modes
 
-    private void DrawBgMode3CurrentScanline()
+    private void DrawBgMode3CurrentScanline(ref int[] scanlineBgBuffer)
     {
         var vramPtrBase = _currentLine * 480;
         for (var col = 0; col < 240; col ++)
         {
             var vramPtr = vramPtrBase + (col * 2);
             var hw = _vram[vramPtr] | (_vram[vramPtr + 1] << 8);
-            _bgBuffer[col].PaletteColor = hw;
-            _bgBuffer[col].Priority = _backgrounds[2].Control.BgPriority;
-            _bgBuffer[col].ColorIsPaletteIndex = false;
+            scanlineBgBuffer[col] = hw;
         }
     }
 
-    private void DrawBgMode4CurrentScanline()
+    private void DrawBgMode4CurrentScanline(ref int[] scanlineBgBuffer)
     {
         // BG Mode 4/5 have a double buffer that is switched using Frame1Select on DISPCNT
         var baseAddress = _dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
@@ -449,13 +448,11 @@ public partial class Ppu
         {
             var vramPtr = vramPtrBase + col;
             var paletteIndex = _vram[baseAddress + vramPtr];
-            _bgBuffer[col].PaletteColor = paletteIndex;
-            _bgBuffer[col].Priority = _backgrounds[2].Control.BgPriority;
-            _bgBuffer[col].ColorIsPaletteIndex = true;
+            scanlineBgBuffer[col] = paletteIndex;
         }
     }
 
-    private void DrawBgMode5CurrentScanline()
+    private void DrawBgMode5CurrentScanline(ref int[] scanlineBgBuffer)
     {
         // Screen is 160*128 in this mode, the rest gets backdrop color
         var baseAddress = _dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
@@ -468,15 +465,11 @@ public partial class Ppu
 
             if (col >= 160 || _currentLine >= 128)
             {
-                _bgBuffer[col].PaletteColor = 0;
-                _bgBuffer[col].Priority = 0;
-                _bgBuffer[col].ColorIsPaletteIndex = true;
+                scanlineBgBuffer[col] = 0;
             }
             else
             {
-                _bgBuffer[col].PaletteColor = hw;
-                _bgBuffer[col].Priority = _backgrounds[2].Control.BgPriority;
-                _bgBuffer[col].ColorIsPaletteIndex = false;
+                scanlineBgBuffer[col] = hw;
             }
         }
     }

@@ -204,6 +204,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\panda.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Peter Lemon - 3D Engine": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\3DEngine\\3DEngine.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Peter Lemon - Hello World": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\HelloWorld\\HelloWorld.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
