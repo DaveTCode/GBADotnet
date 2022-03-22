@@ -35,7 +35,9 @@ public partial class Ppu
 
     internal void DrawCurrentScanline()
     {
-        var bgPriorities = new[] { -1, -1, -1, -1 };
+        var sortedBgIxs = new[] { 0, 1, 2, 3 };
+        SortBackgroundPriorities(sortedBgIxs);
+
         switch (_dispcnt.BgMode)
         {
             case BgMode.Video0:
@@ -43,12 +45,9 @@ public partial class Ppu
                 {
                     if (_dispcnt.ScreenDisplayBg[ii])
                     {
-                        bgPriorities[ii] = _backgrounds[ii].Control.BgPriority;
                         DrawTextModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
                     }
                 }
-
-                CombineBackgroundsInScanline();
                 break;
             case BgMode.Video1:
                 // Background 0-1 are text mode, 2-3 are affine
@@ -66,8 +65,6 @@ public partial class Ppu
                         }
                     }
                 }
-
-                CombineBackgroundsInScanline();
                 break;
             case BgMode.Video2:
                 for (var ii = 0; ii < 4; ii++)
@@ -77,8 +74,6 @@ public partial class Ppu
                         DrawAffineModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
                     }
                 }
-
-                CombineBackgroundsInScanline();
                 break;
             case BgMode.Video3:
                 if (_dispcnt.ScreenDisplayBg[2])
@@ -106,21 +101,58 @@ public partial class Ppu
 
         // Final step is to pick the highest priority pixel of each (bg vs obj)
         // TODO - eventually I guess this will do alpha blending etc
-        CombineBackgroundsAndSprites();
+        CombineBackgroundsAndSprites(sortedBgIxs);
     }
 
-    private void CombineBackgroundsAndSprites()
+    private void CombineBackgroundsAndSprites(int[] sortedBgIxs)
     {
         var fbPtr = _currentLine * Device.WIDTH * 4;
 
         for (var x = 0; x < Device.WIDTH; x++)
         {
+            var usingWindows = _dispcnt.Window0Display | _dispcnt.Window1Display | _dispcnt.ObjWindowDisplay;
+
+            // First step is to work out which window (if any) this pixel is
+            // part of so we know which backgrounds/objects might be present
+            var activeWindow = _windows.GetHighestPriorityWindow(_dispcnt, x, _currentLine);
+
+            // Then fill in the bgBuffer with the highest priority background
+            // pixel to be displayed
+            // TODO - Think this is where I'd find both blend targets
+            var filledBgPixel = false;
+            for (var bgIx = 0; bgIx < 4; bgIx++)
+            {
+                // Check that the BG is both enabled and that the color is not the backdrop
+                if (_dispcnt.ScreenDisplayBg[sortedBgIxs[bgIx]] && _scanlineBgBuffer[sortedBgIxs[bgIx]][x] != 0)
+                {
+                    // Now check that the window this background is in (if any) has that background enabled
+                    if (!usingWindows ||
+                        (activeWindow == -1 && _windows.BgEnableOutside[sortedBgIxs[bgIx]]) ||
+                        (activeWindow != -1 && _windows.BgEnableInside[activeWindow][sortedBgIxs[bgIx]]))
+                    {
+                        _bgBuffer[x].PaletteColor = _scanlineBgBuffer[sortedBgIxs[bgIx]][x];
+                        _bgBuffer[x].Priority = _backgrounds[sortedBgIxs[bgIx]].Control.BgPriority;
+                        _bgBuffer[x].ColorIsPaletteIndex = true;
+                        filledBgPixel = true;
+                        break; // This was the highest priority pixel
+                    }
+                }
+            }
+
+            if (!filledBgPixel)
+            {
+                _bgBuffer[x].PaletteColor = 0;
+                _bgBuffer[x].Priority = 4;
+                _bgBuffer[x].ColorIsPaletteIndex = true;
+            }
+
             var bgEntry = _bgBuffer[x];
             var spriteEntry = _objBuffer[x];
+            var spriteWindowEnabled = !usingWindows || (activeWindow == -1 && _windows.ObjEnableOutside) || (activeWindow != -1 && _windows.ObjEnableInside[activeWindow]);
 
             if (bgEntry.ColorIsPaletteIndex)
             {
-                var paletteEntry = (bgEntry.PaletteColor, spriteEntry.PaletteColor & 0b1111, bgEntry.Priority >= spriteEntry.Priority) switch 
+                var paletteEntry = (bgEntry.PaletteColor, spriteEntry.PaletteColor & 0b1111, bgEntry.Priority >= spriteEntry.Priority && spriteWindowEnabled) switch 
                 {
                     (0, 0, _) => BackdropColor,
                     (0, _, _) => _paletteEntries[0x100 + spriteEntry.PaletteColor],
@@ -133,7 +165,7 @@ public partial class Ppu
             }
             else
             {
-                if (spriteEntry.Priority <= bgEntry.Priority && (spriteEntry.PaletteColor & 0b1111) != 0)
+                if (spriteEntry.Priority <= bgEntry.Priority && (spriteEntry.PaletteColor & 0b1111) != 0 && spriteWindowEnabled)
                 {
                     Utils.ColorToRgb(_paletteEntries[0x100 + spriteEntry.PaletteColor], _frameBuffer.AsSpan(fbPtr));
                 }
@@ -147,10 +179,9 @@ public partial class Ppu
         }
     }
 
-    private void CombineBackgroundsInScanline()
+    private void SortBackgroundPriorities(int[] sortedBgIxs)
     {
-        var sortedBgIxs = new[] { 0, 1, 2, 3 };
-        // Step 1 - Use an optimal sorting network to sort the backgrounds in priority order
+        // Use an optimal sorting network to sort the backgrounds in priority order
         // Network is [[0 1][2 3][0 2][1 3][1 2]]
         // This is absolutely necessary optimisation and I won't hear anything against it
         if (_backgrounds[0].Control.BgPriority > _backgrounds[1].Control.BgPriority)
@@ -180,30 +211,6 @@ public partial class Ppu
             var tmp = sortedBgIxs[1];
             sortedBgIxs[1] = sortedBgIxs[2];
             sortedBgIxs[2] = tmp;
-        }
-
-        for (var x = 0; x < Device.WIDTH; x++)
-        {
-            var filledPixel = false;
-            for (var bgIx = 0; bgIx < 4; bgIx++)
-            {
-                // Check that the BG is both enabled and that the color is not the backdrop
-                if (_dispcnt.ScreenDisplayBg[sortedBgIxs[bgIx]] && _scanlineBgBuffer[sortedBgIxs[bgIx]][x] != 0)
-                {
-                    _bgBuffer[x].PaletteColor = _scanlineBgBuffer[sortedBgIxs[bgIx]][x];
-                    _bgBuffer[x].Priority = _backgrounds[sortedBgIxs[bgIx]].Control.BgPriority;
-                    _bgBuffer[x].ColorIsPaletteIndex = true;
-                    filledPixel = true;
-                    break; // This was the highest priority pixel
-                }
-            }
-
-            if (!filledPixel)
-            {
-                _bgBuffer[x].PaletteColor = 0;
-                _bgBuffer[x].Priority = 4;
-                _bgBuffer[x].ColorIsPaletteIndex = true;
-            }
         }
     }
 

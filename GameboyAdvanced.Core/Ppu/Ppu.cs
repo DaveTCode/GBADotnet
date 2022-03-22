@@ -36,9 +36,7 @@ public partial class Ppu
     private ushort _currentLine;
     private readonly Background[] _backgrounds = new Background[4] { new Background(0), new Background(1), new Background(2), new Background(3) };
 
-    private WindowControl _winIn = new();
-    private WindowControl _winOut = new();
-    private readonly Window[] _windows = new Window[2] { new Window(0), new Window(1) };
+    private readonly Windows _windows = new();
     private Mosaic _mosaic = new();
     private Bldcnt _bldcnt = new();
     private BldAlpha _bldalpha = new();
@@ -77,8 +75,6 @@ public partial class Ppu
         _dispstat = new GeneralLcdStatus();
         _currentLine = 0;
         _currentLineCycles = 0;
-        _winIn = new WindowControl();
-        _winOut = new WindowControl();
         _mosaic = new Mosaic();
         _bldcnt.Reset();
         _bldalpha.Reset();
@@ -87,10 +83,7 @@ public partial class Ppu
             _backgrounds[ii].Reset();
             Array.Clear(_scanlineBgBuffer[ii]);
         }
-        foreach (var window in _windows)
-        {
-            window.Reset();
-        }
+        _windows.Reset();
 
         foreach (var sprite in _sprites)
         {
@@ -364,40 +357,40 @@ public partial class Ppu
                 _backgrounds[3].UpdateReferencePointY(value, 3, 0x00FF_FFFF);
                 break;
             case WIN0H:
-                _windows[0].X2 = value;
+                _windows.SetXB1(0, value);
                 break;
             case WIN0H + 1:
-                _windows[0].X1 = value;
+                _windows.SetXB2(0, value);
                 break;
             case WIN1H:
-                _windows[1].X2 = value;
+                _windows.SetXB1(1, value);
                 break;
             case WIN1H + 1:
-                _windows[1].X1 = value;
+                _windows.SetXB2(1, value);
                 break;
             case WIN0V:
-                _windows[0].Y2 = value;
+                _windows.SetYB1(0, value);
                 break;
             case WIN0V + 1:
-                _windows[0].Y1 = value;
+                _windows.SetYB2(0, value);
                 break;
             case WIN1V:
-                _windows[1].Y2 = value;
+                _windows.SetYB1(1, value);
                 break;
             case WIN1V + 1:
-                _windows[1].Y1 = value;
+                _windows.SetYB2(1, value);
                 break;
             case WININ:
-                _winIn.UpdateB1(value);
+                _windows.UpdateWinIn(0, value);
                 break;
             case WININ + 1:
-                _winIn.UpdateB2(value);
+                _windows.UpdateWinIn(1, value);
                 break;
             case WINOUT:
-                _winOut.UpdateB1(value);
+                _windows.UpdateWinOutB1(value);
                 break;
             case WINOUT + 1:
-                _winOut.UpdateB2(value);
+                _windows.UpdateWinOutB2(value);
                 break;
             case MOSAIC:
                 _mosaic.UpdateB1(value);
@@ -443,8 +436,8 @@ public partial class Ppu
         BG1CNT => (ushort)(_backgrounds[1].Control.Read() & 0xDFFF),
         BG2CNT => _backgrounds[2].Control.Read(),
         BG3CNT => _backgrounds[3].Control.Read(),
-        WININ => _winIn.Get(),
-        WINOUT => _winOut.Get(),
+        WININ => _windows.GetWinIn(),
+        WINOUT => _windows.GetWinOut(),
         BLDCNT => _bldcnt.Get(),
         BLDALPHA => _bldalpha.Get(),
         _ => (ushort)openbus,

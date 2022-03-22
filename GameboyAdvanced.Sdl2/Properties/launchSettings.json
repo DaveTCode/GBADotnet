@@ -196,6 +196,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\txt_se2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - Win Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\win_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Panda": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\panda.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -204,9 +208,37 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\HelloWorld\\HelloWorld.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Peter Lemon - LCD - BGMode0": {
+    "Peter Lemon - LCD - BG - Mode0": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\BG\\BGMode0\\BGMode0.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - LCD - BG - Mode7": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\BG\\BGMode7\\BGMode7.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - LCD - BG - BGRotZoomMode2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\BG\\BGRotZoomMode2\\BGRotZoomMode2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - LCD - BG - BGRotZoomMode3": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\BG\\BGRotZoomMode3\\BGRotZoomMode3.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - LCD - BG - BGRotZoomMode4": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\BG\\BGRotZoomMode4\\BGRotZoomMode4.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - LCD - BG - BGRotZoomMode5": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\BG\\BGRotZoomMode5\\BGRotZoomMode5.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - LCD - OBJ - OBJRotZoom4BPP": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\OBJ\\OBJRotZoom4BPP\\OBJRotZoom4BPP.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - LCD - OBJ - OBJRotZoom8BPP": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\LCD\\OBJ\\OBJRotZoom8BPP\\OBJRotZoom8BPP.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Peter Lemon - Fast Line": {
       "commandName": "Project",
