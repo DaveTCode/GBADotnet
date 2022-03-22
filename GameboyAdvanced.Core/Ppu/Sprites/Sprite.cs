@@ -124,7 +124,7 @@ public class Sprite
             {
                 SpriteShape.Square => (64, 64),
                 SpriteShape.Horizontal => (64, 32),
-                SpriteShape.Vertical => (64, 32),
+                SpriteShape.Vertical => (32, 64),
                 _ => (0, 0),
             },
             _ => throw new Exception("Invalid sprite size")
