@@ -1,4 +1,5 @@
 ﻿using GameboyAdvanced.Web.Emulation;
+using GameboyAdvanced.Web.Nointro;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameboyAdvanced.Web.Controllers;
@@ -8,25 +9,28 @@ public class LoadRomController : Controller
 {
     private readonly ILogger<LoadRomController> _logger;
     private readonly BackgroundEmulatorThread _backgroundEmulatorThread;
+    private readonly RomDatabase _romDatabase;
 
-    public LoadRomController(ILogger<LoadRomController> logger, BackgroundEmulatorThread backgroundEmulatorThread)
+    public LoadRomController(ILogger<LoadRomController> logger, BackgroundEmulatorThread backgroundEmulatorThread, RomDatabase romDatabase)
     {
-        _logger = logger;
-        _backgroundEmulatorThread = backgroundEmulatorThread;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _backgroundEmulatorThread = backgroundEmulatorThread ?? throw new ArgumentNullException(nameof(backgroundEmulatorThread));
+        _romDatabase = romDatabase ?? throw new ArgumentNullException(nameof(romDatabase));
     }
 
     [Route("load"), HttpPost]
-    public async Task<IActionResult> LoadRom(List<IFormFile> roms)
+    public async Task<IActionResult> LoadRom(string guid)
     {
-        if (roms == null) return BadRequest("No rom specified");
-        if (roms.Count != 1) return BadRequest("Can only load a single rom");
-        
-        var rom = roms[0];
-        _logger.LogInformation($"Load rom called with {rom.Name}");
+        _logger.LogInformation("Load rom called for guid {guid}", guid);
 
-        using var ms = new MemoryStream();
-        await rom.CopyToAsync(ms);
-        await _backgroundEmulatorThread.RunRomAsync(ms.ToArray());
+        if (!_romDatabase.RomEntries.TryGetValue(guid, out var romDatabaseEntry))
+        {
+            return NotFound($"Rom not found with GUID {guid}");
+        }
+
+        var romBytes = await System.IO.File.ReadAllBytesAsync(romDatabaseEntry.FullFilePath);
+
+        await _backgroundEmulatorThread.RunRomAsync(romBytes);
         
         return Ok();
     }

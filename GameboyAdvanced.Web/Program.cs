@@ -1,4 +1,5 @@
 using GameboyAdvanced.Web.Emulation;
+using GameboyAdvanced.Web.Nointro;
 using GameboyAdvanced.Web.Signalr;
 using Microsoft.AspNetCore.SignalR;
 using Serilog;
@@ -13,12 +14,20 @@ Log.Logger = new LoggerConfiguration()
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 
+// Load the bios file
 var biosPath = builder.Configuration.GetValue<string>("Bios");
 var bios = File.ReadAllBytes(biosPath);
 
+// Build the database of known ROMs
+var database = RomDatabase.BuildDatabase(builder.Configuration.GetValue<string>("RomDirectory"));
+
 builder.Services.AddControllers();
+builder.Services.AddRazorPages();
 builder.Services.AddLogging();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR().AddJsonProtocol(options => {
+    options.PayloadSerializerOptions.IncludeFields = true; // We use fields not properties across the emulator
+});
+builder.Services.AddSingleton<RomDatabase>(database);
 builder.Services.AddSingleton<BackgroundEmulatorThread>(
     provider => new BackgroundEmulatorThread(
         provider.GetService<ILogger<BackgroundEmulatorThread>>() ?? throw new ArgumentNullException(),
@@ -32,19 +41,19 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    _ = app.UseExceptionHandler("/Error");
 }
 
-app.UseSerilogRequestLogging();
-app.UseDefaultFiles();
-app.UseStaticFiles();
+_ = app.UseSerilogRequestLogging();
+_ = app.UseStaticFiles();
 
-app.UseRouting();
+_ = app.UseRouting();
 
-app.UseEndpoints(endpoints =>
+_ = app.UseEndpoints(endpoints =>
 {
-    endpoints.MapControllers();
-    endpoints.MapHub<EmulatorHub>("/emulatorhub");
+    _ = endpoints.MapRazorPages();
+    _ = endpoints.MapControllers();
+    _ = endpoints.MapHub<EmulatorHub>("/emulatorhub");
 });
 
 app.Run();

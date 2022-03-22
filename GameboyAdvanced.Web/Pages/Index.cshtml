@@ -1,0 +1,48 @@
+﻿@page
+@model GameboyAdvanced.Web.Pages.IndexModel
+@{
+    Layout = "_Layout";
+}
+
+<div class="row vh-100">
+    <div class="col-md-3 vh-100 overflow-auto" id="rom-tree-col">
+        @if (Model.RomDirectoryError != null)
+        {
+            <span class="text-danger">@Model.RomDirectoryError</span>
+        }
+        else
+        {
+            @if (Model.RomDirectoryTree!.SubDirectories.Any() || Model.RomDirectoryTree!.RomTreeEntries.Any())
+            {
+                <ul class="list-unstyled">
+                    @foreach (var subdir in Model.RomDirectoryTree!.SubDirectories)
+                    {
+                        <partial name="RomTree/_Romtree" model="subdir" />
+                    }
+                
+                    @foreach (var rom in Model.RomDirectoryTree!.RomTreeEntries)
+                    {
+                        <li class="rom-tree-file">
+                            <a href="#" onclick="LoadRom('@rom.FullFilePath')"><span>@rom.Name</span></a>
+                        </li>
+                    }
+                </ul>
+            }
+        }
+    </div>
+    <div class="col vh-100 overflow-auto" id="emulator-col">
+        <div class="canvas-container position-relative">
+            <img src="/images/screen_backdrop.png" class="position-absolute top-0 start-0"/>
+            <canvas id="backing-canvas" width="240" height="160" class="d-none "></canvas>
+            <canvas id="screen-canvas" width="480" height="320" class="position-absolute" style="top:64px;left:100px"></canvas>
+            <div class="position-absolute" style="left:100px;top:420px;">
+                <button class="btn btn-secondary disabled" id="pause-button">Pause</button>
+                <button class="btn btn-secondary d-none" id="resume-button">Resume</button>
+            </div>
+            <div class="position-absolute" style="left:520px;top:420px;">
+                <button class="btn btn-danger disabled" id="stop-button">Stop</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 vh-100 overflow-auto" id=""></div>
+</div>

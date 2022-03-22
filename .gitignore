@@ -7,6 +7,5 @@
 roms/real/*
 *.sav
 /GameboyAdvanced.Blazor
-/GameboyAdvanced.Web
 roms/
 **/publish

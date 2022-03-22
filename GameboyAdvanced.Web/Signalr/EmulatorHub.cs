@@ -1,16 +1,44 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using GameboyAdvanced.Core;
+using GameboyAdvanced.Core.Input;
+using GameboyAdvanced.Web.Emulation;
+using Microsoft.AspNetCore.SignalR;
 
 namespace GameboyAdvanced.Web.Signalr;
 
 public interface IEmulatorClient
 {
-    Task SendFrame(byte[] frameData);
+    Task SendFrame(string base64EncodedFrameData);
+
+    Task SendDevice(Device? device);
 }
 
 public class EmulatorHub : Hub<IEmulatorClient>
 {
-    public Task SendPause()
+    private readonly BackgroundEmulatorThread _backgroundEmulatorThread;
+
+    public EmulatorHub(BackgroundEmulatorThread backgroundEmulatorThread)
     {
-        throw new NotImplementedException();
+        _backgroundEmulatorThread = backgroundEmulatorThread ?? throw new ArgumentNullException(nameof(backgroundEmulatorThread));
+    }
+
+    public async Task Pause()
+    {
+        await _backgroundEmulatorThread.SetPause(true);
+        await Clients.All.SendDevice(_backgroundEmulatorThread.GetDevice());
+    }
+
+    public async Task Resume()
+    {
+        await _backgroundEmulatorThread.SetPause(false);
+    }
+
+    public async Task KeyUp(Key key)
+    {
+        await _backgroundEmulatorThread.KeyUp(key);
+    }
+
+    public async Task KeyDown(Key key)
+    {
+        await _backgroundEmulatorThread.KeyDown(key);
     }
 }

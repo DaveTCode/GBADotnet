@@ -1,18 +1,43 @@
 html {
-  font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+.container-fluid {
+    font-family: 'SH Pinscher', sans-serif;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+li.rom-tree-directory {
+    padding-left: 1rem;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    display: block;
+    position: relative;
+    font-weight: 400;
 }
 
-body {
-  margin-bottom: 60px;
+    li.rom-tree-directory a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+        li.rom-tree-directory a:link, li.rom-tree-directory a:hover {
+            color: inherit;
+        }
+
+    li.rom-tree-directory.is-selected {
+        font-weight: 600;
+    }
+
+.rom-tree-dir-toggle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 5px;
+    font-size: 0.6rem;
 }
+
+li.rom-tree-file:hover {
+    text-decoration: underline;
+}
+ 
