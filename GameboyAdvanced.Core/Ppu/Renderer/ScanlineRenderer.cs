@@ -287,8 +287,8 @@ public partial class Ppu
                 // the OAM space is configured for 1D or 2D mapping
                 var finalTileNumber = (sprite.LargePalette, _dispcnt.OneDimObjCharVramMapping) switch
                 {
-                    (true, true) => sprite.Tile + (spriteGridY * sprite.Width) + spriteGridX,
-                    (true, false) => (sprite.Tile & 0xFFFF_FFFE) + (spriteGridY * 4) + spriteGridX, // TODO - Not sure
+                    (true, true) => sprite.Tile + (spriteGridY * sprite.Width / 4) + (spriteGridX * 2),
+                    (true, false) => (sprite.Tile & 0xFFFF_FFFE) + (spriteGridY * 32) + (spriteGridX * 2),
                     (false, true) => sprite.Tile + (spriteGridY * sprite.Width / 8) + spriteGridX,
                     (false, false) => sprite.Tile + (spriteGridY * 32) + spriteGridX,
                 };
@@ -296,9 +296,12 @@ public partial class Ppu
 
                 if (bitmapMode && finalTileNumber < 0x200) continue;
 
-                var finalTileAddressOffset = finalTileNumber * (sprite.LargePalette ? 64 : 32);
+                var finalTileAddressOffset = finalTileNumber * 32;
 
-                var pixelByteAddress = 0x0001_0000 + finalTileAddressOffset + ((spriteX % 8) / 2) + ((spriteY % 8) * 4);
+                var pixelByteAddress = 0x0001_0000 
+                    + finalTileAddressOffset 
+                    + ((spriteX % 8) / (sprite.LargePalette ? 1 : 2)) 
+                    + ((spriteY % 8) * (sprite.LargePalette ? 8 : 4));
 
                 var tileData = _vram[pixelByteAddress];
 
