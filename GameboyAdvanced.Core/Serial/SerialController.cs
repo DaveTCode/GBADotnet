@@ -19,24 +19,9 @@ public class SerialController
     }
 
 
-    internal byte ReadByte(uint address) => throw new NotImplementedException("Byte reads from serial controller not implemented");
+    internal byte ReadByte(uint address) => 0; // TODO - Implement serial controller
 
-    internal ushort ReadHalfWord(uint address) => address switch
-    {
-        SIODATA32 => 0x0,
-        SIOMULTI1 => 0x0,
-        SIOMULTI2 => 0x0,
-        SIOMULTI3 => 0x0,
-        SIOCNT => 0x0,
-        SIODATA8 => 0x0,
-        RCNT => 0x0,
-        JOYCNT => 0x0,
-        JOY_RECV => throw new NotImplementedException("Joypad reads are probably supposed to be word reads"),
-        JOY_TRANS => throw new NotImplementedException("Joypad reads are probably supposed to be word reads"),
-        JOYSTAT => throw new NotImplementedException("Joypad reads are probably supposed to be word reads"),
-        0x0400_012C => 0, // Unused address on serial controller which gets read/written by various games during startup
-        _ => throw new Exception($"Serial controller doesn't map address {address:X8} for halfword reads"), // TODO - Not 100% sure this is right
-    };
+    internal ushort ReadHalfWord(uint address) => 0; // TODO - Implement serial controller
 
     internal uint ReadWord(uint address)
     {
