@@ -133,7 +133,7 @@ public partial class Ppu
                 _interruptInterconnect.RaiseInterrupt(Interrupt.LCDHBlank);
             }
         }
-        else if (CurrentLineCycles == CyclesPerLine)
+        else if (CurrentLineCycles == CyclesPerLine - 1)
         {
             Dispstat.VCounterFlag = false;
             Dispstat.HBlankFlag = false;

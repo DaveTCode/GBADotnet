@@ -1,4 +1,6 @@
-﻿namespace GameboyAdvanced.Core.Dma;
+﻿using GameboyAdvanced.Core.Interrupts;
+
+namespace GameboyAdvanced.Core.Dma;
 
 public class DmaChannel
 {
@@ -125,6 +127,38 @@ public class DmaChannel
                 (_, SrcAddressCtrl.Prohibited) => 0,
                 _ => throw new Exception("Invalid source address control")
             };
+        }
+    }
+
+    internal void StopChannel(InterruptInterconnect interruptInterconnect)
+    {
+        IntCachedValue = null;
+        IsRunning = false;
+
+        if (ControlReg.Repeat && ControlReg.StartTiming != StartTiming.Immediate)
+        {
+            IntWordCount = WordCount == 0 ? MaxWordCounts[Id] : WordCount;
+
+            if (ControlReg.DestAddressCtrl == DestAddressCtrl.IncrementReload)
+            {
+                IntDestinationAddress = DestinationAddress & (ControlReg.Is32Bit ? 0xFFFF_FFFC : 0xFFFF_FFFE);
+            }
+        }
+        else
+        {
+            ControlReg.DmaEnable = false;
+        }
+
+        if (ControlReg.IrqOnEnd)
+        {
+            interruptInterconnect.RaiseInterrupt(Id switch
+            {
+                0 => Interrupt.DMA0,
+                1 => Interrupt.DMA1,
+                2 => Interrupt.DMA2,
+                3 => Interrupt.DMA3,
+                _ => throw new Exception($"Invalid state, no DMA channel with index {Id}")
+            });
         }
     }
 

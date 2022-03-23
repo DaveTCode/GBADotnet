@@ -68,16 +68,7 @@ public class DmaController
                         _dmaDataUnit.Channels[ii].IsRunning = true;
                         break;
                     case StartTiming.VBlank:
-                        if (_dmaDataUnit.Channels[ii].IsRunning)
-                        {
-                            // Hit vblank end, stop DMA if it's still running
-                            if (!_ppu.Dispstat.VBlankFlag)
-                            {
-                                _dmaDataUnit.Channels[ii].IsRunning = false;
-                                continue;
-                            }
-                        }
-                        else
+                        if (!_dmaDataUnit.Channels[ii].IsRunning)
                         {
                             // Wait until vblank to start DMA
                             if (!_ppu.CanVBlankDma()) continue;
@@ -86,16 +77,7 @@ public class DmaController
                         }
                         break;
                     case StartTiming.HBlank:
-                        if (_dmaDataUnit.Channels[ii].IsRunning)
-                        {
-                            // Hit hblank end, stop DMA if it's still running
-                            if (!_ppu.Dispstat.HBlankFlag)
-                            {
-                                _dmaDataUnit.Channels[ii].IsRunning = false;
-                                continue;
-                            }
-                        }
-                        else
+                        if (!_dmaDataUnit.Channels[ii].IsRunning)
                         {
                             // Wait until hblank to start DMA
                             if (!_ppu.CanHBlankDma()) continue;
@@ -137,39 +119,7 @@ public class DmaController
                     {
                         // One additional cycle after DMA complete
                         _waitStates++;
-                        _dmaDataUnit.Channels[ii].IntCachedValue = null;
-
-                        if (_dmaDataUnit.Channels[ii].ControlReg.Repeat && _dmaDataUnit.Channels[ii].ControlReg.StartTiming != StartTiming.Immediate)
-                        {
-                            // Pause the channel until the next time it would be triggered
-                            _dmaDataUnit.Channels[ii].IsRunning = false;
-
-                            _dmaDataUnit.Channels[ii].IntWordCount = (_dmaDataUnit.Channels[ii].WordCount == 0) 
-                                ? DmaChannel.MaxWordCounts[ii]
-                                : _dmaDataUnit.Channels[ii].WordCount;
-
-                            if (_dmaDataUnit.Channels[ii].ControlReg.DestAddressCtrl == DestAddressCtrl.IncrementReload)
-                            {
-                                _dmaDataUnit.Channels[ii].IntDestinationAddress = _dmaDataUnit.Channels[ii].DestinationAddress;
-                            }
-                        }
-                        else
-                        {
-                            _dmaDataUnit.Channels[ii].IsRunning = false;
-                            _dmaDataUnit.Channels[ii].ControlReg.DmaEnable = false;
-                        }
-
-                        if (_dmaDataUnit.Channels[ii].ControlReg.IrqOnEnd)
-                        {
-                            _interruptInterconnect.RaiseInterrupt(ii switch
-                            {
-                                0 => Interrupt.DMA0,
-                                1 => Interrupt.DMA1,
-                                2 => Interrupt.DMA2,
-                                3 => Interrupt.DMA3,
-                                _ => throw new Exception($"Invalid state, no DMA channel with index {ii}")
-                            });
-                        }
+                        _dmaDataUnit.Channels[ii].StopChannel(_interruptInterconnect);
                     }
                 }
                 else
