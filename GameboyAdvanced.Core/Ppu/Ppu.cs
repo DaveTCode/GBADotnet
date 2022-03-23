@@ -102,10 +102,10 @@ public partial class Ppu
         return FrameBuffer;
     }
 
-    internal bool CanVBlankDma() => (CurrentLine == Device.HEIGHT) && (CurrentLineCycles == CyclesPerLine);
+    internal bool CanVBlankDma() => CurrentLine == Device.HEIGHT && (CurrentLineCycles == 0);
 
     // TODO - Not sure what the behaviour here is if accessing OAM while the bit on dispcnt isn't set, does it pause DMA or write nothing?
-    internal bool CanHBlankDma() => (CurrentLineCycles == HBlankFlagCycles) && !Dispstat.VBlankFlag;
+    internal bool CanHBlankDma() => (CurrentLineCycles == HBlankFlagCycles) && (CurrentLine < Device.HEIGHT);
 
     /// <summary>
     /// Step the PPU by a single master clock cycle.
