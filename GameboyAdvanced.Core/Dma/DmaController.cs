@@ -74,7 +74,6 @@ public class DmaController
                             if (!_ppu.CanVBlankDma()) continue;
 
                             _dmaDataUnit.Channels[ii].IsRunning = true;
-                            Console.WriteLine($"VBlank DMA starting whilst PPU is {_ppu.CurrentLine},{_ppu.CurrentLineCycles}");
                         }
                         break;
                     case StartTiming.HBlank:
