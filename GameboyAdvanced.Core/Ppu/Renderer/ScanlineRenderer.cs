@@ -52,14 +52,14 @@ public partial class Ppu
         var sortedBgIxs = new[] { 0, 1, 2, 3 };
         SortBackgroundPriorities(sortedBgIxs);
 
-        switch (_dispcnt.BgMode)
+        switch (Dispcnt.BgMode)
         {
             case BgMode.Video0:
                 for (var ii = 0; ii < 4; ii++)
                 {
-                    if (_dispcnt.ScreenDisplayBg[ii])
+                    if (Dispcnt.ScreenDisplayBg[ii])
                     {
-                        DrawTextModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
+                        DrawTextModeScanline(Backgrounds[ii], ref _scanlineBgBuffer[ii]);
                     }
                 }
                 break;
@@ -67,15 +67,15 @@ public partial class Ppu
                 // Background 0-1 are text mode, 2-3 are affine
                 for (var ii = 0; ii < 4; ii++)
                 {
-                    if (_dispcnt.ScreenDisplayBg[ii])
+                    if (Dispcnt.ScreenDisplayBg[ii])
                     {
                         if (ii < 2)
                         {
-                            DrawTextModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
+                            DrawTextModeScanline(Backgrounds[ii], ref _scanlineBgBuffer[ii]);
                         }
                         else
                         {
-                            DrawAffineModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
+                            DrawAffineModeScanline(Backgrounds[ii], ref _scanlineBgBuffer[ii]);
                         }
                     }
                 }
@@ -83,26 +83,26 @@ public partial class Ppu
             case BgMode.Video2:
                 for (var ii = 0; ii < 4; ii++)
                 {
-                    if (_dispcnt.ScreenDisplayBg[ii])
+                    if (Dispcnt.ScreenDisplayBg[ii])
                     {
-                        DrawAffineModeScanline(_backgrounds[ii], ref _scanlineBgBuffer[ii]);
+                        DrawAffineModeScanline(Backgrounds[ii], ref _scanlineBgBuffer[ii]);
                     }
                 }
                 break;
             case BgMode.Video3:
-                if (_dispcnt.ScreenDisplayBg[2])
+                if (Dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode3CurrentScanline(ref _scanlineBgBuffer[2]);
                 }
                 break;
             case BgMode.Video4:
-                if (_dispcnt.ScreenDisplayBg[2])
+                if (Dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode4CurrentScanline(ref _scanlineBgBuffer[2]);
                 }
                 break;
             case BgMode.Video5:
-                if (_dispcnt.ScreenDisplayBg[2])
+                if (Dispcnt.ScreenDisplayBg[2])
                 {
                     DrawBgMode5CurrentScanline(ref _scanlineBgBuffer[2]);
                 }
@@ -120,8 +120,13 @@ public partial class Ppu
 
     private void CombineBackgroundsAndSprites(int[] sortedBgIxs)
     {
-        var fbPtr = _currentLine * Device.WIDTH * 4;
-        var usingPaletteIndex = _dispcnt.BgMode is not (BgMode.Video3 or BgMode.Video5);
+        var fbPtr = CurrentLine * Device.WIDTH * 4;
+        var usingPaletteIndex = Dispcnt.BgMode is not (BgMode.Video3 or BgMode.Video5);
+
+        if (CurrentLine <= 20)
+        {
+            Console.WriteLine($"{CurrentLine} - {_windows.X1[0]}, {_windows.X2[0]}, {_windows.Y1[0]}, {_windows.Y2[0]}");
+        }
 
         for (var x = 0; x < Device.WIDTH; x++)
         {
@@ -131,11 +136,11 @@ public partial class Ppu
             _bgBuffer[x].ColorIsPaletteIndex[0] = _bgBuffer[x].ColorIsPaletteIndex[1] = usingPaletteIndex;
             _bgBuffer[x].BgId[0] = _bgBuffer[x].BgId[1] = 0;
 
-            var usingWindows = _dispcnt.Window0Display | _dispcnt.Window1Display | _dispcnt.ObjWindowDisplay;
+            var usingWindows = Dispcnt.WindowDisplay[0] | Dispcnt.WindowDisplay[1] | Dispcnt.ObjWindowDisplay;
 
             // First step is to work out which window (if any) this pixel is
             // part of so we know which backgrounds/objects might be present
-            var activeWindow = _windows.GetHighestPriorityWindow(_dispcnt, x, _currentLine);
+            var activeWindow = _windows.GetHighestPriorityWindow(Dispcnt, x, CurrentLine);
 
             // Then fill in the bgBuffer with the top two highest priority
             // opaque pixels
@@ -145,7 +150,7 @@ public partial class Ppu
                 var sortedBgIx = sortedBgIxs[unsortedBgIx];
 
                 // Check that the BG is both enabled and that the color is not the backdrop
-                if (_dispcnt.ScreenDisplayBg[sortedBgIx] && _scanlineBgBuffer[sortedBgIx][x] != 0)
+                if (Dispcnt.ScreenDisplayBg[sortedBgIx] && _scanlineBgBuffer[sortedBgIx][x] != 0)
                 {
                     // Now check that the window this background is in (if any) has that background enabled
                     if (!usingWindows ||
@@ -153,7 +158,7 @@ public partial class Ppu
                         (activeWindow != -1 && _windows.BgEnableInside[activeWindow][sortedBgIx]))
                     {
                         _bgBuffer[x].PaletteColor[filledBgPixels] = _scanlineBgBuffer[sortedBgIx][x];
-                        _bgBuffer[x].Priority[filledBgPixels] = _backgrounds[sortedBgIx].Control.BgPriority;
+                        _bgBuffer[x].Priority[filledBgPixels] = Backgrounds[sortedBgIx].Control.BgPriority;
                         _bgBuffer[x].ColorIsPaletteIndex[filledBgPixels] = usingPaletteIndex;
                         _bgBuffer[x].BgId[filledBgPixels] = sortedBgIx;
                         filledBgPixels++;
@@ -246,7 +251,7 @@ public partial class Ppu
             if (!colorEffectsValid || ColorEffects.SpecialEffect == SpecialEffect.None)
             {
                 // Just copy the highest priority pixel into the frame buffer as no color effects to apply
-                Array.Copy(_pixels[0], 0, _frameBuffer, fbPtr, 4);
+                Array.Copy(_pixels[0], 0, FrameBuffer, fbPtr, 4);
             }
             else
             {
@@ -255,19 +260,19 @@ public partial class Ppu
                     case SpecialEffect.AlphaBlend:
                         for (int i = 0; i < 4; i++)
                         {
-                            _frameBuffer[fbPtr + i] = ColorEffects.AlphaIntensity(_pixels[0][i], _pixels[1][i]);
+                            FrameBuffer[fbPtr + i] = ColorEffects.AlphaIntensity(_pixels[0][i], _pixels[1][i]);
                         }
                         break;
                     case SpecialEffect.IncreaseBrightness:
                         for (int i = 0; i < 4; i++)
                         {
-                            _frameBuffer[fbPtr + i] = ColorEffects.BrightnessIncrease(_pixels[0][i]);
+                            FrameBuffer[fbPtr + i] = ColorEffects.BrightnessIncrease(_pixels[0][i]);
                         }
                         break;
                     case SpecialEffect.DecreaseBrightness:
                         for (int i = 0; i < 4; i++)
                         {
-                            _frameBuffer[fbPtr + i] = ColorEffects.BrightnessDecrease(_pixels[0][i]);
+                            FrameBuffer[fbPtr + i] = ColorEffects.BrightnessDecrease(_pixels[0][i]);
                         }
                         break;
                 }
@@ -282,29 +287,29 @@ public partial class Ppu
         // Use an optimal sorting network to sort the backgrounds in priority order
         // Network is [[0 1][2 3][0 2][1 3][1 2]]
         // This is absolutely necessary optimisation and I won't hear anything against it
-        if (_backgrounds[0].Control.BgPriority > _backgrounds[1].Control.BgPriority)
+        if (Backgrounds[0].Control.BgPriority > Backgrounds[1].Control.BgPriority)
         {
             sortedBgIxs[0] = 1;
             sortedBgIxs[1] = 0;
         }
-        if (_backgrounds[2].Control.BgPriority > _backgrounds[3].Control.BgPriority)
+        if (Backgrounds[2].Control.BgPriority > Backgrounds[3].Control.BgPriority)
         {
             sortedBgIxs[2] = 3;
             sortedBgIxs[3] = 2;
         }
-        if (_backgrounds[sortedBgIxs[0]].Control.BgPriority > _backgrounds[sortedBgIxs[2]].Control.BgPriority)
+        if (Backgrounds[sortedBgIxs[0]].Control.BgPriority > Backgrounds[sortedBgIxs[2]].Control.BgPriority)
         {
             var tmp = sortedBgIxs[0];
             sortedBgIxs[0] = sortedBgIxs[2];
             sortedBgIxs[2] = tmp;
         }
-        if (_backgrounds[sortedBgIxs[1]].Control.BgPriority > _backgrounds[sortedBgIxs[3]].Control.BgPriority)
+        if (Backgrounds[sortedBgIxs[1]].Control.BgPriority > Backgrounds[sortedBgIxs[3]].Control.BgPriority)
         {
             var tmp = sortedBgIxs[1];
             sortedBgIxs[1] = sortedBgIxs[3];
             sortedBgIxs[3] = tmp;
         }
-        if (_backgrounds[sortedBgIxs[1]].Control.BgPriority > _backgrounds[sortedBgIxs[2]].Control.BgPriority)
+        if (Backgrounds[sortedBgIxs[1]].Control.BgPriority > Backgrounds[sortedBgIxs[2]].Control.BgPriority)
         {
             var tmp = sortedBgIxs[1];
             sortedBgIxs[1] = sortedBgIxs[2];
@@ -323,7 +328,7 @@ public partial class Ppu
         }
 
         // Check if OBJs are disabled globally on the PPU
-        if (!_dispcnt.ScreenDisplayObj) return;
+        if (!Dispcnt.ScreenDisplayObj) return;
 
         foreach (var sprite in _sprites)
         {
@@ -347,8 +352,8 @@ public partial class Ppu
             var spriteHeight = (sprite.IsAffine && sprite.DoubleSize) ? sprite.Height * 2 : sprite.Height;
 
             // Check if the sprite falls within the scanline (counting the bounding box)
-            if (loopedY > _currentLine) continue;
-            if (loopedY + spriteHeight <= _currentLine) continue;
+            if (loopedY > CurrentLine) continue;
+            if (loopedY + spriteHeight <= CurrentLine) continue;
 
             for (var ii = 0; ii < spriteWidth; ii++)
             {
@@ -362,7 +367,7 @@ public partial class Ppu
 
                 // Work out which pixel relative to the sprite texture we're processing
                 var spriteX = sprite.HorizontalFlip && !sprite.IsAffine ? sprite.Width - ii - 1 : ii;
-                var spriteY = sprite.VerticalFlip && !sprite.IsAffine ? sprite.Height - (_currentLine - loopedY) : _currentLine - loopedY;
+                var spriteY = sprite.VerticalFlip && !sprite.IsAffine ? sprite.Height - (CurrentLine - loopedY) : CurrentLine - loopedY;
 
                 if (sprite.IsAffine)
                 {
@@ -383,7 +388,7 @@ public partial class Ppu
                 // Decide which tile corresponds to that texture coordinate,
                 // this depends on whether we're in 256 color mode and whether
                 // the OAM space is configured for 1D or 2D mapping
-                var finalTileNumber = (sprite.LargePalette, _dispcnt.OneDimObjCharVramMapping) switch
+                var finalTileNumber = (sprite.LargePalette, Dispcnt.OneDimObjCharVramMapping) switch
                 {
                     (true, true) => sprite.Tile + (spriteGridY * sprite.Width / 4) + (spriteGridX * 2),
                     (true, false) => (sprite.Tile & 0xFFFF_FFFE) + (spriteGridY * 32) + (spriteGridX * 2),
@@ -401,7 +406,7 @@ public partial class Ppu
                     + ((spriteX % 8) / (sprite.LargePalette ? 1 : 2))
                     + ((spriteY % 8) * (sprite.LargePalette ? 8 : 4));
 
-                var tileData = _vram[pixelByteAddress];
+                var tileData = Vram[pixelByteAddress];
 
                 // Color 0 in each BG/OBJ palette is transparent so replace with palette 0 color 0
                 var pixelPalNo = sprite.LargePalette switch
@@ -419,10 +424,10 @@ public partial class Ppu
 
     private void DrawProhibitedModeScanline()
     {
-        var fbPtr = Device.WIDTH * 4 * _currentLine; // 4 bytes per pixel
+        var fbPtr = Device.WIDTH * 4 * CurrentLine; // 4 bytes per pixel
         for (var x = 0; x < Device.WIDTH; x++)
         {
-            Utils.ColorToRgb(BackdropColor, _frameBuffer.AsSpan(fbPtr));
+            Utils.ColorToRgb(BackdropColor, FrameBuffer.AsSpan(fbPtr));
             fbPtr += 4;
         }
     }
@@ -439,8 +444,8 @@ public partial class Ppu
             BgSize.Regular64x64 => (1024, 128),
             _ => throw new Exception("Invalid bg size")
         };
-        var baseRefX = background.RefPointX + (background.Dmx * _currentLine);
-        var baseRefY = background.RefPointY + (background.Dmy * _currentLine);
+        var baseRefX = background.RefPointX + (background.Dmx * CurrentLine);
+        var baseRefY = background.RefPointY + (background.Dmy * CurrentLine);
 
         for (var pixel = 0; pixel < Device.WIDTH; pixel++)
         {
@@ -464,10 +469,10 @@ public partial class Ppu
                 continue;
             }
 
-            var tile = _vram[tileMapBaseAddress + ((yBase / 8) * blockWidth) + (xBase / 8)];
+            var tile = Vram[tileMapBaseAddress + ((yBase / 8) * blockWidth) + (xBase / 8)];
             var tileAddress = tileBaseAddress + (tile * 64); // All affine backgrounds use 8bpp tiles
             tileAddress += ((yBase % 8) * 8) + (xBase % 8);
-            var paletteIndex = _vram[tileAddress];
+            var paletteIndex = Vram[tileAddress];
             scanlineBuffer[pixel] = paletteIndex;
         }
     }
@@ -479,7 +484,7 @@ public partial class Ppu
         for (var x = 0; x < Device.WIDTH; x++)
         {
             // Apply the scroll to the x,y screen coordinates to get tilemap coordinates
-            var scrolledY = (_currentLine + background.YOffset) % background.Control.ScreenSize.Height();
+            var scrolledY = (CurrentLine + background.YOffset) % background.Control.ScreenSize.Height();
             var scrolledX = (x + background.XOffset) % background.Control.ScreenSize.Width();
 
             // Convert the x,y coordinates into which tile coordinates
@@ -499,7 +504,7 @@ public partial class Ppu
             };
 
             var tileMapAddress = tileMapBase + (screenBlockOffset * 0x800) + ((screenBlockTileY % 32) * 64) + (2 * (screenBlockTileX % 32));
-            var tileMapEntry = _vram[tileMapAddress] | (_vram[tileMapAddress + 1] << 8);
+            var tileMapEntry = Vram[tileMapAddress] | (Vram[tileMapAddress + 1] << 8);
             var tile = tileMapEntry & 0b11_1111_1111;
             var horizontalFlip = ((tileMapEntry >> 10) & 1) == 1;
             var verticalFlip = ((tileMapEntry >> 11) & 1) == 1;
@@ -511,12 +516,12 @@ public partial class Ppu
             if (background.Control.LargePalette)
             {
                 var tileAddress = (background.Control.CharBaseBlock * 0x4000) + (tile * 64) + tileX + (tileY * 8);
-                scanlineBuffer[x] = _vram[tileAddress];
+                scanlineBuffer[x] = Vram[tileAddress];
             }
             else
             {
                 var tileAddress = (background.Control.CharBaseBlock * 0x4000) + (tile * 32) + (tileX / 2) + (tileY * 4);
-                var pixelPalIx = (_vram[tileAddress] >> (4 * (tileX & 1))) & 0b1111;
+                var pixelPalIx = (Vram[tileAddress] >> (4 * (tileX & 1))) & 0b1111;
                 var pixelPalNo = (pixelPalIx == 0) ? 0 : (paletteNumber | pixelPalIx);
                 scanlineBuffer[x] = pixelPalNo;
             }
@@ -527,11 +532,11 @@ public partial class Ppu
 
     private void DrawBgMode3CurrentScanline(ref int[] scanlineBgBuffer)
     {
-        var vramPtrBase = _currentLine * 480;
+        var vramPtrBase = CurrentLine * 480;
         for (var col = 0; col < 240; col++)
         {
             var vramPtr = vramPtrBase + (col * 2);
-            var hw = _vram[vramPtr] | (_vram[vramPtr + 1] << 8);
+            var hw = Vram[vramPtr] | (Vram[vramPtr + 1] << 8);
             scanlineBgBuffer[col] = hw;
         }
     }
@@ -539,12 +544,12 @@ public partial class Ppu
     private void DrawBgMode4CurrentScanline(ref int[] scanlineBgBuffer)
     {
         // BG Mode 4/5 have a double buffer that is switched using Frame1Select on DISPCNT
-        var baseAddress = _dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
-        var vramPtrBase = _currentLine * 240;
+        var baseAddress = Dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
+        var vramPtrBase = CurrentLine * 240;
         for (var col = 0; col < 240; col++)
         {
             var vramPtr = vramPtrBase + col;
-            var paletteIndex = _vram[baseAddress + vramPtr];
+            var paletteIndex = Vram[baseAddress + vramPtr];
             scanlineBgBuffer[col] = paletteIndex;
         }
     }
@@ -552,15 +557,15 @@ public partial class Ppu
     private void DrawBgMode5CurrentScanline(ref int[] scanlineBgBuffer)
     {
         // Screen is 160*128 in this mode, the rest gets backdrop color
-        var baseAddress = _dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
+        var baseAddress = Dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
 
-        var vramPtrBase = baseAddress + (_currentLine * 320);
+        var vramPtrBase = baseAddress + (CurrentLine * 320);
         for (var col = 0; col < 240; col++)
         {
             var vramPtr = vramPtrBase + (col * 2);
-            var hw = _vram[vramPtr] | (_vram[vramPtr + 1] << 8);
+            var hw = Vram[vramPtr] | (Vram[vramPtr + 1] << 8);
 
-            if (col >= 160 || _currentLine >= 128)
+            if (col >= 160 || CurrentLine >= 128)
             {
                 scanlineBgBuffer[col] = 0;
             }

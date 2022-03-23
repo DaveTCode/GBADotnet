@@ -51,80 +51,35 @@ public class Windows
 
     internal void SetXB1(int window, byte value)
     {
-        X2[window] = (byte)(value - 1);
-        CapX(window);
+        X2[window] = value;
     }
 
     internal void SetXB2(int window, byte value)
     {
         X1[window] = value;
-        CapX(window);
     }
 
     internal void SetYB1(int window, byte value)
     {
-        Y2[window] = (byte)(value - 1);
-        CapY(window);
+        Y2[window] = value;
     }
 
     internal void SetYB2(int window, byte value)
     {
         Y1[window] = value;
-        CapY(window);
-    }
-
-    /// <summary>
-    /// WIN[01]H sets the start and end of the window in a single half word 
-    /// write.
-    /// 
-    /// The values have interesting capping behaviour, X2 gets capped at 
-    /// Device.WIDTH but the behaviour of X1 if it is > X2 depends on the 
-    /// value of X2.
-    /// </summary>
-    /// <remarks>
-    /// Behaviour here was borrowed knowledge from mgba.
-    /// </remarks>
-    internal void CapX(int window)
-    {
-        if (X1[window] > Device.WIDTH && X1[window] > X2[window])
-        {
-            X1[window] = 0;
-        }
-        if (X2[window] > Device.WIDTH)
-        {
-            X2[window] = Device.WIDTH;
-            if (X1[window] > Device.WIDTH)
-            {
-                X1[window] = Device.WIDTH;
-            }
-        }
-    }
-
-    internal void CapY(int window)
-    {
-        if (Y1[window] > Device.HEIGHT && Y1[window] > Y2[window])
-        {
-            Y1[window] = 0;
-        }
-        if (Y2[window] > Device.HEIGHT)
-        {
-            Y2[window] = Device.HEIGHT;
-            if (Y1[window] > Device.HEIGHT)
-            {
-                Y1[window] = Device.HEIGHT;
-            }
-        }
     }
 
     internal int GetHighestPriorityWindow(DisplayCtrl dispCnt, int x, int y)
     {
-        if (x >= X1[0] && x < X2[0] && y >= Y1[0] && y < Y2[0] && dispCnt.Window0Display)
+        for (var win = 0; win < 2; win++)
         {
-            return 0;
-        }
-        else if (x >= X1[1] && x < X2[1] && y >= Y1[1] && y < Y2[1] && dispCnt.Window1Display)
-        {
-            return 1;
+            if (!dispCnt.WindowDisplay[win]) continue;
+
+            if (((X1[win] > X2[win] && (x >= X1[win] || x < X2[win])) || (X1[win] <= X2[win] && x >= X1[win] && x < X2[win])) &&
+                ((Y1[win] > Y2[win] && (y >= Y1[win] || y < Y2[win])) || (Y1[win] <= Y2[win] && y >= Y1[win] && y < Y2[win])))
+            {
+                return win;
+            }
         }
         
         return -1;

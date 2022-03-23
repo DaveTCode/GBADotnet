@@ -27,20 +27,20 @@ public partial class Ppu
     private readonly InterruptInterconnect _interruptInterconnect;
 
     // TODO - Might be more efficient to store as ushorts given access is over 16 bit bus?
-    private readonly byte[] _vram = new byte[0x18000]; // 96KB
-    private readonly byte[] _frameBuffer = new byte[Device.WIDTH * Device.HEIGHT * 4]; // RGBA order
+    public readonly byte[] Vram = new byte[0x18000]; // 96KB
+    public readonly byte[] FrameBuffer = new byte[Device.WIDTH * Device.HEIGHT * 4]; // RGBA order
 
-    private DisplayCtrl _dispcnt = new();
-    private ushort _greenSwap;
-    private GeneralLcdStatus _dispstat = new();
-    private ushort _currentLine;
-    private readonly Background[] _backgrounds = new Background[4] { new Background(0), new Background(1), new Background(2), new Background(3) };
+    public DisplayCtrl Dispcnt = new();
+    public ushort GreenSwap;
+    public GeneralLcdStatus Dispstat = new();
+    public ushort CurrentLine;
+    public readonly Background[] Backgrounds = new Background[4] { new Background(0), new Background(1), new Background(2), new Background(3) };
 
     private readonly Windows _windows = new();
-    private Mosaic _mosaic = new();
+    public Mosaic Mosaic = new();
     public readonly ColorEffects ColorEffects = new();
 
-    private int _currentLineCycles;
+    public int CurrentLineCycles;
 
     internal Ppu(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
     {
@@ -69,20 +69,20 @@ public partial class Ppu
     internal void Reset()
     {
         Array.Clear(_paletteRam);
-        Array.Clear(_vram);
+        Array.Clear(Vram);
         Array.Clear(_oam);
-        Array.Clear(_frameBuffer);
+        Array.Clear(FrameBuffer);
         Array.Clear(_objBuffer);
-        _dispcnt.Reset();
-        _greenSwap = 0;
-        _dispstat = new GeneralLcdStatus();
-        _currentLine = 0;
-        _currentLineCycles = 0;
-        _mosaic = new Mosaic();
+        Dispcnt.Reset();
+        GreenSwap = 0;
+        Dispstat = new GeneralLcdStatus();
+        CurrentLine = 0;
+        CurrentLineCycles = 0;
+        Mosaic = new Mosaic();
         ColorEffects.Reset();
         for (var ii = 0; ii < 4; ii++)
         {
-            _backgrounds[ii].Reset();
+            Backgrounds[ii].Reset();
             Array.Clear(_scanlineBgBuffer[ii]);
         }
         _windows.Reset();
@@ -99,13 +99,13 @@ public partial class Ppu
     /// </summary>
     internal byte[] GetFrame()
     {
-        return _frameBuffer;
+        return FrameBuffer;
     }
 
-    internal bool CanVBlankDma() => _dispstat.VBlankFlag;
+    internal bool CanVBlankDma() => (CurrentLine == Device.HEIGHT) && (CurrentLineCycles == CyclesPerLine);
 
     // TODO - Not sure what the behaviour here is if accessing OAM while the bit on dispcnt isn't set, does it pause DMA or write nothing?
-    internal bool CanHBlankDma() => _dispstat.HBlankFlag && !_dispstat.VBlankFlag;
+    internal bool CanHBlankDma() => (CurrentLineCycles == HBlankFlagCycles) && !Dispstat.VBlankFlag;
 
     /// <summary>
     /// Step the PPU by a single master clock cycle.
@@ -116,54 +116,54 @@ public partial class Ppu
     /// </summary>
     internal void Step()
     {
-        _currentLineCycles++;
+        CurrentLineCycles++;
 
-        if (_currentLineCycles == HBlankFlagCycles)
+        if (CurrentLineCycles == HBlankFlagCycles)
         {
-            if (_currentLine < Device.HEIGHT)
+            if (CurrentLine < Device.HEIGHT)
             {
                 DrawCurrentScanline();
 
                 // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
-                DrawSpritesOnLine((int)_dispcnt.BgMode >= 3);
+                DrawSpritesOnLine((int)Dispcnt.BgMode >= 3);
             }
-            _dispstat.HBlankFlag = true;
-            if (_dispstat.HBlankIrqEnable)
+            Dispstat.HBlankFlag = true;
+            if (Dispstat.HBlankIrqEnable)
             {
                 _interruptInterconnect.RaiseInterrupt(Interrupt.LCDHBlank);
             }
         }
-        else if (_currentLineCycles == CyclesPerLine)
+        else if (CurrentLineCycles == CyclesPerLine)
         {
-            _dispstat.VCounterFlag = false;
-            _dispstat.HBlankFlag = false;
-            _currentLine++;
-            _currentLineCycles = 0;
+            Dispstat.VCounterFlag = false;
+            Dispstat.HBlankFlag = false;
+            CurrentLine++;
+            CurrentLineCycles = 0;
 
-            if (_currentLine == _dispstat.VCountSetting)
+            if (CurrentLine == Dispstat.VCountSetting)
             {
-                _dispstat.VCounterFlag = true;
-                if (_dispstat.VCounterIrqEnable)
+                Dispstat.VCounterFlag = true;
+                if (Dispstat.VCounterIrqEnable)
                 {
                     _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVCounter);
                 }
             }
 
-            if (_currentLine == Device.HEIGHT)
+            if (CurrentLine == Device.HEIGHT)
             {
-                _dispstat.VBlankFlag = true;
-                if (_dispstat.VBlankIrqEnable)
+                Dispstat.VBlankFlag = true;
+                if (Dispstat.VBlankIrqEnable)
                 {
                     _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVBlank);
                 }
             }
-            else if (_currentLine == VBlankLines + Device.HEIGHT - 1)
+            else if (CurrentLine == VBlankLines + Device.HEIGHT - 1)
             {
-                _dispstat.VBlankFlag = false;
+                Dispstat.VBlankFlag = false;
             }
-            else if (_currentLine == VBlankLines + Device.HEIGHT)
+            else if (CurrentLine == VBlankLines + Device.HEIGHT)
             {
-                _currentLine = 0;
+                CurrentLine = 0;
             }
         }
     }
@@ -173,190 +173,190 @@ public partial class Ppu
         switch (address)
         {
             case DISPCNT:
-                _dispcnt.UpdateB1(value);
+                Dispcnt.UpdateB1(value);
                 break;
             case DISPCNT + 1:
-                _dispcnt.UpdateB2(value);
+                Dispcnt.UpdateB2(value);
                 break;
             case GREENSWAP:
-                _greenSwap = (ushort)((_greenSwap & 0xFF00) | value);
+                GreenSwap = (ushort)((GreenSwap & 0xFF00) | value);
                 break;
             case GREENSWAP + 1:
-                _greenSwap = (ushort)((_greenSwap & 0x00FF) | (value << 8));
+                GreenSwap = (ushort)((GreenSwap & 0x00FF) | (value << 8));
                 break;
             case DISPSTAT:
-                _dispstat.UpdateB1(value);
+                Dispstat.UpdateB1(value);
                 break;
             case DISPSTAT + 1:
-                _dispstat.VCountSetting = value;
+                Dispstat.VCountSetting = value;
                 break;
             case BG0CNT:
-                _backgrounds[0].Control.UpdateB1(value);
+                Backgrounds[0].Control.UpdateB1(value);
                 break;
             case BG0CNT + 1:
-                _backgrounds[0].Control.UpdateB2(value);
+                Backgrounds[0].Control.UpdateB2(value);
                 break;
             case BG1CNT:
-                _backgrounds[1].Control.UpdateB1(value);
+                Backgrounds[1].Control.UpdateB1(value);
                 break;
             case BG1CNT + 1:
-                _backgrounds[1].Control.UpdateB2(value);
+                Backgrounds[1].Control.UpdateB2(value);
                 break;
             case BG2CNT:
-                _backgrounds[2].Control.UpdateB1(value);
+                Backgrounds[2].Control.UpdateB1(value);
                 break;
             case BG2CNT + 1:
-                _backgrounds[2].Control.UpdateB2(value);
+                Backgrounds[2].Control.UpdateB2(value);
                 break;
             case BG3CNT:
-                _backgrounds[3].Control.UpdateB1(value);
+                Backgrounds[3].Control.UpdateB1(value);
                 break;
             case BG3CNT + 1:
-                _backgrounds[3].Control.UpdateB2(value);
+                Backgrounds[3].Control.UpdateB2(value);
                 break;
             case BG0HOFS:
-                _backgrounds[0].XOffset = (_backgrounds[0].XOffset & 0xFF00) | value;
+                Backgrounds[0].XOffset = (Backgrounds[0].XOffset & 0xFF00) | value;
                 break;
             case BG0HOFS + 1:
-                _backgrounds[0].XOffset = (_backgrounds[0].XOffset & 0x00FF) | ((value & 0b1) << 8);
+                Backgrounds[0].XOffset = (Backgrounds[0].XOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG0VOFS:
-                _backgrounds[0].YOffset = (_backgrounds[0].YOffset & 0xFF00) | value;
+                Backgrounds[0].YOffset = (Backgrounds[0].YOffset & 0xFF00) | value;
                 break;
             case BG0VOFS + 1:
-                _backgrounds[0].YOffset = (_backgrounds[0].YOffset & 0x00FF) | ((value & 0b1) << 8);
+                Backgrounds[0].YOffset = (Backgrounds[0].YOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG1HOFS:
-                _backgrounds[1].XOffset = (_backgrounds[1].XOffset & 0xFF00) | value;
+                Backgrounds[1].XOffset = (Backgrounds[1].XOffset & 0xFF00) | value;
                 break;
             case BG1HOFS + 1:
-                _backgrounds[1].XOffset = (_backgrounds[1].XOffset & 0x00FF) | ((value & 0b1) << 8);
+                Backgrounds[1].XOffset = (Backgrounds[1].XOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG1VOFS:
-                _backgrounds[1].YOffset = (_backgrounds[1].YOffset & 0xFF00) | value;
+                Backgrounds[1].YOffset = (Backgrounds[1].YOffset & 0xFF00) | value;
                 break;
             case BG1VOFS + 1:
-                _backgrounds[1].YOffset = (_backgrounds[1].YOffset & 0x00FF) | ((value & 0b1) << 8);
+                Backgrounds[1].YOffset = (Backgrounds[1].YOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG2HOFS:
-                _backgrounds[2].XOffset = (_backgrounds[2].XOffset & 0xFF00) | value;
+                Backgrounds[2].XOffset = (Backgrounds[2].XOffset & 0xFF00) | value;
                 break;
             case BG2HOFS + 1:
-                _backgrounds[2].XOffset = (_backgrounds[2].XOffset & 0x00FF) | ((value & 0b1) << 8);
+                Backgrounds[2].XOffset = (Backgrounds[2].XOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG2VOFS:
-                _backgrounds[2].YOffset = (_backgrounds[2].YOffset & 0xFF00) | value;
+                Backgrounds[2].YOffset = (Backgrounds[2].YOffset & 0xFF00) | value;
                 break;
             case BG2VOFS + 1:
-                _backgrounds[2].YOffset = (_backgrounds[2].YOffset & 0x00FF) | ((value & 0b1) << 8);
+                Backgrounds[2].YOffset = (Backgrounds[2].YOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG3HOFS:
-                _backgrounds[3].XOffset = (_backgrounds[3].XOffset & 0xFF00) | value;
+                Backgrounds[3].XOffset = (Backgrounds[3].XOffset & 0xFF00) | value;
                 break;
             case BG3HOFS + 1:
-                _backgrounds[3].XOffset = (_backgrounds[3].XOffset & 0x00FF) | ((value & 0b1) << 8);
+                Backgrounds[3].XOffset = (Backgrounds[3].XOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG3VOFS:
-                _backgrounds[3].YOffset = (_backgrounds[3].YOffset & 0xFF00) | value;
+                Backgrounds[3].YOffset = (Backgrounds[3].YOffset & 0xFF00) | value;
                 break;
             case BG3VOFS + 1:
-                _backgrounds[3].YOffset = (_backgrounds[3].YOffset & 0x00FF) | ((value & 0b1) << 8);
+                Backgrounds[3].YOffset = (Backgrounds[3].YOffset & 0x00FF) | ((value & 0b1) << 8);
                 break;
             case BG2PA:
-                _backgrounds[2].Dx = (short)((_backgrounds[2].Dx & 0xFF00) | value);
+                Backgrounds[2].Dx = (short)((Backgrounds[2].Dx & 0xFF00) | value);
                 break;
             case BG2PA + 1:
-                _backgrounds[2].Dx = (short)((_backgrounds[2].Dx & 0x00FF) | (value << 8));
+                Backgrounds[2].Dx = (short)((Backgrounds[2].Dx & 0x00FF) | (value << 8));
                 break;
             case BG2PB:
-                _backgrounds[2].Dmx = (short)((_backgrounds[2].Dmx & 0xFF00) | value);
+                Backgrounds[2].Dmx = (short)((Backgrounds[2].Dmx & 0xFF00) | value);
                 break;
             case BG2PB + 1:
-                _backgrounds[2].Dmx = (short)((_backgrounds[2].Dmx & 0x00FF) | (value << 8));
+                Backgrounds[2].Dmx = (short)((Backgrounds[2].Dmx & 0x00FF) | (value << 8));
                 break;
             case BG2PC:
-                _backgrounds[2].Dy = (short)((_backgrounds[2].Dy & 0xFF00) | value);
+                Backgrounds[2].Dy = (short)((Backgrounds[2].Dy & 0xFF00) | value);
                 break;
             case BG2PC + 1:
-                _backgrounds[2].Dy = (short)((_backgrounds[2].Dy & 0x00FF) | (value << 8));
+                Backgrounds[2].Dy = (short)((Backgrounds[2].Dy & 0x00FF) | (value << 8));
                 break;
             case BG2PD:
-                _backgrounds[2].Dmy = (short)((_backgrounds[2].Dmy & 0xFF00) | value);
+                Backgrounds[2].Dmy = (short)((Backgrounds[2].Dmy & 0xFF00) | value);
                 break;
             case BG2PD + 1:
-                _backgrounds[2].Dmy = (short)((_backgrounds[2].Dmy & 0x00FF) | (value << 8));
+                Backgrounds[2].Dmy = (short)((Backgrounds[2].Dmy & 0x00FF) | (value << 8));
                 break;
             case BG2X_L:
-                _backgrounds[2].UpdateReferencePointX(value, 0, 0xFFFF_FF00);
+                Backgrounds[2].UpdateReferencePointX(value, 0, 0xFFFF_FF00);
                 break;
             case BG2X_L + 1:
-                _backgrounds[2].UpdateReferencePointX(value, 1, 0xFFFF_00FF);
+                Backgrounds[2].UpdateReferencePointX(value, 1, 0xFFFF_00FF);
                 break;
             case BG2X_H:
-                _backgrounds[2].UpdateReferencePointX(value, 2, 0xFF00_FFFF);
+                Backgrounds[2].UpdateReferencePointX(value, 2, 0xFF00_FFFF);
                 break;
             case BG2X_H + 1:
-                _backgrounds[2].UpdateReferencePointX(value, 3, 0x00FF_FFFF);
+                Backgrounds[2].UpdateReferencePointX(value, 3, 0x00FF_FFFF);
                 break;
             case BG2Y_L:
-                _backgrounds[2].UpdateReferencePointY(value, 0, 0xFFFF_FF00);
+                Backgrounds[2].UpdateReferencePointY(value, 0, 0xFFFF_FF00);
                 break;
             case BG2Y_L + 1:
-                _backgrounds[2].UpdateReferencePointY(value, 1, 0xFFFF_00FF);
+                Backgrounds[2].UpdateReferencePointY(value, 1, 0xFFFF_00FF);
                 break;
             case BG2Y_H:
-                _backgrounds[2].UpdateReferencePointY(value, 2, 0xFF00_FFFF);
+                Backgrounds[2].UpdateReferencePointY(value, 2, 0xFF00_FFFF);
                 break;
             case BG2Y_H + 1:
-                _backgrounds[2].UpdateReferencePointY(value, 3, 0x00FF_FFFF);
+                Backgrounds[2].UpdateReferencePointY(value, 3, 0x00FF_FFFF);
                 break;
             case BG3PA:
-                _backgrounds[3].Dx = (short)((_backgrounds[3].Dx & 0xFF00) | value);
+                Backgrounds[3].Dx = (short)((Backgrounds[3].Dx & 0xFF00) | value);
                 break;
             case BG3PA + 1:
-                _backgrounds[3].Dx = (short)((_backgrounds[3].Dx & 0x00FF) | (value << 8));
+                Backgrounds[3].Dx = (short)((Backgrounds[3].Dx & 0x00FF) | (value << 8));
                 break;
             case BG3PB:
-                _backgrounds[3].Dmx = (short)((_backgrounds[3].Dmx & 0xFF00) | value);
+                Backgrounds[3].Dmx = (short)((Backgrounds[3].Dmx & 0xFF00) | value);
                 break;
             case BG3PB + 1:
-                _backgrounds[3].Dmx = (short)((_backgrounds[3].Dmx & 0x00FF) | (value << 8));
+                Backgrounds[3].Dmx = (short)((Backgrounds[3].Dmx & 0x00FF) | (value << 8));
                 break;
             case BG3PC:
-                _backgrounds[3].Dy = (short)((_backgrounds[3].Dy & 0xFF00) | value);
+                Backgrounds[3].Dy = (short)((Backgrounds[3].Dy & 0xFF00) | value);
                 break;
             case BG3PC + 1:
-                _backgrounds[3].Dy = (short)((_backgrounds[3].Dy & 0x00FF) | (value << 8));
+                Backgrounds[3].Dy = (short)((Backgrounds[3].Dy & 0x00FF) | (value << 8));
                 break;
             case BG3PD:
-                _backgrounds[3].Dmy = (short)((_backgrounds[3].Dmy & 0xFF00) | value);
+                Backgrounds[3].Dmy = (short)((Backgrounds[3].Dmy & 0xFF00) | value);
                 break;
             case BG3PD + 1:
-                _backgrounds[3].Dmy = (short)((_backgrounds[3].Dmy & 0x00FF) | (value << 8));
+                Backgrounds[3].Dmy = (short)((Backgrounds[3].Dmy & 0x00FF) | (value << 8));
                 break;
             case BG3X_L:
-                _backgrounds[3].UpdateReferencePointX(value, 0, 0xFFFF_FF00);
+                Backgrounds[3].UpdateReferencePointX(value, 0, 0xFFFF_FF00);
                 break;
             case BG3X_L + 1:
-                _backgrounds[3].UpdateReferencePointX(value, 1, 0xFFFF_00FF);
+                Backgrounds[3].UpdateReferencePointX(value, 1, 0xFFFF_00FF);
                 break;
             case BG3X_H:
-                _backgrounds[3].UpdateReferencePointX(value, 2, 0xFF00_FFFF);
+                Backgrounds[3].UpdateReferencePointX(value, 2, 0xFF00_FFFF);
                 break;
             case BG3X_H + 1:
-                _backgrounds[3].UpdateReferencePointX(value, 3, 0x00FF_FFFF);
+                Backgrounds[3].UpdateReferencePointX(value, 3, 0x00FF_FFFF);
                 break;
             case BG3Y_L:
-                _backgrounds[3].UpdateReferencePointY(value, 0, 0xFFFF_FF00);
+                Backgrounds[3].UpdateReferencePointY(value, 0, 0xFFFF_FF00);
                 break;
             case BG3Y_L + 1:
-                _backgrounds[3].UpdateReferencePointY(value, 1, 0xFFFF_00FF);
+                Backgrounds[3].UpdateReferencePointY(value, 1, 0xFFFF_00FF);
                 break;
             case BG3Y_H:
-                _backgrounds[3].UpdateReferencePointY(value, 2, 0xFF00_FFFF);
+                Backgrounds[3].UpdateReferencePointY(value, 2, 0xFF00_FFFF);
                 break;
             case BG3Y_H + 1:
-                _backgrounds[3].UpdateReferencePointY(value, 3, 0x00FF_FFFF);
+                Backgrounds[3].UpdateReferencePointY(value, 3, 0x00FF_FFFF);
                 break;
             case WIN0H:
                 _windows.SetXB1(0, value);
@@ -395,10 +395,10 @@ public partial class Ppu
                 _windows.UpdateWinOutB2(value);
                 break;
             case MOSAIC:
-                _mosaic.UpdateB1(value);
+                Mosaic.UpdateB1(value);
                 break;
             case MOSAIC + 1:
-                _mosaic.UpdateB2(value);
+                Mosaic.UpdateB2(value);
                 break;
             case BLDCNT:
                 ColorEffects.UpdateBldCntB1(value);
@@ -431,14 +431,14 @@ public partial class Ppu
 
     internal ushort ReadRegisterHalfWord(uint address, uint openbus) => address switch
     {
-        DISPCNT => _dispcnt.Read(),
-        GREENSWAP => _greenSwap,
-        DISPSTAT => _dispstat.Read(),
-        VCOUNT => _currentLine,
-        BG0CNT => (ushort)(_backgrounds[0].Control.Read() & 0xDFFF),
-        BG1CNT => (ushort)(_backgrounds[1].Control.Read() & 0xDFFF),
-        BG2CNT => _backgrounds[2].Control.Read(),
-        BG3CNT => _backgrounds[3].Control.Read(),
+        DISPCNT => Dispcnt.Read(),
+        GREENSWAP => GreenSwap,
+        DISPSTAT => Dispstat.Read(),
+        VCOUNT => CurrentLine,
+        BG0CNT => (ushort)(Backgrounds[0].Control.Read() & 0xDFFF),
+        BG1CNT => (ushort)(Backgrounds[1].Control.Read() & 0xDFFF),
+        BG2CNT => Backgrounds[2].Control.Read(),
+        BG3CNT => Backgrounds[3].Control.Read(),
         WININ => _windows.GetWinIn(),
         WINOUT => _windows.GetWinOut(),
         BLDCNT => ColorEffects.BldCnt(),
@@ -452,7 +452,7 @@ public partial class Ppu
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
         >= 0x0500_0000 and <= 0x05FF_FFFF => ReadPaletteByte(address),
-        >= 0x0600_0000 and <= 0x06FF_FFFF => _vram[MaskVRamAddress(address)],
+        >= 0x0600_0000 and <= 0x06FF_FFFF => Vram[MaskVRamAddress(address)],
         >= 0x0700_0000 and <= 0x07FF_FFFF => ReadOamByte(address),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused")
     };
@@ -461,7 +461,7 @@ public partial class Ppu
     {
         // TODO - Cycle timing needs to include extra cycle if ppu is accessing relevant memory area on this cycle
         >= 0x0500_0000 and <= 0x05FF_FFFF => ReadPaletteHalfWord(address),
-        >= 0x0600_0000 and <= 0x06FF_FFFF => Utils.ReadHalfWord(_vram, MaskVRamAddress(address), 0xF_FFFF),
+        >= 0x0600_0000 and <= 0x06FF_FFFF => Utils.ReadHalfWord(Vram, MaskVRamAddress(address), 0xF_FFFF),
         >= 0x0700_0000 and <= 0x07FF_FFFF => ReadOamHalfWord(address),
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is unused")
     };
@@ -485,7 +485,7 @@ public partial class Ppu
                     var hwAddress = address & 0xFFFF_FFFE;
                     var maskedAddress = MaskVRamAddress(hwAddress);
                     // 8 bit writes to OBJ are ignored
-                    if ((int)_dispcnt.BgMode >= 3 && maskedAddress >= 0x0001_4000)
+                    if ((int)Dispcnt.BgMode >= 3 && maskedAddress >= 0x0001_4000)
                     {
                         break;
                     }
@@ -496,7 +496,7 @@ public partial class Ppu
                     else
                     {
                         var hwValue = (ushort)((value << 8) | value);
-                        Utils.WriteHalfWord(_vram, 0xF_FFFF, maskedAddress, hwValue);
+                        Utils.WriteHalfWord(Vram, 0xF_FFFF, maskedAddress, hwValue);
                         break;
                     }
                 }
@@ -517,7 +517,7 @@ public partial class Ppu
                 WritePaletteHalfWord(address, value);
                 break;
             case uint _ when address is >= 0x0600_0000 and <= 0x06FF_FFFF:
-                Utils.WriteHalfWord(_vram, 0x1_FFFF, MaskVRamAddress(address), value);
+                Utils.WriteHalfWord(Vram, 0x1_FFFF, MaskVRamAddress(address), value);
                 break;
             case uint _ when address is >= 0x0700_0000 and <= 0x07FF_FFFF:
                 WriteOamHalfWord(address, value);

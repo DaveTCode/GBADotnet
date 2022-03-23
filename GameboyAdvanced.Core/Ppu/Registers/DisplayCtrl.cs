@@ -22,8 +22,7 @@ public struct DisplayCtrl
     internal bool ForcedBlank;
     internal bool[] ScreenDisplayBg;
     internal bool ScreenDisplayObj;
-    internal bool Window0Display;
-    internal bool Window1Display;
+    internal bool[] WindowDisplay;
     internal bool ObjWindowDisplay;
 
     public DisplayCtrl()
@@ -36,8 +35,7 @@ public struct DisplayCtrl
         ForcedBlank = false;
         ScreenDisplayBg = new bool[4];
         ScreenDisplayObj = false;
-        Window0Display = false;
-        Window1Display = false;
+        WindowDisplay = new bool[2];
         ObjWindowDisplay = false;
     }
 
@@ -69,8 +67,8 @@ public struct DisplayCtrl
         ScreenDisplayBg[2] = (value & 0b100) == 0b100;
         ScreenDisplayBg[3] = (value & 0b1000) == 0b1000;
         ScreenDisplayObj = (value & 0b1_0000) == 0b1_0000;
-        Window0Display = (value & 0b10_0000) == 0b10_0000;
-        Window1Display = (value & 0b100_0000) == 0b100_0000;
+        WindowDisplay[0] = (value & 0b10_0000) == 0b10_0000;
+        WindowDisplay[1] = (value & 0b100_0000) == 0b100_0000;
         ObjWindowDisplay = (value & 0b1000_0000) == 0b1000_0000;
     }
 
@@ -86,7 +84,7 @@ public struct DisplayCtrl
         (ScreenDisplayBg[2] ? 1 << 10 : 0) |
         (ScreenDisplayBg[3] ? 1 << 11 : 0) |
         (ScreenDisplayObj ? 1 << 12 : 0) |
-        (Window0Display ? 1 << 13 : 0) |
-        (Window1Display ? 1 << 14 : 0) |
+        (WindowDisplay[0] ? 1 << 13 : 0) |
+        (WindowDisplay[1] ? 1 << 14 : 0) |
         (ObjWindowDisplay ? 1 << 15 : 0));
 }
