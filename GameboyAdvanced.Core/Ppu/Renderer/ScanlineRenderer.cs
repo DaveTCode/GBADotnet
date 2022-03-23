@@ -24,14 +24,28 @@ public partial class Ppu
 
     private struct BgPixelProperties
     {
-        internal int PaletteColor;
-        internal int Priority;
-        internal bool ColorIsPaletteIndex;
+        internal int[] PaletteColor;
+        internal int[] Priority;
+        internal bool[] ColorIsPaletteIndex;
+        internal int[] BgId;
+
+        public BgPixelProperties()
+        {
+            PaletteColor = new int[2];
+            Priority = new int[2];
+            ColorIsPaletteIndex = new bool[2];
+            BgId = new int[2];
+        }
     }
 
     private readonly int[][] _scanlineBgBuffer = new int[4][];
     private readonly SpritePixelProperties[] _objBuffer = new SpritePixelProperties[Device.WIDTH];
     private readonly BgPixelProperties[] _bgBuffer = new BgPixelProperties[Device.WIDTH];
+    private readonly byte[][] _pixels = new byte[2][]
+    {
+        new byte[4], new byte[4]
+    };
+
 
     internal void DrawCurrentScanline()
     {
@@ -107,75 +121,158 @@ public partial class Ppu
     private void CombineBackgroundsAndSprites(int[] sortedBgIxs)
     {
         var fbPtr = _currentLine * Device.WIDTH * 4;
-        var usingPaletteIndex = !(_dispcnt.BgMode is BgMode.Video3 or BgMode.Video5);
+        var usingPaletteIndex = _dispcnt.BgMode is not (BgMode.Video3 or BgMode.Video5);
 
         for (var x = 0; x < Device.WIDTH; x++)
         {
+            // Set the fallback values for the pixel
+            _bgBuffer[x].PaletteColor[0] = _bgBuffer[x].PaletteColor[1] = 0;
+            _bgBuffer[x].Priority[0] = _bgBuffer[x].Priority[1] = 4;
+            _bgBuffer[x].ColorIsPaletteIndex[0] = _bgBuffer[x].ColorIsPaletteIndex[1] = usingPaletteIndex;
+            _bgBuffer[x].BgId[0] = _bgBuffer[x].BgId[1] = 0;
+
             var usingWindows = _dispcnt.Window0Display | _dispcnt.Window1Display | _dispcnt.ObjWindowDisplay;
 
             // First step is to work out which window (if any) this pixel is
             // part of so we know which backgrounds/objects might be present
             var activeWindow = _windows.GetHighestPriorityWindow(_dispcnt, x, _currentLine);
 
-            // Then fill in the bgBuffer with the highest priority background
-            // pixel to be displayed
-            // TODO - Think this is where I'd find both blend targets
-            var filledBgPixel = false;
-            for (var bgIx = 0; bgIx < 4; bgIx++)
+            // Then fill in the bgBuffer with the top two highest priority
+            // opaque pixels
+            var filledBgPixels = 0;
+            for (var unsortedBgIx = 0; unsortedBgIx < 4; unsortedBgIx++)
             {
+                var sortedBgIx = sortedBgIxs[unsortedBgIx];
+
                 // Check that the BG is both enabled and that the color is not the backdrop
-                if (_dispcnt.ScreenDisplayBg[sortedBgIxs[bgIx]] && _scanlineBgBuffer[sortedBgIxs[bgIx]][x] != 0)
+                if (_dispcnt.ScreenDisplayBg[sortedBgIx] && _scanlineBgBuffer[sortedBgIx][x] != 0)
                 {
                     // Now check that the window this background is in (if any) has that background enabled
                     if (!usingWindows ||
-                        (activeWindow == -1 && _windows.BgEnableOutside[sortedBgIxs[bgIx]]) ||
-                        (activeWindow != -1 && _windows.BgEnableInside[activeWindow][sortedBgIxs[bgIx]]))
+                        (activeWindow == -1 && _windows.BgEnableOutside[sortedBgIx]) ||
+                        (activeWindow != -1 && _windows.BgEnableInside[activeWindow][sortedBgIx]))
                     {
-                        _bgBuffer[x].PaletteColor = _scanlineBgBuffer[sortedBgIxs[bgIx]][x];
-                        _bgBuffer[x].Priority = _backgrounds[sortedBgIxs[bgIx]].Control.BgPriority;
-                        _bgBuffer[x].ColorIsPaletteIndex = usingPaletteIndex;
-                        filledBgPixel = true;
-                        break; // This was the highest priority pixel
+                        _bgBuffer[x].PaletteColor[filledBgPixels] = _scanlineBgBuffer[sortedBgIx][x];
+                        _bgBuffer[x].Priority[filledBgPixels] = _backgrounds[sortedBgIx].Control.BgPriority;
+                        _bgBuffer[x].ColorIsPaletteIndex[filledBgPixels] = usingPaletteIndex;
+                        _bgBuffer[x].BgId[filledBgPixels] = sortedBgIx;
+                        filledBgPixels++;
+
+                        if (filledBgPixels == 1 && ColorEffects.SpecialEffect is SpecialEffect.None or SpecialEffect.IncreaseBrightness or SpecialEffect.DecreaseBrightness)
+                        {
+                            // No second blend target and found highest priority pixel so break
+                            break;
+                        }
+                        else if (filledBgPixels == 2)
+                        {
+                            break;
+                        }
                     }
                 }
-            }
-
-            if (!filledBgPixel)
-            {
-                _bgBuffer[x].PaletteColor = 0;
-                _bgBuffer[x].Priority = 4;
-                _bgBuffer[x].ColorIsPaletteIndex = usingPaletteIndex;
             }
 
             var bgEntry = _bgBuffer[x];
             var spriteEntry = _objBuffer[x];
             var spriteWindowEnabled = !usingWindows || (activeWindow == -1 && _windows.ObjEnableOutside) || (activeWindow != -1 && _windows.ObjEnableInside[activeWindow]);
 
-            if (bgEntry.ColorIsPaletteIndex)
+            // Work out what are the top target palette entries and determine
+            // if those targets were enabled for color effects
+            var colorEffectsValid = ColorEffects.SpecialEffect != SpecialEffect.None;
+            var objLayerUsed = false;
+            var bgLayerIx = 0;
+            for (var target = 0; target < (ColorEffects.SpecialEffect == SpecialEffect.AlphaBlend ? 2 : 1); target++)
             {
-                var paletteEntry = (bgEntry.PaletteColor, spriteEntry.PaletteColor & 0b1111, bgEntry.Priority >= spriteEntry.Priority && spriteWindowEnabled) switch 
+                if (bgEntry.ColorIsPaletteIndex[bgLayerIx])
                 {
-                    (0, 0, _) => BackdropColor,
-                    (0, _, _) => _paletteEntries[0x100 + spriteEntry.PaletteColor],
-                    (_, 0, _) => _paletteEntries[bgEntry.PaletteColor],
-                    (_, _, true) => _paletteEntries[0x100 + spriteEntry.PaletteColor],
-                    (_, _, false) => _paletteEntries[bgEntry.PaletteColor],
-                };
+                    PaletteEntry paletteEntry;
+                    if (bgEntry.PaletteColor[bgLayerIx] == 0 && ((spriteEntry.PaletteColor & 0b1111) == 0))
+                    {
+                        paletteEntry = BackdropColor;
+                        colorEffectsValid &= ColorEffects.TargetBackdrop[target];
+                        bgLayerIx++;
+                    }
+                    else if (bgEntry.PaletteColor[bgLayerIx] == 0 && !objLayerUsed)
+                    {
+                        paletteEntry = _paletteEntries[0x100 + spriteEntry.PaletteColor];
+                        colorEffectsValid &= ColorEffects.TargetObj[target];
+                        objLayerUsed = true;
+                    }
+                    else if ((spriteEntry.PaletteColor & 0b1111) == 0)
+                    {
+                        paletteEntry = _paletteEntries[bgEntry.PaletteColor[bgLayerIx]];
+                        colorEffectsValid &= ColorEffects.TargetBg[target][bgEntry.BgId[bgLayerIx]];
+                        bgLayerIx++;
+                    }
+                    else if (bgEntry.Priority[target] >= spriteEntry.Priority && spriteWindowEnabled && !objLayerUsed)
+                    {
+                        paletteEntry = _paletteEntries[0x100 + spriteEntry.PaletteColor];
+                        colorEffectsValid &= ColorEffects.TargetObj[target];
+                        objLayerUsed = true;
+                    }
+                    else
+                    {
+                        paletteEntry = _paletteEntries[bgEntry.PaletteColor[bgLayerIx]];
+                        colorEffectsValid &= ColorEffects.TargetBg[target][bgEntry.BgId[bgLayerIx]];
+                        bgLayerIx++;
+                    }
 
-                Utils.ColorToRgb(paletteEntry, _frameBuffer.AsSpan(fbPtr));
-            }
-            else
-            {
-                if (spriteEntry.Priority <= bgEntry.Priority && (spriteEntry.PaletteColor & 0b1111) != 0 && spriteWindowEnabled)
-                {
-                    Utils.ColorToRgb(_paletteEntries[0x100 + spriteEntry.PaletteColor], _frameBuffer.AsSpan(fbPtr));
+                    Utils.ColorToRgb(paletteEntry, _pixels[target]);
                 }
                 else
                 {
-                    Utils.ColorToRgb(bgEntry.PaletteColor, _frameBuffer.AsSpan(fbPtr));
+                    if (spriteEntry.Priority <= bgEntry.Priority[bgLayerIx] && (spriteEntry.PaletteColor & 0b1111) != 0 && spriteWindowEnabled && !objLayerUsed)
+                    {
+                        colorEffectsValid &= ColorEffects.TargetObj[target];
+                        Utils.ColorToRgb(_paletteEntries[0x100 + spriteEntry.PaletteColor], _pixels[target]);
+                        objLayerUsed = true;
+                    }
+                    else
+                    {
+                        if (bgEntry.PaletteColor[bgLayerIx] == 0)
+                        {
+                            colorEffectsValid &= ColorEffects.TargetBackdrop[target];
+                        }
+                        else
+                        {
+                            colorEffectsValid &= ColorEffects.TargetBg[target][bgEntry.BgId[bgLayerIx]];
+                        }
+                        
+                        Utils.ColorToRgb(bgEntry.PaletteColor[bgLayerIx], _pixels[target]);
+                        bgLayerIx++;
+                    }
                 }
             }
-            
+
+            if (!colorEffectsValid || ColorEffects.SpecialEffect == SpecialEffect.None)
+            {
+                // Just copy the highest priority pixel into the frame buffer as no color effects to apply
+                Array.Copy(_pixels[0], 0, _frameBuffer, fbPtr, 4);
+            }
+            else
+            {
+                switch (ColorEffects.SpecialEffect)
+                {
+                    case SpecialEffect.AlphaBlend:
+                        for (int i = 0; i < 4; i++)
+                        {
+                            _frameBuffer[fbPtr + i] = ColorEffects.AlphaIntensity(_pixels[0][i], _pixels[1][i]);
+                        }
+                        break;
+                    case SpecialEffect.IncreaseBrightness:
+                        for (int i = 0; i < 4; i++)
+                        {
+                            _frameBuffer[fbPtr + i] = ColorEffects.BrightnessIncrease(_pixels[0][i]);
+                        }
+                        break;
+                    case SpecialEffect.DecreaseBrightness:
+                        for (int i = 0; i < 4; i++)
+                        {
+                            _frameBuffer[fbPtr + i] = ColorEffects.BrightnessDecrease(_pixels[0][i]);
+                        }
+                        break;
+                }
+            }
+
             fbPtr += 4;
         }
     }
@@ -299,9 +396,9 @@ public partial class Ppu
 
                 var finalTileAddressOffset = finalTileNumber * 32;
 
-                var pixelByteAddress = 0x0001_0000 
-                    + finalTileAddressOffset 
-                    + ((spriteX % 8) / (sprite.LargePalette ? 1 : 2)) 
+                var pixelByteAddress = 0x0001_0000
+                    + finalTileAddressOffset
+                    + ((spriteX % 8) / (sprite.LargePalette ? 1 : 2))
                     + ((spriteY % 8) * (sprite.LargePalette ? 8 : 4));
 
                 var tileData = _vram[pixelByteAddress];
@@ -431,7 +528,7 @@ public partial class Ppu
     private void DrawBgMode3CurrentScanline(ref int[] scanlineBgBuffer)
     {
         var vramPtrBase = _currentLine * 480;
-        for (var col = 0; col < 240; col ++)
+        for (var col = 0; col < 240; col++)
         {
             var vramPtr = vramPtrBase + (col * 2);
             var hw = _vram[vramPtr] | (_vram[vramPtr + 1] << 8);

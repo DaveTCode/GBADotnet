@@ -38,8 +38,7 @@ public partial class Ppu
 
     private readonly Windows _windows = new();
     private Mosaic _mosaic = new();
-    private Bldcnt _bldcnt = new();
-    private BldAlpha _bldalpha = new();
+    public readonly ColorEffects ColorEffects = new();
 
     private int _currentLineCycles;
 
@@ -55,11 +54,15 @@ public partial class Ppu
 
         for (var ii = 0; ii < _sprites.Length; ii++)
         {
-
             _sprites[ii] = new Sprite
             {
                 Index = ii,
             };
+        }
+
+        for (var ii = 0; ii < Device.WIDTH; ii++)
+        {
+            _bgBuffer[ii] = new BgPixelProperties();
         }
     }
 
@@ -76,8 +79,7 @@ public partial class Ppu
         _currentLine = 0;
         _currentLineCycles = 0;
         _mosaic = new Mosaic();
-        _bldcnt.Reset();
-        _bldalpha.Reset();
+        ColorEffects.Reset();
         for (var ii = 0; ii < 4; ii++)
         {
             _backgrounds[ii].Reset();
@@ -399,21 +401,22 @@ public partial class Ppu
                 _mosaic.UpdateB2(value);
                 break;
             case BLDCNT:
-                _bldcnt.UpdateB1(value);
+                ColorEffects.UpdateBldCntB1(value);
                 break;
             case BLDCNT + 1:
-                _bldcnt.UpdateB2(value);
+                ColorEffects.UpdateBldCntB2(value);
                 break;
             case BLDALPHA:
-                _bldalpha.UpdateB1(value);
+                ColorEffects.UpdateBldAlphaB1(value);
                 break;
             case BLDALPHA + 1:
-                _bldalpha.UpdateB2(value);
+                ColorEffects.UpdateBldAlphaB2(value);
                 break;
             case BLDY:
-                break; // TODO - Implement BLDY
+                ColorEffects.UpdateBldy(value);
+                break;
             default:
-                return; // TODO - Make sure behaviour on unknown writes is ok
+                return;
         }
     }
 
@@ -438,8 +441,8 @@ public partial class Ppu
         BG3CNT => _backgrounds[3].Control.Read(),
         WININ => _windows.GetWinIn(),
         WINOUT => _windows.GetWinOut(),
-        BLDCNT => _bldcnt.Get(),
-        BLDALPHA => _bldalpha.Get(),
+        BLDCNT => ColorEffects.BldCnt(),
+        BLDALPHA => ColorEffects.BldAlpha(),
         _ => (ushort)openbus,
     };
 
