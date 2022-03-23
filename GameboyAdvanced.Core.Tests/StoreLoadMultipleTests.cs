@@ -123,7 +123,7 @@ public class StoreLoadMultipleTests
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         for (var r = 0u; r < 7; r++)
         {
-            _ = cpu.Bus.WriteWord(0x0300_1000u + (r * 4), r + 1, 1);
+            _ = cpu.Bus.WriteWord(0x0300_1000u + (r * 4), r + 1, 1, 0);
         }
 
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline;

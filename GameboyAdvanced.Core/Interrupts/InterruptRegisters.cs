@@ -120,6 +120,7 @@ public class InterruptRegisters
     private InterruptRegister _interruptEnable;
     private InterruptRegister _interruptRequest;
     internal bool CpuShouldIrq;
+    internal bool ShouldBreakHalt;
 
     internal void Reset()
     {
@@ -141,6 +142,7 @@ public class InterruptRegisters
     private void UpdateCpuShouldIrq()
     {
         CpuShouldIrq = _interruptMasterEnable && (_interruptEnable.Get() & _interruptRequest.Get()) != 0;
+        ShouldBreakHalt = (_interruptEnable.Get() & _interruptRequest.Get()) != 0;
     }
 
     internal byte ReadByte(uint address) => (byte)(ReadHalfWord(address & 0xFFFF_FFFE) >> (int)(8 * (address & 1)));

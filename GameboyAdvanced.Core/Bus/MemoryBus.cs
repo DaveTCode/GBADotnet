@@ -32,7 +32,7 @@ public partial class MemoryBus
     private readonly byte[] _onChipWRam = new byte[0x8000];
     private readonly WaitControl _waitControl;
     private InternalMemoryControl _intMemoryControl;
-    internal HaltMode HaltMode;
+    internal HaltMode HaltMode = HaltMode.None;
 
     internal MemoryBus(
         byte[] bios,
@@ -70,6 +70,7 @@ public partial class MemoryBus
         _intMemoryControl.Reset();
         _bios.Reset(skipBios);
         _prefetcher.Reset();
+        HaltMode = HaltMode.None;
     }
 
     internal byte ReadByte(uint address, int seq, uint r15, uint D, ulong currentCycles, ref int waitStates)
@@ -264,7 +265,7 @@ public partial class MemoryBus
         };
     }
 
-    internal int WriteByte(uint address, byte value, int seq)
+    internal int WriteByte(uint address, byte value, int seq, uint r15)
     {
         switch (address)
         {
@@ -314,7 +315,10 @@ public partial class MemoryBus
                     case POSTFLG:
                         return 0; // TODO - Handle writing to POSTFLG during BIOS
                     case HALTCNT:
-                        HaltMode = (HaltMode)((value >> 7) & 0b1);
+                        if (r15 <= 0x3FFF)
+                        {
+                            HaltMode = (HaltMode)((value >> 7) & 0b1);
+                        }
                         return 0;
                     case uint _ when (address & 0xFF00FFFF) == INTMEMCTRL:
                         throw new NotImplementedException("Can't set int memory control as byte or wait control for WRAM will get locked up at 15");
@@ -357,7 +361,7 @@ public partial class MemoryBus
         }
     }
 
-    internal int WriteHalfWord(uint unalignedAddress, ushort value, int seq)
+    internal int WriteHalfWord(uint unalignedAddress, ushort value, int seq, uint r15)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFE;
         switch (alignedAddress)
@@ -395,7 +399,10 @@ public partial class MemoryBus
                         _serialController.WriteHalfWord(alignedAddress, value);
                         return 0;
                     case POSTFLG:
-                        HaltMode = (HaltMode)((value >> 15) & 0b1);
+                        if (r15 <= 0x3FFF)
+                        {
+                            HaltMode = (HaltMode)((value >> 15) & 0b1);
+                        }
                         return 0; // TODO - Handle writing to POSTFLG during BIOS
                     case WAITCNT:
                         _waitControl.Set(value);
@@ -408,7 +415,7 @@ public partial class MemoryBus
                     case uint _ when (alignedAddress & 0xFF00FFFF) == INTMEMCTRL:
                         throw new NotImplementedException("Can't set int memory control as ushort or wait control for WRAM will get locked up at 15");
                     default:
-                        return 0; // TODO - Is this correct?
+                        return 0;
                 };
             case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 _ppu.WriteHalfWord(alignedAddress, value);
@@ -447,7 +454,7 @@ public partial class MemoryBus
         }
     }
 
-    internal int WriteWord(uint unalignedAddress, uint value, int seq)
+    internal int WriteWord(uint unalignedAddress, uint value, int seq, uint r15)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFC;
 
@@ -488,7 +495,10 @@ public partial class MemoryBus
                         _serialController.WriteWord(alignedAddress, value);
                         return 0;
                     case POSTFLG:
-                        HaltMode = (HaltMode)((value >> 15) & 0b1);
+                        if (r15 <= 0x3FFF)
+                        {
+                            HaltMode = (HaltMode)((value >> 15) & 0b1);
+                        }
                         return 0; // TODO - Handle writing to POSTFLG during BIOS
                     case WAITCNT:
                         _waitControl.Set((ushort)value);
@@ -503,7 +513,7 @@ public partial class MemoryBus
                         _intMemoryControl.Set(value);
                         return 0;
                     default:
-                        return 0; // TODO - Is this correct?
+                        return 0;
                 };
             case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 _ppu.WriteHalfWord(alignedAddress, (ushort)value);

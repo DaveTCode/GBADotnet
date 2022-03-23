@@ -95,7 +95,7 @@ public unsafe class Device
             }
             else
             {
-                if (InterruptRegisters.CpuShouldIrq)
+                if (InterruptRegisters.ShouldBreakHalt)
                 {
                     Bus.HaltMode = HaltMode.None;
                 }

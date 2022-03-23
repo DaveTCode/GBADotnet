@@ -74,6 +74,7 @@ public class DmaController
                             if (!_ppu.CanVBlankDma()) continue;
 
                             _dmaDataUnit.Channels[ii].IsRunning = true;
+                            Console.WriteLine($"VBlank DMA starting whilst PPU is {_ppu.CurrentLine},{_ppu.CurrentLineCycles}");
                         }
                         break;
                     case StartTiming.HBlank:
@@ -104,8 +105,8 @@ public class DmaController
                 if (_dmaDataUnit.Channels[ii].IntCachedValue.HasValue)
                 {
                     _waitStates += (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
-                        ? _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].IntDestSeqAccess)
-                        : _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].IntDestSeqAccess);
+                        ? _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].IntDestSeqAccess, 0x4000)
+                        : _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].IntDestSeqAccess, 0x4000);
                     _dmaDataUnit.Channels[ii].IntDestinationAddress = (uint)(_dmaDataUnit.Channels[ii].IntDestinationAddress + _dmaDataUnit.Channels[ii].IntDestAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
                     _dmaDataUnit.Channels[ii].IntWordCount--;
                     _dmaDataUnit.Channels[ii].IntCachedValue = null;

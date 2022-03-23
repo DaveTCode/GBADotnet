@@ -340,6 +340,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\ppu\\basic-timing\\basic-timing.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "NBA - PPU - Basic Timing - Hacked": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\basic-timing.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "NBA - Timer - Start Stop": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\timer\\start-stop\\start-stop.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"

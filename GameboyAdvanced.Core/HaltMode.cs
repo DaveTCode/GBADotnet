@@ -9,7 +9,7 @@
 /// </summary>
 public enum HaltMode
 {
+    Halt = 0b0,
+    Stop = 0b1,
     None,
-    Halt,
-    Stop,
 }

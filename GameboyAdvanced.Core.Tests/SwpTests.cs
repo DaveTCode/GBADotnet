@@ -36,7 +36,7 @@ public class SwpTests
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
         cpu.R[2] = 0xFEED_BEEFu; // This value should be overwritten
-        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFFu, 1);
+        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFFu, 1, 0);
 
         var waitStates = 0;
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
@@ -73,7 +73,7 @@ public class SwpTests
         cpu.R[0] = 0x0300_1000u; // Rn is the swap address in memory
         cpu.R[1] = 0xBEEF_FEEDu; // Set up value to swap into memory
         cpu.R[2] = 0xFEED_BEEFu; // This value should be overwritten
-        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFEu, 1);
+        _ = cpu.Bus.WriteWord(0x0300_1000, 0xABCD_EFFEu, 1, 0);
 
         var waitStates = 0;
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
