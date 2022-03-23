@@ -1,10 +1,13 @@
 ﻿namespace GameboyAdvanced.Core.Dma;
 
-public struct DmaChannel
+public class DmaChannel
 {
     internal readonly static int[] MaxWordCounts = new int[] { 0x4000, 0x4000, 0x4000, 0x10000 };
 
     internal int Id;
+    private readonly ushort _wordMask;
+    private readonly uint _srcMask;
+    private readonly uint _destMask;
     internal uint SourceAddress;
     internal uint DestinationAddress;
     internal ushort WordCount;
@@ -25,27 +28,70 @@ public struct DmaChannel
 
     internal int ClocksToStart;
 
-    internal DmaChannel(int id)
+    internal DmaChannel(int id, ushort wordMask, uint srcMask, uint destMask)
     {
         Id = id;
-        SourceAddress = IntSourceAddress = 0;
-        DestinationAddress = IntDestinationAddress = 0;
-        WordCount = 0;
-        IntCachedValue = null;
-        IntWordCount = 0;
-        IntDestAddressIncrement = 0;
-        IntDestSeqAccess = 0;
-        IntSrcAddressIncrement = 0;
-        IntSrcSeqAccess = 0;
-        ControlReg = new DmaControlRegister(id);
-        ClocksToStart = 0;
-        InternalLatch = 0;
-        IsRunning = false;
+        _wordMask = wordMask;
+        _srcMask = srcMask;
+        _destMask = destMask;
+        ControlReg = new DmaControlRegister(Id);
+        Reset();
     }
 
-    internal void UpdateControlRegister(ushort value)
+    internal void UpdateSourceAddress(uint byteIndex, byte value)
     {
-        var enableBitFlip = ControlReg.Update(value);
+        switch (byteIndex)
+        {
+            case 0: 
+                SourceAddress = (SourceAddress & 0xFFFF_FF00) | value;
+                break;
+            case 1:
+                SourceAddress = (SourceAddress & 0xFFFF_00FF) | (uint)(value << 8);
+                break;
+            case 2:
+                SourceAddress = (SourceAddress & 0xFF00_FFFF) | (uint)(value << 16);
+                break;
+            case 3:
+                SourceAddress = (SourceAddress & 0x00FF_FFFF) | (uint)(value << 24);
+                break;
+        }
+
+        SourceAddress &= _srcMask;
+    }
+
+    internal void UpdateDestinationAddress(uint byteIndex, byte value)
+    {
+        switch (byteIndex)
+        {
+            case 0:
+                DestinationAddress = (DestinationAddress & 0xFFFF_FF00) | value;
+                break;
+            case 1:
+                DestinationAddress = (DestinationAddress & 0xFFFF_00FF) | (uint)(value << 8);
+                break;
+            case 2:
+                DestinationAddress = (DestinationAddress & 0xFF00_FFFF) | (uint)(value << 16);
+                break;
+            case 3:
+                DestinationAddress = (DestinationAddress & 0x00FF_FFFF) | (uint)(value << 24);
+                break;
+        }
+
+        DestinationAddress &= _destMask;
+    }
+
+    internal void UpdateWordCount(uint byteIndex, byte value)
+    {
+        WordCount = byteIndex == 0 
+            ? (ushort)((WordCount & 0xFF00) | value) 
+            : (ushort)((WordCount & 0x00FF) | (ushort)(value << 8));
+
+        WordCount &= _wordMask;
+    }
+
+    internal void UpdateControlRegister(byte value)
+    {
+        var enableBitFlip = ControlReg.UpdateB2(value);
 
         if (enableBitFlip)
         {

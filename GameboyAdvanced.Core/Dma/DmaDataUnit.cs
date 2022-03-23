@@ -14,7 +14,10 @@ public class DmaDataUnit
 {
     internal readonly DmaChannel[] Channels = new DmaChannel[4]
     {
-        new DmaChannel(0), new DmaChannel(1), new DmaChannel(2), new DmaChannel(3)
+        new DmaChannel(0, 0x3FFF, 0x07FF_FFFF, 0x07FF_FFFF), 
+        new DmaChannel(1, 0x3FFF, 0x0FFF_FFFF, 0x07FF_FFFF), 
+        new DmaChannel(2, 0x3FFF, 0x0FFF_FFFF, 0x07FF_FFFF), 
+        new DmaChannel(3, 0xFFFF, 0x0FFF_FFFF, 0x0FFF_FFFF)
     };
 
     internal void Reset()
@@ -43,92 +46,113 @@ public class DmaDataUnit
         _ => (ushort)openbus,
     };
 
-    internal uint ReadWord(uint address, uint openbus) => ReadHalfWord(address, openbus);
+    internal uint ReadWord(uint address, uint openbus) => 
+        (uint)(ReadHalfWord(address, openbus) | (ReadHalfWord(address + 2, openbus) << 16));
 
     internal void WriteByte(uint address, byte value)
-    {
-        throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA write"); // TODO - Handle unused addresses properly
-    }
-
-    internal void WriteHalfWord(uint address, ushort value)
-    {
-        switch (address)
-        {
-            case DMA0CNT_L:
-                Channels[0].WordCount = (ushort)(value & 0x3FFF);
-                break;
-            case DMA0CNT_H:
-                Channels[0].UpdateControlRegister(value);
-                break;
-            case DMA1CNT_L:
-                Channels[1].WordCount = (ushort)(value & 0x3FFF);
-                break;
-            case DMA1CNT_H:
-                Channels[1].UpdateControlRegister(value);
-                break;
-            case DMA2CNT_L:
-                Channels[2].WordCount = (ushort)(value & 0x3FFF);
-                break;
-            case DMA2CNT_H:
-                Channels[2].UpdateControlRegister(value);
-                break;
-            case DMA3CNT_L:
-                Channels[3].WordCount = value; // Accepts lengths up to 0xFFFF so no mask
-                break;
-            case DMA3CNT_H:
-                Channels[3].UpdateControlRegister(value);
-                break;
-            default:
-                break;
-        }
-    }
-
-    internal void WriteWord(uint address, uint value)
     {
         switch (address)
         {
             case DMA0SAD:
-                Channels[0].SourceAddress = value & 0x07FF_FFFF;
+            case DMA0SAD + 1:
+            case DMA0SAD + 2:
+            case DMA0SAD + 3:
+                Channels[0].UpdateSourceAddress(address & 0b11, value);
                 break;
             case DMA0DAD:
-                Channels[0].DestinationAddress = value & 0x07FF_FFFF;
-                break;
-            case DMA0CNT_L:
-                Channels[0].WordCount = (ushort)(value & 0x3FFF);
-                Channels[0].UpdateControlRegister((ushort)(value >> 16));
+            case DMA0DAD + 1:
+            case DMA0DAD + 2:
+            case DMA0DAD + 3:
+                Channels[0].UpdateDestinationAddress(address & 0b11, value);
                 break;
             case DMA1SAD:
-                Channels[1].SourceAddress = value & 0x0FFF_FFFF;
+            case DMA1SAD + 1:
+            case DMA1SAD + 2:
+            case DMA1SAD + 3:
+                Channels[1].UpdateSourceAddress(address & 0b11, value);
                 break;
             case DMA1DAD:
-                Channels[1].DestinationAddress = value & 0x07FF_FFFF;
-                break;
-            case DMA1CNT_L:
-                Channels[1].WordCount = (ushort)(value & 0x3FFF);
-                Channels[1].UpdateControlRegister((ushort)(value >> 16));
+            case DMA1DAD + 1:
+            case DMA1DAD + 2:
+            case DMA1DAD + 3:
+                Channels[1].UpdateDestinationAddress(address & 0b11, value);
                 break;
             case DMA2SAD:
-                Channels[2].SourceAddress = value & 0x0FFF_FFFF;
+            case DMA2SAD + 1:
+            case DMA2SAD + 2:
+            case DMA2SAD + 3:
+                Channels[2].UpdateSourceAddress(address & 0b11, value);
                 break;
             case DMA2DAD:
-                Channels[2].DestinationAddress = value & 0x07FF_FFFF;
-                break;
-            case DMA2CNT_L:
-                Channels[2].WordCount = (ushort)(value & 0x3FFF);
-                Channels[2].UpdateControlRegister((ushort)(value >> 16));
+            case DMA2DAD + 1:
+            case DMA2DAD + 2:
+            case DMA2DAD + 3:
+                Channels[2].UpdateDestinationAddress(address & 0b11, value);
                 break;
             case DMA3SAD:
-                Channels[3].SourceAddress = value & 0x0FFF_FFFF;
+            case DMA3SAD + 1:
+            case DMA3SAD + 2:
+            case DMA3SAD + 3:
+                Channels[3].UpdateSourceAddress(address & 0b11, value);
                 break;
             case DMA3DAD:
-                Channels[3].DestinationAddress = value & 0x0FFF_FFFF;
+            case DMA3DAD + 1:
+            case DMA3DAD + 2:
+            case DMA3DAD + 3:
+                Channels[3].UpdateDestinationAddress(address & 0b11, value);
+                break;
+            case DMA0CNT_L:
+            case DMA0CNT_L + 1:
+                Channels[0].UpdateWordCount(address & 0b1, value);
+                break;
+            case DMA1CNT_L:
+            case DMA1CNT_L + 1:
+                Channels[1].UpdateWordCount(address & 0b1, value);
+                break;
+            case DMA2CNT_L:
+            case DMA2CNT_L + 1:
+                Channels[2].UpdateWordCount(address & 0b1, value);
                 break;
             case DMA3CNT_L:
-                Channels[3].WordCount = (ushort)value;
-                Channels[3].UpdateControlRegister((ushort)(value >> 16));
+            case DMA3CNT_L + 1:
+                Channels[3].UpdateWordCount(address & 0b1, value);
                 break;
-            default:
+            case DMA0CNT_H:
+                Channels[0].ControlReg.UpdateB1(value);
+                break;
+            case DMA0CNT_H + 1:
+                Channels[0].UpdateControlRegister(value);
+                break;
+            case DMA1CNT_H:
+                Channels[1].ControlReg.UpdateB1(value);
+                break;
+            case DMA1CNT_H + 1:
+                Channels[1].UpdateControlRegister(value);
+                break;
+            case DMA2CNT_H:
+                Channels[2].ControlReg.UpdateB1(value);
+                break;
+            case DMA2CNT_H + 1:
+                Channels[2].UpdateControlRegister(value);
+                break;
+            case DMA3CNT_H:
+                Channels[3].ControlReg.UpdateB1(value);
+                break;
+            case DMA3CNT_H + 1:
+                Channels[3].UpdateControlRegister(value);
                 break;
         }
+    }
+
+    internal void WriteHalfWord(uint address, ushort value)
+    {
+        WriteByte(address, (byte)value);
+        WriteByte(address + 1, (byte)(value >> 8));
+    }
+
+    internal void WriteWord(uint address, uint value)
+    {
+        WriteHalfWord(address, (ushort)value);
+        WriteHalfWord(address + 2, (ushort)(value >> 16));
     }
 }

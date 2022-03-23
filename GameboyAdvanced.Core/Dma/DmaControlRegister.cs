@@ -49,18 +49,23 @@ public struct DmaControlRegister
         DmaEnable = false;
     }
 
-    internal bool Update(uint val)
+    internal void UpdateB1(byte val)
     {
         DestAddressCtrl = (DestAddressCtrl)((val >> 5) & 0b11);
-        SrcAddressCtrl = (SrcAddressCtrl)((val >> 7) & 0b11);
-        Repeat = ((val >> 9) & 0b1) == 0b1;
-        Is32Bit = ((val >> 10) & 0b1) == 0b1;
-        GamePakDRQ = (_dmaChannelId == 3) && ((val >> 11) & 0b1) == 0b1;
-        StartTiming = (StartTiming)((val >> 12) & 0b11);
-        IrqOnEnd = ((val >> 14) & 0b1) == 0b1;
+        SrcAddressCtrl = (SrcAddressCtrl)(((byte)SrcAddressCtrl) | (val >> 7));
+    }
+
+    internal bool UpdateB2(byte val)
+    {
+        SrcAddressCtrl = (SrcAddressCtrl)(((byte)SrcAddressCtrl) | (val & 0b1) << 1);
+        Repeat = ((val >> 1) & 0b1) == 0b1;
+        Is32Bit = ((val >> 2) & 0b1) == 0b1;
+        GamePakDRQ = (_dmaChannelId == 3) && ((val >> 3) & 0b1) == 0b1;
+        StartTiming = (StartTiming)((val >> 4) & 0b11);
+        IrqOnEnd = ((val >> 6) & 0b1) == 0b1;
 
         var oldEnable = DmaEnable;
-        DmaEnable = ((val >> 15) & 0b1) == 0b1;
+        DmaEnable = ((val >> 7) & 0b1) == 0b1;
 
         return !oldEnable && DmaEnable;
     }
