@@ -123,11 +123,6 @@ public partial class Ppu
         var fbPtr = CurrentLine * Device.WIDTH * 4;
         var usingPaletteIndex = Dispcnt.BgMode is not (BgMode.Video3 or BgMode.Video5);
 
-        if (CurrentLine <= 20)
-        {
-            Console.WriteLine($"{CurrentLine} - {_windows.X1[0]}, {_windows.X2[0]}, {_windows.Y1[0]}, {_windows.Y2[0]}");
-        }
-
         for (var x = 0; x < Device.WIDTH; x++)
         {
             // Set the fallback values for the pixel
