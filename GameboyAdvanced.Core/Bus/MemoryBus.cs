@@ -234,7 +234,10 @@ public partial class MemoryBus
                     uint _ when (alignedAddress & 0xFF00FFFF) == INTMEMCTRL => _intMemoryControl.Get(),
                     _ => D, // Open bus
                 };
-            case uint a when a is >= 0x0500_0000 and <= 0x07FF_FFFF:
+            case uint a when a is >= 0x0500_0000 and <= 0x06FF_FFFF:
+                waitStates += 1;
+                return (uint)(_ppu.ReadHalfWord(alignedAddress) | (_ppu.ReadHalfWord(alignedAddress + 2) << 16));
+            case uint a when a is >= 0x0700_0000 and <= 0x07FF_FFFF:
                 return (uint)(_ppu.ReadHalfWord(alignedAddress) | (_ppu.ReadHalfWord(alignedAddress + 2) << 16));
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
                 // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
@@ -515,7 +518,11 @@ public partial class MemoryBus
                     default:
                         return 0;
                 };
-            case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF:
+            case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x06FF_FFFF:
+                _ppu.WriteHalfWord(alignedAddress, (ushort)value);
+                _ppu.WriteHalfWord(alignedAddress + 2, (ushort)(value >> 16));
+                return 1;
+            case uint _ when alignedAddress is >= 0x0700_0000 and <= 0x07FF_FFFF:
                 _ppu.WriteHalfWord(alignedAddress, (ushort)value);
                 _ppu.WriteHalfWord(alignedAddress + 2, (ushort)(value >> 16));
                 return 0;
