@@ -65,17 +65,42 @@ public class DmaController
                 switch (_dmaDataUnit.Channels[ii].ControlReg.StartTiming)
                 {
                     case StartTiming.Immediate:
+                        _dmaDataUnit.Channels[ii].IsRunning = true;
                         break;
                     case StartTiming.VBlank:
-                        if (!_ppu.CanVBlankDma())
+                        if (_dmaDataUnit.Channels[ii].IsRunning)
                         {
-                            continue;
+                            // Hit vblank end, stop DMA if it's still running
+                            if (!_ppu.Dispstat.VBlankFlag)
+                            {
+                                _dmaDataUnit.Channels[ii].IsRunning = false;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            // Wait until vblank to start DMA
+                            if (!_ppu.CanVBlankDma()) continue;
+
+                            _dmaDataUnit.Channels[ii].IsRunning = true;
                         }
                         break;
                     case StartTiming.HBlank:
-                        if (!_ppu.CanHBlankDma())
+                        if (_dmaDataUnit.Channels[ii].IsRunning)
                         {
-                            continue;
+                            // Hit hblank end, stop DMA if it's still running
+                            if (!_ppu.Dispstat.HBlankFlag)
+                            {
+                                _dmaDataUnit.Channels[ii].IsRunning = false;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            // Wait until hblank to start DMA
+                            if (!_ppu.CanHBlankDma()) continue;
+
+                            _dmaDataUnit.Channels[ii].IsRunning = true;
                         }
                         break;
                     case StartTiming.Special:
@@ -116,6 +141,9 @@ public class DmaController
 
                         if (_dmaDataUnit.Channels[ii].ControlReg.Repeat && _dmaDataUnit.Channels[ii].ControlReg.StartTiming != StartTiming.Immediate)
                         {
+                            // Pause the channel until the next time it would be triggered
+                            _dmaDataUnit.Channels[ii].IsRunning = false;
+
                             _dmaDataUnit.Channels[ii].IntWordCount = (_dmaDataUnit.Channels[ii].WordCount == 0) 
                                 ? DmaChannel.MaxWordCounts[ii]
                                 : _dmaDataUnit.Channels[ii].WordCount;
@@ -127,6 +155,7 @@ public class DmaController
                         }
                         else
                         {
+                            _dmaDataUnit.Channels[ii].IsRunning = false;
                             _dmaDataUnit.Channels[ii].ControlReg.DmaEnable = false;
                         }
 

@@ -19,6 +19,8 @@ public struct DmaChannel
     internal int IntDestSeqAccess;
     internal int IntSrcSeqAccess;
 
+    internal bool IsRunning;
+
     internal DmaControlRegister ControlReg;
 
     internal int ClocksToStart;
@@ -38,6 +40,7 @@ public struct DmaChannel
         ControlReg = new DmaControlRegister(id);
         ClocksToStart = 0;
         InternalLatch = 0;
+        IsRunning = false;
     }
 
     internal void UpdateControlRegister(ushort value)
