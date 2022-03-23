@@ -52,12 +52,12 @@ public struct DmaControlRegister
     internal void UpdateB1(byte val)
     {
         DestAddressCtrl = (DestAddressCtrl)((val >> 5) & 0b11);
-        SrcAddressCtrl = (SrcAddressCtrl)(((byte)SrcAddressCtrl) | (val >> 7));
+        SrcAddressCtrl = (SrcAddressCtrl)((((byte)SrcAddressCtrl) & 0b10) | (val >> 7));
     }
 
     internal bool UpdateB2(byte val)
     {
-        SrcAddressCtrl = (SrcAddressCtrl)(((byte)SrcAddressCtrl) | (val & 0b1) << 1);
+        SrcAddressCtrl = (SrcAddressCtrl)((((byte)SrcAddressCtrl) & 0b01) | ((val & 0b1) << 1));
         Repeat = ((val >> 1) & 0b1) == 0b1;
         Is32Bit = ((val >> 2) & 0b1) == 0b1;
         GamePakDRQ = (_dmaChannelId == 3) && ((val >> 3) & 0b1) == 0b1;
