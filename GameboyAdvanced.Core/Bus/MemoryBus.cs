@@ -127,7 +127,7 @@ public partial class MemoryBus
                 return _prefetcher.ReadGamePakByte(address, _waitControl.WaitState2[seq], currentCycles, ref waitStates);
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
-                waitStates += _waitControl.SRAMWaitControl;
+                waitStates += _waitControl.SRAMWaitStates;
                 return _gamePak.ReadSRam(address);
             default:
                 var rotate = (address & 0b11) * 8;
@@ -191,7 +191,7 @@ public partial class MemoryBus
                 return _prefetcher.ReadGamePakHalfWord(alignedAddress, _waitControl.WaitState2[seq], currentCycles, ref waitStates);
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
-                waitStates += _waitControl.SRAMWaitControl;
+                waitStates += _waitControl.SRAMWaitStates;
                 return (ushort)(_gamePak.ReadSRam(unalignedAddress) * 0x0101);
             default:
                 // Open bus
@@ -258,7 +258,7 @@ public partial class MemoryBus
                 return _prefetcher.ReadGamePakWord(alignedAddress, _waitControl.WaitState2[seq], _waitControl.WaitState2[1] + 1, currentCycles, ref waitStates);
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
-                waitStates += _waitControl.SRAMWaitControl;
+                waitStates += _waitControl.SRAMWaitStates;
                 return _gamePak.ReadSRam(unalignedAddress) * 0x01010101u;
             default:
                 return D;
@@ -355,7 +355,7 @@ public partial class MemoryBus
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
                 _gamePak.WriteSRam(address, value);
-                return _waitControl.SRAMWaitControl;
+                return _waitControl.SRAMWaitStates;
             default:
                 return 0;
         }
@@ -448,7 +448,7 @@ public partial class MemoryBus
                 _prefetcher.Reset();
                 var shift = (ushort)(unalignedAddress & 1) << 3;
                 _gamePak.WriteSRam(unalignedAddress, (byte)(value >> shift));
-                return _waitControl.SRAMWaitControl;
+                return _waitControl.SRAMWaitStates;
             default:
                 return 0;
         }
@@ -547,7 +547,7 @@ public partial class MemoryBus
                 _prefetcher.Reset();
                 var shift = (int)(unalignedAddress & 0b11) << 3;
                 _gamePak.WriteSRam(unalignedAddress, (byte)(value >> shift));
-                return _waitControl.SRAMWaitControl;
+                return _waitControl.SRAMWaitStates * 2;
             default:
                 return 0;
         }

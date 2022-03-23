@@ -20,6 +20,7 @@ internal enum PhiOutput
 /// </summary>
 public class WaitControl
 {
+    internal int SRAMWaitStates;
     internal int SRAMWaitControl;
     internal int[] WaitState0 = new int[2];
     internal int[] WaitState1 = new int[2];
@@ -50,6 +51,14 @@ public class WaitControl
     internal void SetByte1(byte value)
     {
         SRAMWaitControl = value & 0b11;
+        SRAMWaitStates = SRAMWaitControl switch
+        {
+            0 => 4,
+            1 => 3,
+            2 => 2,
+            3 => 8,
+            _ => throw new Exception("Invalid SRAM wait control value")
+        };
         WaitState0[0] = WaitStatesNFromBitVal((value >> 2) & 0b11);
         WaitState0[1] = ((value >> 4) & 0b1) == 0 ? 2 : 1;
         WaitState1[0] = WaitStatesNFromBitVal((value >> 5) & 0b11);
