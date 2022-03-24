@@ -134,7 +134,7 @@ public partial class MemoryBus
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
                 waitStates += _waitControl.SRAMWaitStates;
-                return _gamePak.ReadSRam(address);
+                return _gamePak.ReadBackupStorage(address);
             default:
                 var rotate = (address & 0b11) * 8;
                 return (byte)(D >> (int)rotate);
@@ -198,7 +198,7 @@ public partial class MemoryBus
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
                 waitStates += _waitControl.SRAMWaitStates;
-                return (ushort)(_gamePak.ReadSRam(unalignedAddress) * 0x0101);
+                return (ushort)(_gamePak.ReadBackupStorage(unalignedAddress) * 0x0101);
             default:
                 // Open bus
                 if ((unalignedAddress & 0b11) > 1)
@@ -268,7 +268,7 @@ public partial class MemoryBus
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
                 waitStates += _waitControl.SRAMWaitStates;
-                return _gamePak.ReadSRam(unalignedAddress) * 0x01010101u;
+                return _gamePak.ReadBackupStorage(unalignedAddress) * 0x01010101u;
             default:
                 return D;
         };
@@ -367,7 +367,7 @@ public partial class MemoryBus
                 return _waitControl.WaitState2[seq];
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
-                _gamePak.WriteSRam(address, value);
+                _gamePak.WriteBackupStorage(address, value);
                 return _waitControl.SRAMWaitStates;
             default:
                 return 0;
@@ -461,7 +461,7 @@ public partial class MemoryBus
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
                 var shift = (ushort)(unalignedAddress & 1) << 3;
-                _gamePak.WriteSRam(unalignedAddress, (byte)(value >> shift));
+                _gamePak.WriteBackupStorage(unalignedAddress, (byte)(value >> shift));
                 return _waitControl.SRAMWaitStates;
             default:
                 return 0;
@@ -565,7 +565,7 @@ public partial class MemoryBus
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
                 var shift = (int)(unalignedAddress & 0b11) << 3;
-                _gamePak.WriteSRam(unalignedAddress, (byte)(value >> shift));
+                _gamePak.WriteBackupStorage(unalignedAddress, (byte)(value >> shift));
                 return _waitControl.SRAMWaitStates * 2;
             default:
                 return 0;

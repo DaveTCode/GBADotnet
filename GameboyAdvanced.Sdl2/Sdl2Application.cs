@@ -48,7 +48,7 @@ internal class Sdl2Application : IDisposable
         }
 
         _window = SDL.SDL_CreateWindow(
-            $"GBA - {_device.LoadedRomName()}",
+            $"GBA - {_device.Gamepak}",
             SDL.SDL_WINDOWPOS_UNDEFINED,
             SDL.SDL_WINDOWPOS_UNDEFINED,
             Device.WIDTH * _pixelSize,
