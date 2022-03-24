@@ -142,6 +142,7 @@ internal unsafe static class Thumb
         core.R[14] = (uint)(core.R[15] + offset);
     }
 
+    private static uint _blR14;
     public static void BL_Hi(Core core, ushort instruction)
     {
         var offset = (instruction & 0b111_1111_1111) << 1;
@@ -152,9 +153,14 @@ internal unsafe static class Thumb
             core.Debugger.FireEvent(Debug.DebugEvent.BranchToZero, core);
         }
 #endif
-        core.R[14] = (core.R[15] - 2) | 1;
-        core.R[15] = newPc;
+        _blR14 = (core.R[15] - 2) | 1;
+        core.R[15] = newPc & 0xFFFF_FFFE;
         core.ClearPipeline();
+        core.NextExecuteAction = &BL_Hi2;
+    }
+    public static void BL_Hi2(Core core, uint _)
+    {
+        core.R[14] = _blR14;
 
         core.MoveExecutePipelineToNextInstruction();
     }

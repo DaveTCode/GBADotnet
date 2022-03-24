@@ -4,6 +4,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Aging Cartridge - w/ BIOS": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin --runBios"
+    },
     "ARM Wrestler": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\arm_wrestler\\armwrestler-gba-fixed.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -339,6 +343,10 @@
     "NBA - PPU - Basic Timing": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\ppu\\basic-timing\\basic-timing.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - PPU - Basic Timing - Hacked": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\basic-timing.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "NBA - Timer - Start Stop": {
       "commandName": "Project",
