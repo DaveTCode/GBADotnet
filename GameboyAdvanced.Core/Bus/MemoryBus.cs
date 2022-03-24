@@ -32,7 +32,8 @@ public partial class MemoryBus
     private readonly byte[] _onChipWRam = new byte[0x8000];
     private readonly WaitControl _waitControl;
     private InternalMemoryControl _intMemoryControl;
-    internal HaltMode HaltMode = HaltMode.None;
+    public HaltMode HaltMode = HaltMode.None;
+    public byte PostFlag = 0;
 
     internal MemoryBus(
         byte[] bios,
@@ -60,6 +61,11 @@ public partial class MemoryBus
         _waitControl = new WaitControl();
         _intMemoryControl = new InternalMemoryControl();
         _prefetcher = new Prefetcher(_waitControl, gamePak);
+
+        if (skipBios)
+        {
+            PostFlag = 1;
+        }
     }
 
     internal void Reset(bool skipBios)
@@ -98,7 +104,7 @@ public partial class MemoryBus
                     IF => _interruptRegisters.ReadByte(address),
                     WAITCNT => (byte)_waitControl.Get(),
                     IME => _interruptRegisters.ReadByte(address),
-                    POSTFLG => (byte)1, // TODO - Implement read/write of this during bios
+                    POSTFLG => PostFlag,
                     uint _ when (address & 0xFF00FFFF) == INTMEMCTRL => (byte)_intMemoryControl.Get(), // TODO - Do we just cast to byte here?
                     _ => (byte)D, // Open bus
                 };
@@ -162,7 +168,7 @@ public partial class MemoryBus
                     IF => _interruptRegisters.ReadHalfWord(alignedAddress),
                     WAITCNT => _waitControl.Get(),
                     IME => _interruptRegisters.ReadHalfWord(alignedAddress),
-                    POSTFLG => (ushort)1, // TODO - Implement read/write of this during bios
+                    POSTFLG => PostFlag,
                     uint _ when (alignedAddress & 0xFF00FFFF) == INTMEMCTRL => (ushort)_intMemoryControl.Get(), // TODO - Do we just cast to ushort here?
                     _ => (ushort)D, // Open bus
                 };
@@ -230,7 +236,7 @@ public partial class MemoryBus
                     IE => _interruptRegisters.ReadWord(alignedAddress),
                     WAITCNT => _waitControl.Get(),
                     IME => _interruptRegisters.ReadWord(alignedAddress),
-                    POSTFLG => 1, // TODO - Implement read/write of this during bios
+                    POSTFLG => PostFlag,
                     uint _ when (alignedAddress & 0xFF00FFFF) == INTMEMCTRL => _intMemoryControl.Get(),
                     _ => D, // Open bus
                 };
@@ -316,7 +322,11 @@ public partial class MemoryBus
                         _interruptRegisters.WriteByte(address, value);
                         return 0;
                     case POSTFLG:
-                        return 0; // TODO - Handle writing to POSTFLG during BIOS
+                        if (r15 < 0x3FFF)
+                        {
+                            PostFlag = 1;
+                        }
+                        return 0;
                     case HALTCNT:
                         if (r15 <= 0x3FFF)
                         {
@@ -404,9 +414,10 @@ public partial class MemoryBus
                     case POSTFLG:
                         if (r15 <= 0x3FFF)
                         {
+                            PostFlag = 1;
                             HaltMode = (HaltMode)((value >> 15) & 0b1);
                         }
-                        return 0; // TODO - Handle writing to POSTFLG during BIOS
+                        return 0;
                     case WAITCNT:
                         _waitControl.Set(value);
                         return 0;
@@ -500,9 +511,10 @@ public partial class MemoryBus
                     case POSTFLG:
                         if (r15 <= 0x3FFF)
                         {
+                            PostFlag = 1;
                             HaltMode = (HaltMode)((value >> 15) & 0b1);
                         }
-                        return 0; // TODO - Handle writing to POSTFLG during BIOS
+                        return 0;
                     case WAITCNT:
                         _waitControl.Set((ushort)value);
                         // 206 is unused so no extra write here
