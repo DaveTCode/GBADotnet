@@ -202,6 +202,10 @@ public unsafe class Core
             Cpsr.Mode = Cpsr.Set(0x6000_001F);
             Cpsr.ThumbMode = false;
         }
+        else
+        {
+            Cpsr.Mode = CPSRMode.System;
+        }
 
         ClearPipeline();
         Pipeline.ClearedThisCycle = false; // Despite the pipeline being cleared this is part of RESET so don't skip address increments
