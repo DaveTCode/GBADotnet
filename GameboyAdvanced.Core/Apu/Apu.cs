@@ -28,6 +28,7 @@ public class Apu
     {
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
         _soundControlRegister = new SoundControlRegister(_dmaChannels);
+        Reset();
     }
 
     internal void Reset()
@@ -129,12 +130,13 @@ public class Apu
                 }
                 break;
             case SOUNDBIAS: // Sound PWM Control
-                if ((address & 1) == 1)
+                if ((address & 1) == 0)
                 {
-                    _biasLevel = (value >> 1) & 0b1_1111_1111;
+                    _biasLevel = (_biasLevel & 0b1_0000_0000) | (value >> 1);
                 }
                 else
                 {
+                    _biasLevel = (_biasLevel & 0b0_0111_1111) | ((value & 0b11) << 7);
                     _samplingCycle = (value >> 6) & 0b11;
                 }
                 break;
