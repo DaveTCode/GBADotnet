@@ -288,61 +288,97 @@ internal unsafe static class Thumb
         core.MoveExecutePipelineToNextInstruction();
     }
 
+    private static int _aluDestination;
+    private static uint _cachedAluValue;
+    public static void ALUCycle2(Core core, uint _)
+    {
+        core.nOPC = false;
+        core.SEQ = 1;
+        core.AIncrement = 0;
+        core.nMREQ = false;
+        core.R[_aluDestination] = _cachedAluValue;
+        core.MoveExecutePipelineToNextInstruction();
+    }
+
     public static void ALU(Core core, ushort instruction)
     {
         var opcode = (instruction >> 6) & 0b1111;
         var rs = (instruction >> 3) & 0b111;
         var rd = instruction & 0b111;
-        core.MoveExecutePipelineToNextInstruction();
 
         switch (opcode)
         {
             case 0x0: // AND
                 core.R[rd] = core.R[rd] & core.R[rs];
                 SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0x1: // EOR
                 core.R[rd] = core.R[rd] ^ core.R[rs];
                 SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0x2: // LSL
-                core.R[rd] = LSL(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
-                core.WaitStates++; // TODO - Treat as proper extra I cycle
+                core.nMREQ = true;
+                core.nOPC = true;
+                core.SEQ = 0;
+                _aluDestination = rd;
+                _cachedAluValue = LSL(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.NextExecuteAction = &ALUCycle2;
                 break;
             case 0x3: // LSR
-                core.R[rd] = LSRRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
-                core.WaitStates++; // TODO - Treat as proper extra I cycle
+                core.nMREQ = true;
+                core.nOPC = true;
+                core.SEQ = 0;
+                _aluDestination = rd;
+                _cachedAluValue = LSRRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.NextExecuteAction = &ALUCycle2;
                 break;
             case 0x4: // ASR
-                core.R[rd] = ASRRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
-                core.WaitStates++; // TODO - Treat as proper extra I cycle
+                core.nMREQ = true;
+                core.nOPC = true;
+                core.SEQ = 0;
+                _aluDestination = rd;
+                _cachedAluValue = ASRRegister(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.NextExecuteAction = &ALUCycle2;
                 break;
             case 0x5: // ADC
                 core.R[rd] = ADC(core.R[rd], core.R[rs], ref core.Cpsr);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0x6: // SBC
                 core.R[rd] = SBC(core.R[rd], core.R[rs], ref core.Cpsr);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0x7: // ROR
-                core.R[rd] = ROR(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
-                core.WaitStates++; // TODO - Treat as proper extra I cycle
+                core.nMREQ = true;
+                core.nOPC = true;
+                core.SEQ = 0;
+                _aluDestination = rd;
+                _cachedAluValue = ROR(core.R[rd], (byte)core.R[rs], ref core.Cpsr);
+                core.NextExecuteAction = &ALUCycle2;
                 break;
             case 0x8: // TST
                 var result = core.R[rd] & core.R[rs];
                 SetZeroSignFlags(ref core.Cpsr, result);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0x9: // NEG
                 core.R[rd] = SUB(0, core.R[rs], ref core.Cpsr);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0xA: // CMP
                 _ = SUB(core.R[rd], core.R[rs], ref core.Cpsr);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0xB: // CMN
                 _ = ADD(core.R[rd], core.R[rs], ref core.Cpsr);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0xC: // ORR
                 core.R[rd] = core.R[rd] | core.R[rs];
                 SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0xD: // MUL
                 MultiplyUtils.SetupForMultiplyFlags(core, rd, rs, rd);
@@ -350,10 +386,12 @@ internal unsafe static class Thumb
             case 0xE: // BIC
                 core.R[rd] = core.R[rd] & (~core.R[rs]);
                 SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0xF: // MVN
                 core.R[rd] = ~core.R[rs];
                 SetZeroSignFlags(ref core.Cpsr, core.R[rd]);
+                core.MoveExecutePipelineToNextInstruction();
                 break;
             default:
                 throw new NotImplementedException($"Thumb ALU opcode {opcode:X2} not implemented");
