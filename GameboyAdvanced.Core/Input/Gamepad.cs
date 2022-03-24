@@ -87,7 +87,7 @@ public class Gamepad
         }
     }
 
-    internal byte ReadByte(uint address) => throw new NotImplementedException("Read byte not implemented for gamepad registers");
+    internal byte ReadByte(uint address) => (byte)(ReadHalfWord(address & 0xFFFF_FFFE) >> (int)(8 * (address & 1)));
 
     internal ushort ReadHalfWord(uint address) => address switch
     {
