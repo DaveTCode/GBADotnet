@@ -2,7 +2,7 @@
   "profiles": {
     "Run Compatibility Checker": {
       "commandName": "Project",
-      "commandLineArgs": "-o database -r \"..\\..\\..\\..\\roms\\real\" -b ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "-o ..\\..\\..\\..\\compatibility -r \"..\\..\\..\\..\\roms\\real\" -b ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     }
   }
 }

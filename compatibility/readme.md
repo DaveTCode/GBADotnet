@@ -2,174 +2,181 @@
 
 This file contains a table with all ROMS tested along with some details parsed from the ROM and a screenshot from 100 frames in with no button presses
 
+<table>
+  <thead>
+    <tr>
+<td>Filename</td><td>Game Title</td><td>Bootable</td><td>Save Type</td><td>Image</td>    </tr>
+  </thead>
+  <tbody>
 | Filename | Game Title | Bootable | Save Type | Image |
 | -------- | ---------- | -------- | --------- | ----- |
-| Advance Wars 2 - Black Hole Rising (USA, Australia).gba | ADVANCEWARS | :heavy_check_mark: | FLASH64 | <img src"=./images/Advance Wars 2 - Black Hole Rising (USA, Australia).png" alt="Advance Wars 2 - Black Hole Rising (USA, Australia).gba image"></img> |
-| Advanced Wars.gba | ADVANCEWARS | :heavy_check_mark: | FLASH64 | <img src"=./images/Advanced Wars.png" alt="Advanced Wars.gba image"></img> |
-| Aero the Acrobat - Rascal Rival Revenge.gba | AEROACROBAT | :heavy_check_mark: | EEPROM | <img src"=./images/Aero the Acrobat - Rascal Rival Revenge.png" alt="Aero the Acrobat - Rascal Rival Revenge.gba image"></img> |
-| Alien Hominid.gba | ALIENHOMINI | :heavy_check_mark: | EEPROM | <img src"=./images/Alien Hominid.png" alt="Alien Hominid.gba image"></img> |
-| Astro Boy - Omega Factor.gba | ASTRO BOY-O | :heavy_check_mark: | EEPROM | <img src"=./images/Astro Boy - Omega Factor.png" alt="Astro Boy - Omega Factor.gba image"></img> |
-| Atari Anniversary Advance (USA).gba | ATARI_ANNIV | :heavy_check_mark: | SRAM | <img src"=./images/Atari Anniversary Advance (USA).png" alt="Atari Anniversary Advance (USA).gba image"></img> |
-| Banjo Kazooie - Grunty_s Revenge.gba | BANJOKAZOOI | :heavy_check_mark: | EEPROM | <img src"=./images/Banjo Kazooie - Grunty_s Revenge.png" alt="Banjo Kazooie - Grunty_s Revenge.gba image"></img> |
-| Banjo Pilot.gba | BANJO PILOT | :heavy_check_mark: | EEPROM | <img src"=./images/Banjo Pilot.png" alt="Banjo Pilot.gba image"></img> |
-| Bomber-Man Tournament.gba | BOMSTORYUSA | :heavy_check_mark: | SRAM | <img src"=./images/Bomber-Man Tournament.png" alt="Bomber-Man Tournament.gba image"></img> |
-| Bomberman Max 2 - Blue (E).gba | BOMBERMAN M | :heavy_check_mark: | EEPROM | <img src"=./images/Bomberman Max 2 - Blue (E).png" alt="Bomberman Max 2 - Blue (E).gba image"></img> |
-| Bomberman Max 2 - Red (E).gba | BMAX2-RED | :heavy_check_mark: | EEPROM | <img src"=./images/Bomberman Max 2 - Red (E).png" alt="Bomberman Max 2 - Red (E).gba image"></img> |
-| Breath of Fire (E).gba | BOF EUR | :heavy_check_mark: | SRAM | <img src"=./images/Breath of Fire (E).png" alt="Breath of Fire (E).gba image"></img> |
-| Breath of Fire II (USA).gba | BOF2 | :heavy_check_mark: | SRAM | <img src"=./images/Breath of Fire II (USA).png" alt="Breath of Fire II (USA).gba image"></img> |
-| Broken Sword - the Shadow of the Templars.gba | BROKENSWORD | :heavy_check_mark: | EEPROM | <img src"=./images/Broken Sword - the Shadow of the Templars.png" alt="Broken Sword - the Shadow of the Templars.gba image"></img> |
-| Car Battler Joe (USA).gba | CARBATTLERJ | :heavy_check_mark: | EEPROM | <img src"=./images/Car Battler Joe (USA).png" alt="Car Battler Joe (USA).gba image"></img> |
-| Castlevania - Aria of Sorrow (USA).gba | CASTLEVANIA | :heavy_check_mark: | SRAM | <img src"=./images/Castlevania - Aria of Sorrow (USA).png" alt="Castlevania - Aria of Sorrow (USA).gba image"></img> |
-| Castlevania - Circle of the Moon.gba | DRACULA AGB | :heavy_check_mark: | SRAM | <img src"=./images/Castlevania - Circle of the Moon.png" alt="Castlevania - Circle of the Moon.gba image"></img> |
-| Castlevania - Harmony Of Dissonance.gba | CASTLEVANIA | :heavy_check_mark: | SRAM | <img src"=./images/Castlevania - Harmony Of Dissonance.png" alt="Castlevania - Harmony Of Dissonance.gba image"></img> |
-| Chu Chu Rocket!.gba | CHUCHUROCKE | :heavy_check_mark: | FLASH64 | <img src"=./images/Chu Chu Rocket!.png" alt="Chu Chu Rocket!.gba image"></img> |
-| Crash Bandicoot - Purple Riptos Rampage.gba | CRASH PURPL | :heavy_check_mark: | EEPROM | <img src"=./images/Crash Bandicoot - Purple Riptos Rampage.png" alt="Crash Bandicoot - Purple Riptos Rampage.gba image"></img> |
-| Crash Bandicoot - the Huge Adventure.gba | CRASH | :heavy_check_mark: | EEPROM | <img src"=./images/Crash Bandicoot - the Huge Adventure.png" alt="Crash Bandicoot - the Huge Adventure.gba image"></img> |
-| Crash Bandicoot 2 - N-Tranced.gba | CRASH2 | :heavy_check_mark: | EEPROM | <img src"=./images/Crash Bandicoot 2 - N-Tranced.png" alt="Crash Bandicoot 2 - N-Tranced.gba image"></img> |
-| Denki Blocks! (USA) (En,Es).gba | DENKIBLOCKS | :heavy_check_mark: | EEPROM | <img src"=./images/Denki Blocks! (USA) (En,Es).png" alt="Denki Blocks! (USA) (En,Es).gba image"></img> |
-| Densetsu no Stafy 2.gba | STAFY 2 | :heavy_check_mark: | SRAM | <img src"=./images/Densetsu no Stafy 2.png" alt="Densetsu no Stafy 2.gba image"></img> |
-| Densetsu no Stafy 3.gba | STAFY 3 | :heavy_check_mark: | SRAM | <img src"=./images/Densetsu no Stafy 3.png" alt="Densetsu no Stafy 3.gba image"></img> |
-| Densetsu no Stafy.gba | STAFY | :heavy_check_mark: | SRAM | <img src"=./images/Densetsu no Stafy.png" alt="Densetsu no Stafy.gba image"></img> |
-| Disney_s Kim Possible 2 - Drakken_s Demise (U).gba | KIMPOSSIBLE | :heavy_check_mark: | EEPROM | <img src"=./images/Disney_s Kim Possible 2 - Drakken_s Demise (U).png" alt="Disney_s Kim Possible 2 - Drakken_s Demise (U).gba image"></img> |
-| Donkey Kong - King of Swing.gba | KINGOFSWING | :heavy_check_mark: | SRAM | <img src"=./images/Donkey Kong - King of Swing.png" alt="Donkey Kong - King of Swing.gba image"></img> |
-| Donkey Kong Country 2 (U).gba | RAREDKC2 | :heavy_check_mark: | EEPROM | <img src"=./images/Donkey Kong Country 2 (U).png" alt="Donkey Kong Country 2 (U).gba image"></img> |
-| Donkey Kong Country 3.gba | RAREDKC3 | :heavy_check_mark: | EEPROM | <img src"=./images/Donkey Kong Country 3.png" alt="Donkey Kong Country 3.gba image"></img> |
-| Donkey Kong Country.gba | RAREDKC1 | :heavy_check_mark: | EEPROM | <img src"=./images/Donkey Kong Country.png" alt="Donkey Kong Country.gba image"></img> |
-| Doom (USA, Europe).gba | AGB-DOOM | :heavy_check_mark: | EEPROM | <img src"=./images/Doom (USA, Europe).png" alt="Doom (USA, Europe).gba image"></img> |
-| Dr. Mario _ Puzzle League.gba | DRMARIO&PON | :heavy_check_mark: | EEPROM | <img src"=./images/Dr. Mario _ Puzzle League.png" alt="Dr. Mario _ Puzzle League.gba image"></img> |
-| Drill Dozer.gba | DRILL DOZER | :heavy_check_mark: | SRAM | <img src"=./images/Drill Dozer.png" alt="Drill Dozer.gba image"></img> |
-| Duke Nukem Advance (U).gba | DUKE NUKEM  | :heavy_check_mark: | EEPROM | <img src"=./images/Duke Nukem Advance (U).png" alt="Duke Nukem Advance (U).gba image"></img> |
-| Ecks vs. Sever (E).gba | ECKS VSE SE | :heavy_check_mark: | SRAM | <img src"=./images/Ecks vs. Sever (E).png" alt="Ecks vs. Sever (E).gba image"></img> |
-| F-Zero - Maximum Velocity (USA, Europe).gba | F-ZERO ADVA | :heavy_check_mark: | SRAM | <img src"=./images/F-Zero - Maximum Velocity (USA, Europe).png" alt="F-Zero - Maximum Velocity (USA, Europe).gba image"></img> |
-| F-Zero 2 - GP Legend.gba | F-ZERO2 | :heavy_check_mark: | SRAM | <img src"=./images/F-Zero 2 - GP Legend.png" alt="F-Zero 2 - GP Legend.gba image"></img> |
-| Final Fantasy - Tactics Advanced.gba | FFTA_USVER. | :heavy_check_mark: | FLASH64 | <img src"=./images/Final Fantasy - Tactics Advanced.png" alt="Final Fantasy - Tactics Advanced.gba image"></img> |
-| Final Fantasy 1 + 2 - Dawn of Souls.gba | FF1&2DAWNOF | :heavy_check_mark: | SRAM | <img src"=./images/Final Fantasy 1 + 2 - Dawn of Souls.png" alt="Final Fantasy 1 + 2 - Dawn of Souls.gba image"></img> |
-| Final Fantasy 4 Advance.gba | FF4ADVANCE | :heavy_check_mark: | SRAM | <img src"=./images/Final Fantasy 4 Advance.png" alt="Final Fantasy 4 Advance.gba image"></img> |
-| Final Fantasy 5 Advance.gba | FF5ADVANCE | :heavy_check_mark: | SRAM | <img src"=./images/Final Fantasy 5 Advance.png" alt="Final Fantasy 5 Advance.gba image"></img> |
-| Final Fantasy 6 Advance.gba | FF6ADVANCE | :heavy_check_mark: | SRAM | <img src"=./images/Final Fantasy 6 Advance.png" alt="Final Fantasy 6 Advance.gba image"></img> |
-| Final Fight One (U).gba | FINAL FIGHT | :heavy_check_mark: | EEPROM | <img src"=./images/Final Fight One (U).png" alt="Final Fight One (U).gba image"></img> |
-| Fire Emblem - the Sacred Stones.gba | FIREEMBLEM2 | :heavy_check_mark: | SRAM | <img src"=./images/Fire Emblem - the Sacred Stones.png" alt="Fire Emblem - the Sacred Stones.gba image"></img> |
-| Fire Emblem.gba | FIREEMBLEME | :heavy_check_mark: | SRAM | <img src"=./images/Fire Emblem.png" alt="Fire Emblem.gba image"></img> |
-| Frogger_s Adventure - Temple of the Frog.gba | FROG: TEMPL | :heavy_check_mark: | EEPROM | <img src"=./images/Frogger_s Adventure - Temple of the Frog.png" alt="Frogger_s Adventure - Temple of the Frog.gba image"></img> |
-| Frogger_s Adventures 2 - The Lost Wand (E).gba | FG2 THE LOS | :heavy_check_mark: | EEPROM | <img src"=./images/Frogger_s Adventures 2 - The Lost Wand (E).png" alt="Frogger_s Adventures 2 - The Lost Wand (E).gba image"></img> |
-| Game _ Watch Gallery Advance.gba | G&W GALLERY | :heavy_check_mark: | SRAM | <img src"=./images/Game _ Watch Gallery Advance.png" alt="Game _ Watch Gallery Advance.gba image"></img> |
-| Golden Sun - The Lost Age (USA, Europe).gba | GOLDEN_SUN_ | :x: | FLASH64 |  |
-| Golden Sun.gba | Golden_Sun_ | :heavy_check_mark: | FLASH64 | <img src"=./images/Golden Sun.png" alt="Golden Sun.gba image"></img> |
-| Gradius Galaxies (USA).gba | GRADIUSGALA | :heavy_check_mark: | EEPROM | <img src"=./images/Gradius Galaxies (USA).png" alt="Gradius Galaxies (USA).gba image"></img> |
-| Grand Theft Auto Advance.gba | GTA | :heavy_check_mark: | EEPROM | <img src"=./images/Grand Theft Auto Advance.png" alt="Grand Theft Auto Advance.gba image"></img> |
-| Gunstar Super Heroes.gba | GUNSTAR SH | :heavy_check_mark: | EEPROM | <img src"=./images/Gunstar Super Heroes.png" alt="Gunstar Super Heroes.gba image"></img> |
-| Hamtaro - Ham-Ham Games (Europe) (En,Fr,De,Es,It).gba | HAMSPORTS | :heavy_check_mark: | SRAM | <img src"=./images/Hamtaro - Ham-Ham Games (Europe) (En,Fr,De,Es,It).png" alt="Hamtaro - Ham-Ham Games (Europe) (En,Fr,De,Es,It).gba image"></img> |
-| Harvest Moon - Friends of Mineral Town.gba | HARVESTMOGB | :heavy_check_mark: | SRAM | <img src"=./images/Harvest Moon - Friends of Mineral Town.png" alt="Harvest Moon - Friends of Mineral Town.gba image"></img> |
-| Harvest Moon - More Friends of Mineral Town (U).gba | HM MFOM USA | :heavy_check_mark: | SRAM | <img src"=./images/Harvest Moon - More Friends of Mineral Town (U).png" alt="Harvest Moon - More Friends of Mineral Town (U).gba image"></img> |
-| Karnaaj Rally (U).gba | KARNAAJ | :heavy_check_mark: | FLASH64 | <img src"=./images/Karnaaj Rally (U).png" alt="Karnaaj Rally (U).gba image"></img> |
-| King of Fighters EX 2 - Howling Blood.gba | KOFEX2HOWLI | :heavy_check_mark: | EEPROM | <img src"=./images/King of Fighters EX 2 - Howling Blood.png" alt="King of Fighters EX 2 - Howling Blood.gba image"></img> |
-| King of Fighters EX, The - NeoBlood (U) (V1.1).gba | KINGOFEXNEO | :heavy_check_mark: | EEPROM | <img src"=./images/King of Fighters EX, The - NeoBlood (U) (V1.1).png" alt="King of Fighters EX, The - NeoBlood (U) (V1.1).gba image"></img> |
-| Kingdom Hearts - Chain of Memories.gba | KINGDOMHEAR | :heavy_check_mark: | SRAM | <img src"=./images/Kingdom Hearts - Chain of Memories.png" alt="Kingdom Hearts - Chain of Memories.gba image"></img> |
-| Kirby & The Amazing Mirror (USA).gba | AGB KIRBY A | :heavy_check_mark: | SRAM | <img src"=./images/Kirby & The Amazing Mirror (USA).png" alt="Kirby & The Amazing Mirror (USA).gba image"></img> |
-| Kirby - Nightmare in Dream Land (USA).gba | AGB KIRBY D | :heavy_check_mark: | SRAM | <img src"=./images/Kirby - Nightmare in Dream Land (USA).png" alt="Kirby - Nightmare in Dream Land (USA).gba image"></img> |
-| Klonoa - Empire of Dreams.gba | KLONOA EMPI | :heavy_check_mark: | EEPROM | <img src"=./images/Klonoa - Empire of Dreams.png" alt="Klonoa - Empire of Dreams.gba image"></img> |
-| Klonoa 2 - Dream Champ Tournament.gba | KLONOA2 | :heavy_check_mark: | EEPROM | <img src"=./images/Klonoa 2 - Dream Champ Tournament.png" alt="Klonoa 2 - Dream Champ Tournament.gba image"></img> |
-| Konami Krazy Racers (Europe).gba | KRAZY RACER | :heavy_check_mark: | SRAM | <img src"=./images/Konami Krazy Racers (Europe).png" alt="Konami Krazy Racers (Europe).gba image"></img> |
-| Kuru Kuru Kururin.gba | KURURIN | :heavy_check_mark: | SRAM | <img src"=./images/Kuru Kuru Kururin.png" alt="Kuru Kuru Kururin.gba image"></img> |
-| Kururin Paradise (Japan).gba | KURUPARA | :heavy_check_mark: | SRAM | <img src"=./images/Kururin Paradise (Japan).png" alt="Kururin Paradise (Japan).gba image"></img> |
-| Legend of Zelda, The - A Link to the Past _ Four Swords (USA, Australia).gba | GBAZELDA | :heavy_check_mark: | EEPROM | <img src"=./images/Legend of Zelda, The - A Link to the Past _ Four Swords (USA, Australia).png" alt="Legend of Zelda, The - A Link to the Past _ Four Swords (USA, Australia).gba image"></img> |
-| LEGO - Star Wars - the Video Game.gba | LEGOSTARWAR | :heavy_check_mark: | EEPROM | <img src"=./images/LEGO - Star Wars - the Video Game.png" alt="LEGO - Star Wars - the Video Game.gba image"></img> |
-| LEGO - Star Wars 2 - the Original Trilogy.gba | LSW2GBA | :heavy_check_mark: | EEPROM | <img src"=./images/LEGO - Star Wars 2 - the Original Trilogy.png" alt="LEGO - Star Wars 2 - the Original Trilogy.gba image"></img> |
-| Lilo _ Stitch.gba | LILO AND ST | :heavy_check_mark: | SRAM | <img src"=./images/Lilo _ Stitch.png" alt="Lilo _ Stitch.gba image"></img> |
-| Lord of the Rings 2 - the Two Towers.gba | TWO TOWERS | :heavy_check_mark: | EEPROM | <img src"=./images/Lord of the Rings 2 - the Two Towers.png" alt="Lord of the Rings 2 - the Two Towers.gba image"></img> |
-| Lord of the Rings 3 - Return of the King.gba | RETURN KING | :heavy_check_mark: | EEPROM | <img src"=./images/Lord of the Rings 3 - Return of the King.png" alt="Lord of the Rings 3 - Return of the King.gba image"></img> |
-| Lunar Legend (U) [!].gba | LUNAR LEGEN | :heavy_check_mark: | EEPROM | <img src"=./images/Lunar Legend (U) [!].png" alt="Lunar Legend (U) [!].gba image"></img> |
-| Mario Advanced - Mario Bros. 2 + Mario Classic.gba | SUPER MARIO | :heavy_check_mark: | EEPROM | <img src"=./images/Mario Advanced - Mario Bros. 2 + Mario Classic.png" alt="Mario Advanced - Mario Bros. 2 + Mario Classic.gba image"></img> |
-| Mario Advanced 2 - Mario World.gba | SUPER MARIO | :heavy_check_mark: | EEPROM | <img src"=./images/Mario Advanced 2 - Mario World.png" alt="Mario Advanced 2 - Mario World.gba image"></img> |
-| Mario Advanced 4 - Mario Bros. 3.gba | SUPER MARIO | :heavy_check_mark: | FLASH128 | <img src"=./images/Mario Advanced 4 - Mario Bros. 3.png" alt="Mario Advanced 4 - Mario Bros. 3.gba image"></img> |
-| Mario and Luigi - Superstar Saga.gba | MARIO&LUIGI | :heavy_check_mark: | EEPROM | <img src"=./images/Mario and Luigi - Superstar Saga.png" alt="Mario and Luigi - Superstar Saga.gba image"></img> |
-| Mario Golf - Advance Tour.gba | MARIOGOLFGB | :x: | SRAM |  |
-| Mario Kart - Super Circuit.gba | MARIO KART | :heavy_check_mark: | FLASH64 | <img src"=./images/Mario Kart - Super Circuit.png" alt="Mario Kart - Super Circuit.gba image"></img> |
-| Mario Tennis - Power Tour.gba | MARIOTENNIS | :x: | SRAM |  |
-| Mario vs. Donkey Kong.gba | MARIOVSDK | :heavy_check_mark: | FLASH64 | <img src"=./images/Mario vs. Donkey Kong.png" alt="Mario vs. Donkey Kong.gba image"></img> |
-| Max Payne (USA).gba | MAX PAYNE   | :x: | EEPROM |  |
-| Medal of Honor - Infiltrator (U).gba | INFILTRATOR | :heavy_check_mark: | EEPROM | <img src"=./images/Medal of Honor - Infiltrator (U).png" alt="Medal of Honor - Infiltrator (U).gba image"></img> |
-| Mega-Man - Zero 2.gba | MEGAMANZERO | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man - Zero 2.png" alt="Mega-Man - Zero 2.gba image"></img> |
-| Mega-Man - Zero 3.gba | MEGAMANZERO | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man - Zero 3.png" alt="Mega-Man - Zero 3.gba image"></img> |
-| Mega-Man - Zero 4.gba | MEGAMANZERO | :heavy_check_mark: | EEPROM | <img src"=./images/Mega-Man - Zero 4.png" alt="Mega-Man - Zero 4.gba image"></img> |
-| Mega-Man and Bass.gba | MEGAMAN&BAS | :heavy_check_mark: | EEPROM | <img src"=./images/Mega-Man and Bass.png" alt="Mega-Man and Bass.gba image"></img> |
-| Mega-Man Battle Network 2.gba | MEGAMAN_EXE | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man Battle Network 2.png" alt="Mega-Man Battle Network 2.gba image"></img> |
-| Mega-Man Battle Network 3 - Blue.gba | MEGA_EXE3_B | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man Battle Network 3 - Blue.png" alt="Mega-Man Battle Network 3 - Blue.gba image"></img> |
-| Mega-Man Battle Network 3 - White.gba | MEGA_EXE3_W | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man Battle Network 3 - White.png" alt="Mega-Man Battle Network 3 - White.gba image"></img> |
-| Mega-Man Battle Network 4 - Blue Moon.gba | MEGAMANBN4B | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man Battle Network 4 - Blue Moon.png" alt="Mega-Man Battle Network 4 - Blue Moon.gba image"></img> |
-| Mega-Man Battle Network 4 - Red Sun.gba | MEGAMANBN4R | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man Battle Network 4 - Red Sun.png" alt="Mega-Man Battle Network 4 - Red Sun.gba image"></img> |
-| Mega-Man Battle Network 5 - Team Colonel.gba | MEGAMAN5_TC | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man Battle Network 5 - Team Colonel.png" alt="Mega-Man Battle Network 5 - Team Colonel.gba image"></img> |
-| Mega-Man Battle Network 5 - Team Proto-Man.gba | MEGAMAN5_TP | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man Battle Network 5 - Team Proto-Man.png" alt="Mega-Man Battle Network 5 - Team Proto-Man.gba image"></img> |
-| Mega-Man Battle Network 6 - Cybeast Falzar.gba | MEGAMAN6_FX | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man Battle Network 6 - Cybeast Falzar.png" alt="Mega-Man Battle Network 6 - Cybeast Falzar.gba image"></img> |
-| Mega-Man Battle Network 6 - Cybeast Gregar.gba | MEGAMAN6_GX | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man Battle Network 6 - Cybeast Gregar.png" alt="Mega-Man Battle Network 6 - Cybeast Gregar.gba image"></img> |
-| Mega-Man Battle Network.gba | MEGAMAN_BN | :heavy_check_mark: | SRAM | <img src"=./images/Mega-Man Battle Network.png" alt="Mega-Man Battle Network.gba image"></img> |
-| Megaman Zero (USA, Europe).gba | MEGAMAN ZER | :heavy_check_mark: | SRAM | <img src"=./images/Megaman Zero (USA, Europe).png" alt="Megaman Zero (USA, Europe).gba image"></img> |
-| Metal Slug Advance.gba | METAL SLUG | :heavy_check_mark: | EEPROM | <img src"=./images/Metal Slug Advance.png" alt="Metal Slug Advance.gba image"></img> |
-| Metroid - Fusion.gba | METROID4USA | :heavy_check_mark: | SRAM | <img src"=./images/Metroid - Fusion.png" alt="Metroid - Fusion.gba image"></img> |
-| Metroid - Zero Mission.gba | ZEROMISSION | :heavy_check_mark: | SRAM | <img src"=./images/Metroid - Zero Mission.png" alt="Metroid - Zero Mission.gba image"></img> |
-| Monkey Ball Jr..gba | MONKEYBALLJ | :heavy_check_mark: | EEPROM | <img src"=./images/Monkey Ball Jr..png" alt="Monkey Ball Jr..gba image"></img> |
-| Monster Rancher Advance (USA).gba | MONSRANCHER | :heavy_check_mark: | SRAM | <img src"=./images/Monster Rancher Advance (USA).png" alt="Monster Rancher Advance (USA).gba image"></img> |
-| Monster Rancher Advance 2 (USA).gba | MONSTERRANC | :heavy_check_mark: | SRAM | <img src"=./images/Monster Rancher Advance 2 (USA).png" alt="Monster Rancher Advance 2 (USA).gba image"></img> |
-| Mortal Kombat - Deadly Alliance (USA) (En,Fr,De,Es,It).gba | MKALLIANCE | :heavy_check_mark: | EEPROM | <img src"=./images/Mortal Kombat - Deadly Alliance (USA) (En,Fr,De,Es,It).png" alt="Mortal Kombat - Deadly Alliance (USA) (En,Fr,De,Es,It).gba image"></img> |
-| Mother 3 (J) [T+Eng].gba | MOTHER3 | :heavy_check_mark: | FLASH64 | <img src"=./images/Mother 3 (J) [T+Eng].png" alt="Mother 3 (J) [T+Eng].gba image"></img> |
-| Ninja Cop.gba | NINJA COP   | :heavy_check_mark: | EEPROM | <img src"=./images/Ninja Cop.png" alt="Ninja Cop.gba image"></img> |
-| OpenLara.gba | OpenLara | :heavy_check_mark: | SRAM | <img src"=./images/OpenLara.png" alt="OpenLara.gba image"></img> |
-| Pac-Man Collection.gba | PACMANCOLLE | :heavy_check_mark: | SRAM | <img src"=./images/Pac-Man Collection.png" alt="Pac-Man Collection.gba image"></img> |
-| Pocky _ Rocky with Becky.gba | POCKY-ROCKY | :heavy_check_mark: | SRAM | <img src"=./images/Pocky _ Rocky with Becky.png" alt="Pocky _ Rocky with Becky.gba image"></img> |
-| Pokemon - Emerald Version (USA, Europe).gba | POKEMON EME | :heavy_check_mark: | FLASH128 | <img src"=./images/Pokemon - Emerald Version (USA, Europe).png" alt="Pokemon - Emerald Version (USA, Europe).gba image"></img> |
-| Pokemon - Fire Red.gba | POKEMON FIR | :heavy_check_mark: | FLASH128 | <img src"=./images/Pokemon - Fire Red.png" alt="Pokemon - Fire Red.gba image"></img> |
-| Pokemon - Leaf Green Version (USA).gba | POKEMON LEA | :heavy_check_mark: | FLASH128 | <img src"=./images/Pokemon - Leaf Green Version (USA).png" alt="Pokemon - Leaf Green Version (USA).gba image"></img> |
-| Pokemon - Ruby Version (USA).gba | POKEMON RUB | :heavy_check_mark: | FLASH128 | <img src"=./images/Pokemon - Ruby Version (USA).png" alt="Pokemon - Ruby Version (USA).gba image"></img> |
-| Pokemon - Sapphire Version (USA).gba | POKEMON SAP | :heavy_check_mark: | FLASH128 | <img src"=./images/Pokemon - Sapphire Version (USA).png" alt="Pokemon - Sapphire Version (USA).gba image"></img> |
-| Pokemon Mystery Dungeon - Red Rescue Team.gba | POKE DUNGEO | :heavy_check_mark: | FLASH128 | <img src"=./images/Pokemon Mystery Dungeon - Red Rescue Team.png" alt="Pokemon Mystery Dungeon - Red Rescue Team.gba image"></img> |
-| Pokemon Pinball - Ruby _ Sapphire (E).gba | POKEPIN R/S | :heavy_check_mark: | SRAM | <img src"=./images/Pokemon Pinball - Ruby _ Sapphire (E).png" alt="Pokemon Pinball - Ruby _ Sapphire (E).gba image"></img> |
-| Puyo Pop.gba | PUYO POP | :heavy_check_mark: | EEPROM | <img src"=./images/Puyo Pop.png" alt="Puyo Pop.gba image"></img> |
-| Puzzle Fighter 2 Turbo.gba | PUZZLEFIGHT | :heavy_check_mark: | EEPROM | <img src"=./images/Puzzle Fighter 2 Turbo.png" alt="Puzzle Fighter 2 Turbo.gba image"></img> |
-| Racing Gears Advance (U).gba | RACING GEAR | :heavy_check_mark: | EEPROM | <img src"=./images/Racing Gears Advance (U).png" alt="Racing Gears Advance (U).gba image"></img> |
-| Ray-Man 3 - Hoodlum Havoc.gba | RAYMAN 3 | :heavy_check_mark: | EEPROM | <img src"=./images/Ray-Man 3 - Hoodlum Havoc.png" alt="Ray-Man 3 - Hoodlum Havoc.gba image"></img> |
-| Ray-Man Advance.gba | RAYMAN | :heavy_check_mark: | EEPROM | <img src"=./images/Ray-Man Advance.png" alt="Ray-Man Advance.gba image"></img> |
-| Rhythm Tengoku (Japan).gba | RHYTHMTENGO | :heavy_check_mark: | SRAM | <img src"=./images/Rhythm Tengoku (Japan).png" alt="Rhythm Tengoku (Japan).gba image"></img> |
-| Riviera - The Promised Land (U).gba | RIVIERA | :heavy_check_mark: | SRAM | <img src"=./images/Riviera - The Promised Land (U).png" alt="Riviera - The Promised Land (U).gba image"></img> |
-| Sonic Advance 2.gba | SONIC ADVAN | :heavy_check_mark: | FLASH64 | <img src"=./images/Sonic Advance 2.png" alt="Sonic Advance 2.gba image"></img> |
-| Sonic Advance 3 (USA) (En,Ja,Fr,De,Es,It).gba | SONICADVANC | :heavy_check_mark: | FLASH64 | <img src"=./images/Sonic Advance 3 (USA) (En,Ja,Fr,De,Es,It).png" alt="Sonic Advance 3 (USA) (En,Ja,Fr,De,Es,It).gba image"></img> |
-| Sonic Advance.gba | SONICADVANC | :heavy_check_mark: | FLASH64 | <img src"=./images/Sonic Advance.png" alt="Sonic Advance.gba image"></img> |
-| Sonic Battle.gba | SONICBATTLE | :heavy_check_mark: | FLASH64 | <img src"=./images/Sonic Battle.png" alt="Sonic Battle.gba image"></img> |
-| Sonic Pinball Party (USA) (En,Ja,Fr,De,Es,It).gba | SONICPINBAL | :heavy_check_mark: | FLASH64 | <img src"=./images/Sonic Pinball Party (USA) (En,Ja,Fr,De,Es,It).png" alt="Sonic Pinball Party (USA) (En,Ja,Fr,De,Es,It).gba image"></img> |
-| Spider-Man - Mysterio_s Menace (U) [!].gba | SPIDERMAN M | :heavy_check_mark: | SRAM | <img src"=./images/Spider-Man - Mysterio_s Menace (U) [!].png" alt="Spider-Man - Mysterio_s Menace (U) [!].gba image"></img> |
-| Spyro - Season of Ice.gba | SPYRO | :heavy_check_mark: | EEPROM | <img src"=./images/Spyro - Season of Ice.png" alt="Spyro - Season of Ice.gba image"></img> |
-| Spyro 2 - Season of Flame.gba | SPYRO 2 | :heavy_check_mark: | EEPROM | <img src"=./images/Spyro 2 - Season of Flame.png" alt="Spyro 2 - Season of Flame.gba image"></img> |
-| Spyro 3 - Attack of the Rhynocs.gba | SPYRO 3 | :heavy_check_mark: | EEPROM | <img src"=./images/Spyro 3 - Attack of the Rhynocs.png" alt="Spyro 3 - Attack of the Rhynocs.gba image"></img> |
-| Spyro Orange - the Cortex Conspiracy.gba | SPYRO ORANG | :heavy_check_mark: | EEPROM | <img src"=./images/Spyro Orange - the Cortex Conspiracy.png" alt="Spyro Orange - the Cortex Conspiracy.gba image"></img> |
-| Street Fighter Alpha 3 (E) [!].gba | STREET FIGH | :heavy_check_mark: | EEPROM | <img src"=./images/Street Fighter Alpha 3 (E) [!].png" alt="Street Fighter Alpha 3 (E) [!].gba image"></img> |
-| Summon Night - Swordcraft Story 2.gba | SWORDCRAFT2 | :heavy_check_mark: | EEPROM | <img src"=./images/Summon Night - Swordcraft Story 2.png" alt="Summon Night - Swordcraft Story 2.gba image"></img> |
-| Summon Night - Swordcraft Story.gba | SUMMONIGHSC | :heavy_check_mark: | EEPROM | <img src"=./images/Summon Night - Swordcraft Story.png" alt="Summon Night - Swordcraft Story.gba image"></img> |
-| Super Bust-A-Move (USA) (En,Fr,Es).gba | BUSTAMOVEGB | :heavy_check_mark: | SRAM | <img src"=./images/Super Bust-A-Move (USA) (En,Fr,Es).png" alt="Super Bust-A-Move (USA) (En,Fr,Es).gba image"></img> |
-| Super Dodge Ball Advance (Europe).gba | SPUER DODGE | :heavy_check_mark: | SRAM | <img src"=./images/Super Dodge Ball Advance (Europe).png" alt="Super Dodge Ball Advance (Europe).gba image"></img> |
-| Super Ghouls _N Ghosts (U).gba | SUPER GHOUL | :heavy_check_mark: | EEPROM | <img src"=./images/Super Ghouls _N Ghosts (U).png" alt="Super Ghouls _N Ghosts (U).gba image"></img> |
-| Super Mario Advance (U) [!].gba | SUPER MARIO | :heavy_check_mark: | EEPROM | <img src"=./images/Super Mario Advance (U) [!].png" alt="Super Mario Advance (U) [!].gba image"></img> |
-| Super Mario Advance 3 - Yoshi_s Island (USA).gba | SUPER MARIO | :heavy_check_mark: | EEPROM | <img src"=./images/Super Mario Advance 3 - Yoshi_s Island (USA).png" alt="Super Mario Advance 3 - Yoshi_s Island (USA).gba image"></img> |
-| Super Monkey Ball Jr (U) [!].gba | MONKEYBALLJ | :heavy_check_mark: | EEPROM | <img src"=./images/Super Monkey Ball Jr (U) [!].png" alt="Super Monkey Ball Jr (U) [!].gba image"></img> |
-| Super Robot Taisen - Original Generation 2 (U) [!].gba | SRTOG2 | :heavy_check_mark: | FLASH64 | <img src"=./images/Super Robot Taisen - Original Generation 2 (U) [!].png" alt="Super Robot Taisen - Original Generation 2 (U) [!].gba image"></img> |
-| Super Street Fighter II Turbo - Revival (E) [!].gba | SSF2TREVIVA | :heavy_check_mark: | EEPROM | <img src"=./images/Super Street Fighter II Turbo - Revival (E) [!].png" alt="Super Street Fighter II Turbo - Revival (E) [!].gba image"></img> |
-| Sword of Mana (USA, Australia).gba | SWORD OF MA | :heavy_check_mark: | FLASH64 | <img src"=./images/Sword of Mana (USA, Australia).png" alt="Sword of Mana (USA, Australia).gba image"></img> |
-| Tactics Ogre - the Knight of Lodis.gba | TACTICSOGRE | :heavy_check_mark: | FLASH64 | <img src"=./images/Tactics Ogre - the Knight of Lodis.png" alt="Tactics Ogre - the Knight of Lodis.gba image"></img> |
-| Tales of Phantasia (USA, Australia).gba | PHANTASIA | :heavy_check_mark: | EEPROM | <img src"=./images/Tales of Phantasia (USA, Australia).png" alt="Tales of Phantasia (USA, Australia).gba image"></img> |
-| Tekken Advance (U) [!].gba | TEKKEN | :heavy_check_mark: | EEPROM | <img src"=./images/Tekken Advance (U) [!].png" alt="Tekken Advance (U) [!].gba image"></img> |
-| TMNT (U).gba | TMNT | :heavy_check_mark: | EEPROM | <img src"=./images/TMNT (U).png" alt="TMNT (U).gba image"></img> |
-| Tony Hawk_s Downhill Jam.gba | TONYHAWKDJ | :heavy_check_mark: | EEPROM | <img src"=./images/Tony Hawk_s Downhill Jam.png" alt="Tony Hawk_s Downhill Jam.gba image"></img> |
-| Tony Hawk_s Pro Skater 2.gba | TONY HAWK 2 | :heavy_check_mark: | EEPROM | <img src"=./images/Tony Hawk_s Pro Skater 2.png" alt="Tony Hawk_s Pro Skater 2.gba image"></img> |
-| Tony Hawk_s Pro Skater 3 (U) [!].gba | TONY HAWK 3 | :x: | EEPROM |  |
-| Tony Hawk_s Pro Skater 4.gba | TONY HAWK 4 | :heavy_check_mark: | EEPROM | <img src"=./images/Tony Hawk_s Pro Skater 4.png" alt="Tony Hawk_s Pro Skater 4.gba image"></img> |
-| Tony Hawk_s Underground (U).gba | THUGTHUGTHU | :heavy_check_mark: | EEPROM | <img src"=./images/Tony Hawk_s Underground (U).png" alt="Tony Hawk_s Underground (U).gba image"></img> |
-| Tony Hawk_s Underground 2.gba | THUG2 | :heavy_check_mark: | EEPROM | <img src"=./images/Tony Hawk_s Underground 2.png" alt="Tony Hawk_s Underground 2.gba image"></img> |
-| Turbo Turtle Adventure (USA).gba | TURBO TURTL | :heavy_check_mark: | EEPROM | <img src"=./images/Turbo Turtle Adventure (USA).png" alt="Turbo Turtle Adventure (USA).gba image"></img> |
-| Ultimate Brain Games (U).gba | UBG | :heavy_check_mark: | EEPROM | <img src"=./images/Ultimate Brain Games (U).png" alt="Ultimate Brain Games (U).gba image"></img> |
-| Ultimate Card Games (U).gba | UCG | :heavy_check_mark: | EEPROM | <img src"=./images/Ultimate Card Games (U).png" alt="Ultimate Card Games (U).gba image"></img> |
-| V-Rally 3 (U).gba | VRALLY 3 | :heavy_check_mark: | EEPROM | <img src"=./images/V-Rally 3 (U).png" alt="V-Rally 3 (U).gba image"></img> |
-| Virtua Tennis (U).gba | VIRTUATENNI | :heavy_check_mark: | EEPROM | <img src"=./images/Virtua Tennis (U).png" alt="Virtua Tennis (U).gba image"></img> |
-| Wade Hixton_s Counter Punch (USA, Europe).gba | WADE HIXTON | :heavy_check_mark: | EEPROM | <img src"=./images/Wade Hixton_s Counter Punch (USA, Europe).png" alt="Wade Hixton_s Counter Punch (USA, Europe).gba image"></img> |
-| Wario Land 4 (UE) [!].gba | WARIOLANDE | :heavy_check_mark: | SRAM | <img src"=./images/Wario Land 4 (UE) [!].png" alt="Wario Land 4 (UE) [!].gba image"></img> |
-| Wario Ware Inc..gba | WARIOWAREIN | :heavy_check_mark: | SRAM | <img src"=./images/Wario Ware Inc..png" alt="Wario Ware Inc..gba image"></img> |
-| Yggdra Union - We_ll Never Fight Alone (USA).gba | YGGDRA UNIO | :heavy_check_mark: | EEPROM | <img src"=./images/Yggdra Union - We_ll Never Fight Alone (USA).png" alt="Yggdra Union - We_ll Never Fight Alone (USA).gba image"></img> |
-| Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!].gba | YU-GI-OH!ED | :heavy_check_mark: | SRAM | <img src"=./images/Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!].png" alt="Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!].gba image"></img> |
-| Zelda - the Minish Cap.gba | GBAZELDA MC | :heavy_check_mark: | EEPROM | <img src"=./images/Zelda - the Minish Cap.png" alt="Zelda - the Minish Cap.gba image"></img> |
+<tr><td>Advance Wars 2 - Black Hole Rising (USA, Australia)</td><td>ADVANCEWARS</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Advance Wars 2 - Black Hole Rising (USA, Australia).gba" alt="Advance Wars 2 - Black Hole Rising (USA, Australia).png"></img></td></tr>
+<tr><td>Advanced Wars</td><td>ADVANCEWARS</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Advanced Wars.gba" alt="Advanced Wars.png"></img></td></tr>
+<tr><td>Aero the Acrobat - Rascal Rival Revenge</td><td>AEROACROBAT</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Aero the Acrobat - Rascal Rival Revenge.gba" alt="Aero the Acrobat - Rascal Rival Revenge.png"></img></td></tr>
+<tr><td>Alien Hominid</td><td>ALIENHOMINI</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Alien Hominid.gba" alt="Alien Hominid.png"></img></td></tr>
+<tr><td>Astro Boy - Omega Factor</td><td>ASTRO BOY-O</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Astro Boy - Omega Factor.gba" alt="Astro Boy - Omega Factor.png"></img></td></tr>
+<tr><td>Atari Anniversary Advance (USA)</td><td>ATARI_ANNIV</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Atari Anniversary Advance (USA).gba" alt="Atari Anniversary Advance (USA).png"></img></td></tr>
+<tr><td>Banjo Kazooie - Grunty_s Revenge</td><td>BANJOKAZOOI</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Banjo Kazooie - Grunty_s Revenge.gba" alt="Banjo Kazooie - Grunty_s Revenge.png"></img></td></tr>
+<tr><td>Banjo Pilot</td><td>BANJO PILOT</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Banjo Pilot.gba" alt="Banjo Pilot.png"></img></td></tr>
+<tr><td>Bomber-Man Tournament</td><td>BOMSTORYUSA</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Bomber-Man Tournament.gba" alt="Bomber-Man Tournament.png"></img></td></tr>
+<tr><td>Bomberman Max 2 - Blue (E)</td><td>BOMBERMAN M</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Bomberman Max 2 - Blue (E).gba" alt="Bomberman Max 2 - Blue (E).png"></img></td></tr>
+<tr><td>Bomberman Max 2 - Red (E)</td><td>BMAX2-RED</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Bomberman Max 2 - Red (E).gba" alt="Bomberman Max 2 - Red (E).png"></img></td></tr>
+<tr><td>Breath of Fire (E)</td><td>BOF EUR</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Breath of Fire (E).gba" alt="Breath of Fire (E).png"></img></td></tr>
+<tr><td>Breath of Fire II (USA)</td><td>BOF2</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Breath of Fire II (USA).gba" alt="Breath of Fire II (USA).png"></img></td></tr>
+<tr><td>Broken Sword - the Shadow of the Templars</td><td>BROKENSWORD</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Broken Sword - the Shadow of the Templars.gba" alt="Broken Sword - the Shadow of the Templars.png"></img></td></tr>
+<tr><td>Car Battler Joe (USA)</td><td>CARBATTLERJ</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Car Battler Joe (USA).gba" alt="Car Battler Joe (USA).png"></img></td></tr>
+<tr><td>Castlevania - Aria of Sorrow (USA)</td><td>CASTLEVANIA</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Castlevania - Aria of Sorrow (USA).gba" alt="Castlevania - Aria of Sorrow (USA).png"></img></td></tr>
+<tr><td>Castlevania - Circle of the Moon</td><td>DRACULA AGB</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Castlevania - Circle of the Moon.gba" alt="Castlevania - Circle of the Moon.png"></img></td></tr>
+<tr><td>Castlevania - Harmony Of Dissonance</td><td>CASTLEVANIA</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Castlevania - Harmony Of Dissonance.gba" alt="Castlevania - Harmony Of Dissonance.png"></img></td></tr>
+<tr><td>Chu Chu Rocket!</td><td>CHUCHUROCKE</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Chu Chu Rocket!.gba" alt="Chu Chu Rocket!.png"></img></td></tr>
+<tr><td>Crash Bandicoot - Purple Riptos Rampage</td><td>CRASH PURPL</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Crash Bandicoot - Purple Riptos Rampage.gba" alt="Crash Bandicoot - Purple Riptos Rampage.png"></img></td></tr>
+<tr><td>Crash Bandicoot - the Huge Adventure</td><td>CRASH</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Crash Bandicoot - the Huge Adventure.gba" alt="Crash Bandicoot - the Huge Adventure.png"></img></td></tr>
+<tr><td>Crash Bandicoot 2 - N-Tranced</td><td>CRASH2</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Crash Bandicoot 2 - N-Tranced.gba" alt="Crash Bandicoot 2 - N-Tranced.png"></img></td></tr>
+<tr><td>Denki Blocks! (USA) (En,Es)</td><td>DENKIBLOCKS</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Denki Blocks! (USA) (En,Es).gba" alt="Denki Blocks! (USA) (En,Es).png"></img></td></tr>
+<tr><td>Densetsu no Stafy 2</td><td>STAFY 2</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Densetsu no Stafy 2.gba" alt="Densetsu no Stafy 2.png"></img></td></tr>
+<tr><td>Densetsu no Stafy 3</td><td>STAFY 3</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Densetsu no Stafy 3.gba" alt="Densetsu no Stafy 3.png"></img></td></tr>
+<tr><td>Densetsu no Stafy</td><td>STAFY</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Densetsu no Stafy.gba" alt="Densetsu no Stafy.png"></img></td></tr>
+<tr><td>Disney_s Kim Possible 2 - Drakken_s Demise (U)</td><td>KIMPOSSIBLE</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Disney_s Kim Possible 2 - Drakken_s Demise (U).gba" alt="Disney_s Kim Possible 2 - Drakken_s Demise (U).png"></img></td></tr>
+<tr><td>Donkey Kong - King of Swing</td><td>KINGOFSWING</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Donkey Kong - King of Swing.gba" alt="Donkey Kong - King of Swing.png"></img></td></tr>
+<tr><td>Donkey Kong Country 2 (U)</td><td>RAREDKC2</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Donkey Kong Country 2 (U).gba" alt="Donkey Kong Country 2 (U).png"></img></td></tr>
+<tr><td>Donkey Kong Country 3</td><td>RAREDKC3</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Donkey Kong Country 3.gba" alt="Donkey Kong Country 3.png"></img></td></tr>
+<tr><td>Donkey Kong Country</td><td>RAREDKC1</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Donkey Kong Country.gba" alt="Donkey Kong Country.png"></img></td></tr>
+<tr><td>Doom (USA, Europe)</td><td>AGB-DOOM</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Doom (USA, Europe).gba" alt="Doom (USA, Europe).png"></img></td></tr>
+<tr><td>Dr. Mario _ Puzzle League</td><td>DRMARIO&PON</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Dr. Mario _ Puzzle League.gba" alt="Dr. Mario _ Puzzle League.png"></img></td></tr>
+<tr><td>Drill Dozer</td><td>DRILL DOZER</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Drill Dozer.gba" alt="Drill Dozer.png"></img></td></tr>
+<tr><td>Duke Nukem Advance (U)</td><td>DUKE NUKEM </td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Duke Nukem Advance (U).gba" alt="Duke Nukem Advance (U).png"></img></td></tr>
+<tr><td>Ecks vs. Sever (E)</td><td>ECKS VSE SE</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Ecks vs. Sever (E).gba" alt="Ecks vs. Sever (E).png"></img></td></tr>
+<tr><td>F-Zero - Maximum Velocity (USA, Europe)</td><td>F-ZERO ADVA</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/F-Zero - Maximum Velocity (USA, Europe).gba" alt="F-Zero - Maximum Velocity (USA, Europe).png"></img></td></tr>
+<tr><td>F-Zero 2 - GP Legend</td><td>F-ZERO2</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/F-Zero 2 - GP Legend.gba" alt="F-Zero 2 - GP Legend.png"></img></td></tr>
+<tr><td>Final Fantasy - Tactics Advanced</td><td>FFTA_USVER.</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Final Fantasy - Tactics Advanced.gba" alt="Final Fantasy - Tactics Advanced.png"></img></td></tr>
+<tr><td>Final Fantasy 1 + 2 - Dawn of Souls</td><td>FF1&2DAWNOF</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Final Fantasy 1 + 2 - Dawn of Souls.gba" alt="Final Fantasy 1 + 2 - Dawn of Souls.png"></img></td></tr>
+<tr><td>Final Fantasy 4 Advance</td><td>FF4ADVANCE</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Final Fantasy 4 Advance.gba" alt="Final Fantasy 4 Advance.png"></img></td></tr>
+<tr><td>Final Fantasy 5 Advance</td><td>FF5ADVANCE</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Final Fantasy 5 Advance.gba" alt="Final Fantasy 5 Advance.png"></img></td></tr>
+<tr><td>Final Fantasy 6 Advance</td><td>FF6ADVANCE</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Final Fantasy 6 Advance.gba" alt="Final Fantasy 6 Advance.png"></img></td></tr>
+<tr><td>Final Fight One (U)</td><td>FINAL FIGHT</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Final Fight One (U).gba" alt="Final Fight One (U).png"></img></td></tr>
+<tr><td>Fire Emblem - the Sacred Stones</td><td>FIREEMBLEM2</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Fire Emblem - the Sacred Stones.gba" alt="Fire Emblem - the Sacred Stones.png"></img></td></tr>
+<tr><td>Fire Emblem</td><td>FIREEMBLEME</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Fire Emblem.gba" alt="Fire Emblem.png"></img></td></tr>
+<tr><td>Frogger_s Adventure - Temple of the Frog</td><td>FROG: TEMPL</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Frogger_s Adventure - Temple of the Frog.gba" alt="Frogger_s Adventure - Temple of the Frog.png"></img></td></tr>
+<tr><td>Frogger_s Adventures 2 - The Lost Wand (E)</td><td>FG2 THE LOS</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Frogger_s Adventures 2 - The Lost Wand (E).gba" alt="Frogger_s Adventures 2 - The Lost Wand (E).png"></img></td></tr>
+<tr><td>Game _ Watch Gallery Advance</td><td>G&W GALLERY</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Game _ Watch Gallery Advance.gba" alt="Game _ Watch Gallery Advance.png"></img></td></tr>
+<tr><td>Golden Sun - The Lost Age (USA, Europe)</td><td>GOLDEN_SUN_</td><td>:x: - The method or operation is not implemented.</td><td>FLASH64</td><td><img src="./images/Golden Sun - The Lost Age (USA, Europe).gba" alt="Golden Sun - The Lost Age (USA, Europe).png"></img></td></tr>
+<tr><td>Golden Sun</td><td>Golden_Sun_</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Golden Sun.gba" alt="Golden Sun.png"></img></td></tr>
+<tr><td>Gradius Galaxies (USA)</td><td>GRADIUSGALA</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Gradius Galaxies (USA).gba" alt="Gradius Galaxies (USA).png"></img></td></tr>
+<tr><td>Grand Theft Auto Advance</td><td>GTA</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Grand Theft Auto Advance.gba" alt="Grand Theft Auto Advance.png"></img></td></tr>
+<tr><td>Gunstar Super Heroes</td><td>GUNSTAR SH</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Gunstar Super Heroes.gba" alt="Gunstar Super Heroes.png"></img></td></tr>
+<tr><td>Hamtaro - Ham-Ham Games (Europe) (En,Fr,De,Es,It)</td><td>HAMSPORTS</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Hamtaro - Ham-Ham Games (Europe) (En,Fr,De,Es,It).gba" alt="Hamtaro - Ham-Ham Games (Europe) (En,Fr,De,Es,It).png"></img></td></tr>
+<tr><td>Harvest Moon - Friends of Mineral Town</td><td>HARVESTMOGB</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Harvest Moon - Friends of Mineral Town.gba" alt="Harvest Moon - Friends of Mineral Town.png"></img></td></tr>
+<tr><td>Harvest Moon - More Friends of Mineral Town (U)</td><td>HM MFOM USA</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Harvest Moon - More Friends of Mineral Town (U).gba" alt="Harvest Moon - More Friends of Mineral Town (U).png"></img></td></tr>
+<tr><td>Karnaaj Rally (U)</td><td>KARNAAJ</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Karnaaj Rally (U).gba" alt="Karnaaj Rally (U).png"></img></td></tr>
+<tr><td>King of Fighters EX 2 - Howling Blood</td><td>KOFEX2HOWLI</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/King of Fighters EX 2 - Howling Blood.gba" alt="King of Fighters EX 2 - Howling Blood.png"></img></td></tr>
+<tr><td>King of Fighters EX, The - NeoBlood (U) (V1.1)</td><td>KINGOFEXNEO</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/King of Fighters EX, The - NeoBlood (U) (V1.1).gba" alt="King of Fighters EX, The - NeoBlood (U) (V1.1).png"></img></td></tr>
+<tr><td>Kingdom Hearts - Chain of Memories</td><td>KINGDOMHEAR</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Kingdom Hearts - Chain of Memories.gba" alt="Kingdom Hearts - Chain of Memories.png"></img></td></tr>
+<tr><td>Kirby & The Amazing Mirror (USA)</td><td>AGB KIRBY A</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Kirby & The Amazing Mirror (USA).gba" alt="Kirby & The Amazing Mirror (USA).png"></img></td></tr>
+<tr><td>Kirby - Nightmare in Dream Land (USA)</td><td>AGB KIRBY D</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Kirby - Nightmare in Dream Land (USA).gba" alt="Kirby - Nightmare in Dream Land (USA).png"></img></td></tr>
+<tr><td>Klonoa - Empire of Dreams</td><td>KLONOA EMPI</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Klonoa - Empire of Dreams.gba" alt="Klonoa - Empire of Dreams.png"></img></td></tr>
+<tr><td>Klonoa 2 - Dream Champ Tournament</td><td>KLONOA2</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Klonoa 2 - Dream Champ Tournament.gba" alt="Klonoa 2 - Dream Champ Tournament.png"></img></td></tr>
+<tr><td>Konami Krazy Racers (Europe)</td><td>KRAZY RACER</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Konami Krazy Racers (Europe).gba" alt="Konami Krazy Racers (Europe).png"></img></td></tr>
+<tr><td>Kuru Kuru Kururin</td><td>KURURIN</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Kuru Kuru Kururin.gba" alt="Kuru Kuru Kururin.png"></img></td></tr>
+<tr><td>Kururin Paradise (Japan)</td><td>KURUPARA</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Kururin Paradise (Japan).gba" alt="Kururin Paradise (Japan).png"></img></td></tr>
+<tr><td>Legend of Zelda, The - A Link to the Past _ Four Swords (USA, Australia)</td><td>GBAZELDA</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Legend of Zelda, The - A Link to the Past _ Four Swords (USA, Australia).gba" alt="Legend of Zelda, The - A Link to the Past _ Four Swords (USA, Australia).png"></img></td></tr>
+<tr><td>LEGO - Star Wars - the Video Game</td><td>LEGOSTARWAR</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/LEGO - Star Wars - the Video Game.gba" alt="LEGO - Star Wars - the Video Game.png"></img></td></tr>
+<tr><td>LEGO - Star Wars 2 - the Original Trilogy</td><td>LSW2GBA</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/LEGO - Star Wars 2 - the Original Trilogy.gba" alt="LEGO - Star Wars 2 - the Original Trilogy.png"></img></td></tr>
+<tr><td>Lilo _ Stitch</td><td>LILO AND ST</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Lilo _ Stitch.gba" alt="Lilo _ Stitch.png"></img></td></tr>
+<tr><td>Lord of the Rings 2 - the Two Towers</td><td>TWO TOWERS</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Lord of the Rings 2 - the Two Towers.gba" alt="Lord of the Rings 2 - the Two Towers.png"></img></td></tr>
+<tr><td>Lord of the Rings 3 - Return of the King</td><td>RETURN KING</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Lord of the Rings 3 - Return of the King.gba" alt="Lord of the Rings 3 - Return of the King.png"></img></td></tr>
+<tr><td>Lunar Legend (U) [!]</td><td>LUNAR LEGEN</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Lunar Legend (U) [!].gba" alt="Lunar Legend (U) [!].png"></img></td></tr>
+<tr><td>Mario Advanced - Mario Bros. 2 + Mario Classic</td><td>SUPER MARIO</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Mario Advanced - Mario Bros. 2 + Mario Classic.gba" alt="Mario Advanced - Mario Bros. 2 + Mario Classic.png"></img></td></tr>
+<tr><td>Mario Advanced 2 - Mario World</td><td>SUPER MARIO</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Mario Advanced 2 - Mario World.gba" alt="Mario Advanced 2 - Mario World.png"></img></td></tr>
+<tr><td>Mario Advanced 4 - Mario Bros. 3</td><td>SUPER MARIO</td><td>:heavy_check_mark:</td><td>FLASH128</td><td><img src="./images/Mario Advanced 4 - Mario Bros. 3.gba" alt="Mario Advanced 4 - Mario Bros. 3.png"></img></td></tr>
+<tr><td>Mario and Luigi - Superstar Saga</td><td>MARIO&LUIGI</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Mario and Luigi - Superstar Saga.gba" alt="Mario and Luigi - Superstar Saga.png"></img></td></tr>
+<tr><td>Mario Golf - Advance Tour</td><td>MARIOGOLFGB</td><td>:x: - The method or operation is not implemented.</td><td>SRAM</td><td><img src="./images/Mario Golf - Advance Tour.gba" alt="Mario Golf - Advance Tour.png"></img></td></tr>
+<tr><td>Mario Kart - Super Circuit</td><td>MARIO KART</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Mario Kart - Super Circuit.gba" alt="Mario Kart - Super Circuit.png"></img></td></tr>
+<tr><td>Mario Tennis - Power Tour</td><td>MARIOTENNIS</td><td>:x: - The method or operation is not implemented.</td><td>SRAM</td><td><img src="./images/Mario Tennis - Power Tour.gba" alt="Mario Tennis - Power Tour.png"></img></td></tr>
+<tr><td>Mario vs. Donkey Kong</td><td>MARIOVSDK</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Mario vs. Donkey Kong.gba" alt="Mario vs. Donkey Kong.png"></img></td></tr>
+<tr><td>Max Payne (USA)</td><td>MAX PAYNE  </td><td>:x: - The method or operation is not implemented.</td><td>EEPROM</td><td><img src="./images/Max Payne (USA).gba" alt="Max Payne (USA).png"></img></td></tr>
+<tr><td>Medal of Honor - Infiltrator (U)</td><td>INFILTRATOR</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Medal of Honor - Infiltrator (U).gba" alt="Medal of Honor - Infiltrator (U).png"></img></td></tr>
+<tr><td>Mega-Man - Zero 2</td><td>MEGAMANZERO</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man - Zero 2.gba" alt="Mega-Man - Zero 2.png"></img></td></tr>
+<tr><td>Mega-Man - Zero 3</td><td>MEGAMANZERO</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man - Zero 3.gba" alt="Mega-Man - Zero 3.png"></img></td></tr>
+<tr><td>Mega-Man - Zero 4</td><td>MEGAMANZERO</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Mega-Man - Zero 4.gba" alt="Mega-Man - Zero 4.png"></img></td></tr>
+<tr><td>Mega-Man and Bass</td><td>MEGAMAN&BAS</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Mega-Man and Bass.gba" alt="Mega-Man and Bass.png"></img></td></tr>
+<tr><td>Mega-Man Battle Network 2</td><td>MEGAMAN_EXE</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man Battle Network 2.gba" alt="Mega-Man Battle Network 2.png"></img></td></tr>
+<tr><td>Mega-Man Battle Network 3 - Blue</td><td>MEGA_EXE3_B</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man Battle Network 3 - Blue.gba" alt="Mega-Man Battle Network 3 - Blue.png"></img></td></tr>
+<tr><td>Mega-Man Battle Network 3 - White</td><td>MEGA_EXE3_W</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man Battle Network 3 - White.gba" alt="Mega-Man Battle Network 3 - White.png"></img></td></tr>
+<tr><td>Mega-Man Battle Network 4 - Blue Moon</td><td>MEGAMANBN4B</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man Battle Network 4 - Blue Moon.gba" alt="Mega-Man Battle Network 4 - Blue Moon.png"></img></td></tr>
+<tr><td>Mega-Man Battle Network 4 - Red Sun</td><td>MEGAMANBN4R</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man Battle Network 4 - Red Sun.gba" alt="Mega-Man Battle Network 4 - Red Sun.png"></img></td></tr>
+<tr><td>Mega-Man Battle Network 5 - Team Colonel</td><td>MEGAMAN5_TC</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man Battle Network 5 - Team Colonel.gba" alt="Mega-Man Battle Network 5 - Team Colonel.png"></img></td></tr>
+<tr><td>Mega-Man Battle Network 5 - Team Proto-Man</td><td>MEGAMAN5_TP</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man Battle Network 5 - Team Proto-Man.gba" alt="Mega-Man Battle Network 5 - Team Proto-Man.png"></img></td></tr>
+<tr><td>Mega-Man Battle Network 6 - Cybeast Falzar</td><td>MEGAMAN6_FX</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man Battle Network 6 - Cybeast Falzar.gba" alt="Mega-Man Battle Network 6 - Cybeast Falzar.png"></img></td></tr>
+<tr><td>Mega-Man Battle Network 6 - Cybeast Gregar</td><td>MEGAMAN6_GX</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man Battle Network 6 - Cybeast Gregar.gba" alt="Mega-Man Battle Network 6 - Cybeast Gregar.png"></img></td></tr>
+<tr><td>Mega-Man Battle Network</td><td>MEGAMAN_BN</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Mega-Man Battle Network.gba" alt="Mega-Man Battle Network.png"></img></td></tr>
+<tr><td>Megaman Zero (USA, Europe)</td><td>MEGAMAN ZER</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Megaman Zero (USA, Europe).gba" alt="Megaman Zero (USA, Europe).png"></img></td></tr>
+<tr><td>Metal Slug Advance</td><td>METAL SLUG</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Metal Slug Advance.gba" alt="Metal Slug Advance.png"></img></td></tr>
+<tr><td>Metroid - Fusion</td><td>METROID4USA</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Metroid - Fusion.gba" alt="Metroid - Fusion.png"></img></td></tr>
+<tr><td>Metroid - Zero Mission</td><td>ZEROMISSION</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Metroid - Zero Mission.gba" alt="Metroid - Zero Mission.png"></img></td></tr>
+<tr><td>Monkey Ball Jr.</td><td>MONKEYBALLJ</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Monkey Ball Jr..gba" alt="Monkey Ball Jr..png"></img></td></tr>
+<tr><td>Monster Rancher Advance (USA)</td><td>MONSRANCHER</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Monster Rancher Advance (USA).gba" alt="Monster Rancher Advance (USA).png"></img></td></tr>
+<tr><td>Monster Rancher Advance 2 (USA)</td><td>MONSTERRANC</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Monster Rancher Advance 2 (USA).gba" alt="Monster Rancher Advance 2 (USA).png"></img></td></tr>
+<tr><td>Mortal Kombat - Deadly Alliance (USA) (En,Fr,De,Es,It)</td><td>MKALLIANCE</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Mortal Kombat - Deadly Alliance (USA) (En,Fr,De,Es,It).gba" alt="Mortal Kombat - Deadly Alliance (USA) (En,Fr,De,Es,It).png"></img></td></tr>
+<tr><td>Mother 3 (J) [T+Eng]</td><td>MOTHER3</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Mother 3 (J) [T+Eng].gba" alt="Mother 3 (J) [T+Eng].png"></img></td></tr>
+<tr><td>Ninja Cop</td><td>NINJA COP  </td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Ninja Cop.gba" alt="Ninja Cop.png"></img></td></tr>
+<tr><td>OpenLara</td><td>OpenLara</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/OpenLara.gba" alt="OpenLara.png"></img></td></tr>
+<tr><td>Pac-Man Collection</td><td>PACMANCOLLE</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Pac-Man Collection.gba" alt="Pac-Man Collection.png"></img></td></tr>
+<tr><td>Pocky _ Rocky with Becky</td><td>POCKY-ROCKY</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Pocky _ Rocky with Becky.gba" alt="Pocky _ Rocky with Becky.png"></img></td></tr>
+<tr><td>Pokemon - Emerald Version (USA, Europe)</td><td>POKEMON EME</td><td>:heavy_check_mark:</td><td>FLASH128</td><td><img src="./images/Pokemon - Emerald Version (USA, Europe).gba" alt="Pokemon - Emerald Version (USA, Europe).png"></img></td></tr>
+<tr><td>Pokemon - Fire Red</td><td>POKEMON FIR</td><td>:heavy_check_mark:</td><td>FLASH128</td><td><img src="./images/Pokemon - Fire Red.gba" alt="Pokemon - Fire Red.png"></img></td></tr>
+<tr><td>Pokemon - Leaf Green Version (USA)</td><td>POKEMON LEA</td><td>:heavy_check_mark:</td><td>FLASH128</td><td><img src="./images/Pokemon - Leaf Green Version (USA).gba" alt="Pokemon - Leaf Green Version (USA).png"></img></td></tr>
+<tr><td>Pokemon - Ruby Version (USA)</td><td>POKEMON RUB</td><td>:heavy_check_mark:</td><td>FLASH128</td><td><img src="./images/Pokemon - Ruby Version (USA).gba" alt="Pokemon - Ruby Version (USA).png"></img></td></tr>
+<tr><td>Pokemon - Sapphire Version (USA)</td><td>POKEMON SAP</td><td>:heavy_check_mark:</td><td>FLASH128</td><td><img src="./images/Pokemon - Sapphire Version (USA).gba" alt="Pokemon - Sapphire Version (USA).png"></img></td></tr>
+<tr><td>Pokemon Mystery Dungeon - Red Rescue Team</td><td>POKE DUNGEO</td><td>:heavy_check_mark:</td><td>FLASH128</td><td><img src="./images/Pokemon Mystery Dungeon - Red Rescue Team.gba" alt="Pokemon Mystery Dungeon - Red Rescue Team.png"></img></td></tr>
+<tr><td>Pokemon Pinball - Ruby _ Sapphire (E)</td><td>POKEPIN R/S</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Pokemon Pinball - Ruby _ Sapphire (E).gba" alt="Pokemon Pinball - Ruby _ Sapphire (E).png"></img></td></tr>
+<tr><td>Puyo Pop</td><td>PUYO POP</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Puyo Pop.gba" alt="Puyo Pop.png"></img></td></tr>
+<tr><td>Puzzle Fighter 2 Turbo</td><td>PUZZLEFIGHT</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Puzzle Fighter 2 Turbo.gba" alt="Puzzle Fighter 2 Turbo.png"></img></td></tr>
+<tr><td>Racing Gears Advance (U)</td><td>RACING GEAR</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Racing Gears Advance (U).gba" alt="Racing Gears Advance (U).png"></img></td></tr>
+<tr><td>Ray-Man 3 - Hoodlum Havoc</td><td>RAYMAN 3</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Ray-Man 3 - Hoodlum Havoc.gba" alt="Ray-Man 3 - Hoodlum Havoc.png"></img></td></tr>
+<tr><td>Ray-Man Advance</td><td>RAYMAN</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Ray-Man Advance.gba" alt="Ray-Man Advance.png"></img></td></tr>
+<tr><td>Rhythm Tengoku (Japan)</td><td>RHYTHMTENGO</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Rhythm Tengoku (Japan).gba" alt="Rhythm Tengoku (Japan).png"></img></td></tr>
+<tr><td>Riviera - The Promised Land (U)</td><td>RIVIERA</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Riviera - The Promised Land (U).gba" alt="Riviera - The Promised Land (U).png"></img></td></tr>
+<tr><td>Sonic Advance 2</td><td>SONIC ADVAN</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Sonic Advance 2.gba" alt="Sonic Advance 2.png"></img></td></tr>
+<tr><td>Sonic Advance 3 (USA) (En,Ja,Fr,De,Es,It)</td><td>SONICADVANC</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Sonic Advance 3 (USA) (En,Ja,Fr,De,Es,It).gba" alt="Sonic Advance 3 (USA) (En,Ja,Fr,De,Es,It).png"></img></td></tr>
+<tr><td>Sonic Advance</td><td>SONICADVANC</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Sonic Advance.gba" alt="Sonic Advance.png"></img></td></tr>
+<tr><td>Sonic Battle</td><td>SONICBATTLE</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Sonic Battle.gba" alt="Sonic Battle.png"></img></td></tr>
+<tr><td>Sonic Pinball Party (USA) (En,Ja,Fr,De,Es,It)</td><td>SONICPINBAL</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Sonic Pinball Party (USA) (En,Ja,Fr,De,Es,It).gba" alt="Sonic Pinball Party (USA) (En,Ja,Fr,De,Es,It).png"></img></td></tr>
+<tr><td>Spider-Man - Mysterio_s Menace (U) [!]</td><td>SPIDERMAN M</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Spider-Man - Mysterio_s Menace (U) [!].gba" alt="Spider-Man - Mysterio_s Menace (U) [!].png"></img></td></tr>
+<tr><td>Spyro - Season of Ice</td><td>SPYRO</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Spyro - Season of Ice.gba" alt="Spyro - Season of Ice.png"></img></td></tr>
+<tr><td>Spyro 2 - Season of Flame</td><td>SPYRO 2</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Spyro 2 - Season of Flame.gba" alt="Spyro 2 - Season of Flame.png"></img></td></tr>
+<tr><td>Spyro 3 - Attack of the Rhynocs</td><td>SPYRO 3</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Spyro 3 - Attack of the Rhynocs.gba" alt="Spyro 3 - Attack of the Rhynocs.png"></img></td></tr>
+<tr><td>Spyro Orange - the Cortex Conspiracy</td><td>SPYRO ORANG</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Spyro Orange - the Cortex Conspiracy.gba" alt="Spyro Orange - the Cortex Conspiracy.png"></img></td></tr>
+<tr><td>Street Fighter Alpha 3 (E) [!]</td><td>STREET FIGH</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Street Fighter Alpha 3 (E) [!].gba" alt="Street Fighter Alpha 3 (E) [!].png"></img></td></tr>
+<tr><td>Summon Night - Swordcraft Story 2</td><td>SWORDCRAFT2</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Summon Night - Swordcraft Story 2.gba" alt="Summon Night - Swordcraft Story 2.png"></img></td></tr>
+<tr><td>Summon Night - Swordcraft Story</td><td>SUMMONIGHSC</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Summon Night - Swordcraft Story.gba" alt="Summon Night - Swordcraft Story.png"></img></td></tr>
+<tr><td>Super Bust-A-Move (USA) (En,Fr,Es)</td><td>BUSTAMOVEGB</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Super Bust-A-Move (USA) (En,Fr,Es).gba" alt="Super Bust-A-Move (USA) (En,Fr,Es).png"></img></td></tr>
+<tr><td>Super Dodge Ball Advance (Europe)</td><td>SPUER DODGE</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Super Dodge Ball Advance (Europe).gba" alt="Super Dodge Ball Advance (Europe).png"></img></td></tr>
+<tr><td>Super Ghouls _N Ghosts (U)</td><td>SUPER GHOUL</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Super Ghouls _N Ghosts (U).gba" alt="Super Ghouls _N Ghosts (U).png"></img></td></tr>
+<tr><td>Super Mario Advance (U) [!]</td><td>SUPER MARIO</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Super Mario Advance (U) [!].gba" alt="Super Mario Advance (U) [!].png"></img></td></tr>
+<tr><td>Super Mario Advance 3 - Yoshi_s Island (USA)</td><td>SUPER MARIO</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Super Mario Advance 3 - Yoshi_s Island (USA).gba" alt="Super Mario Advance 3 - Yoshi_s Island (USA).png"></img></td></tr>
+<tr><td>Super Monkey Ball Jr (U) [!]</td><td>MONKEYBALLJ</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Super Monkey Ball Jr (U) [!].gba" alt="Super Monkey Ball Jr (U) [!].png"></img></td></tr>
+<tr><td>Super Robot Taisen - Original Generation 2 (U) [!]</td><td>SRTOG2</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Super Robot Taisen - Original Generation 2 (U) [!].gba" alt="Super Robot Taisen - Original Generation 2 (U) [!].png"></img></td></tr>
+<tr><td>Super Street Fighter II Turbo - Revival (E) [!]</td><td>SSF2TREVIVA</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Super Street Fighter II Turbo - Revival (E) [!].gba" alt="Super Street Fighter II Turbo - Revival (E) [!].png"></img></td></tr>
+<tr><td>Sword of Mana (USA, Australia)</td><td>SWORD OF MA</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Sword of Mana (USA, Australia).gba" alt="Sword of Mana (USA, Australia).png"></img></td></tr>
+<tr><td>Tactics Ogre - the Knight of Lodis</td><td>TACTICSOGRE</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Tactics Ogre - the Knight of Lodis.gba" alt="Tactics Ogre - the Knight of Lodis.png"></img></td></tr>
+<tr><td>Tales of Phantasia (USA, Australia)</td><td>PHANTASIA</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tales of Phantasia (USA, Australia).gba" alt="Tales of Phantasia (USA, Australia).png"></img></td></tr>
+<tr><td>Tekken Advance (U) [!]</td><td>TEKKEN</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tekken Advance (U) [!].gba" alt="Tekken Advance (U) [!].png"></img></td></tr>
+<tr><td>TMNT (U)</td><td>TMNT</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/TMNT (U).gba" alt="TMNT (U).png"></img></td></tr>
+<tr><td>Tony Hawk_s Downhill Jam</td><td>TONYHAWKDJ</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Downhill Jam.gba" alt="Tony Hawk_s Downhill Jam.png"></img></td></tr>
+<tr><td>Tony Hawk_s Pro Skater 2</td><td>TONY HAWK 2</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Pro Skater 2.gba" alt="Tony Hawk_s Pro Skater 2.png"></img></td></tr>
+<tr><td>Tony Hawk_s Pro Skater 3 (U) [!]</td><td>TONY HAWK 3</td><td>:x: - Index was outside the bounds of the array.</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Pro Skater 3 (U) [!].gba" alt="Tony Hawk_s Pro Skater 3 (U) [!].png"></img></td></tr>
+<tr><td>Tony Hawk_s Pro Skater 4</td><td>TONY HAWK 4</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Pro Skater 4.gba" alt="Tony Hawk_s Pro Skater 4.png"></img></td></tr>
+<tr><td>Tony Hawk_s Underground (U)</td><td>THUGTHUGTHU</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Underground (U).gba" alt="Tony Hawk_s Underground (U).png"></img></td></tr>
+<tr><td>Tony Hawk_s Underground 2</td><td>THUG2</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Underground 2.gba" alt="Tony Hawk_s Underground 2.png"></img></td></tr>
+<tr><td>Turbo Turtle Adventure (USA)</td><td>TURBO TURTL</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Turbo Turtle Adventure (USA).gba" alt="Turbo Turtle Adventure (USA).png"></img></td></tr>
+<tr><td>Ultimate Brain Games (U)</td><td>UBG</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Ultimate Brain Games (U).gba" alt="Ultimate Brain Games (U).png"></img></td></tr>
+<tr><td>Ultimate Card Games (U)</td><td>UCG</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Ultimate Card Games (U).gba" alt="Ultimate Card Games (U).png"></img></td></tr>
+<tr><td>V-Rally 3 (U)</td><td>VRALLY 3</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/V-Rally 3 (U).gba" alt="V-Rally 3 (U).png"></img></td></tr>
+<tr><td>Virtua Tennis (U)</td><td>VIRTUATENNI</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Virtua Tennis (U).gba" alt="Virtua Tennis (U).png"></img></td></tr>
+<tr><td>Wade Hixton_s Counter Punch (USA, Europe)</td><td>WADE HIXTON</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Wade Hixton_s Counter Punch (USA, Europe).gba" alt="Wade Hixton_s Counter Punch (USA, Europe).png"></img></td></tr>
+<tr><td>Wario Land 4 (UE) [!]</td><td>WARIOLANDE</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Wario Land 4 (UE) [!].gba" alt="Wario Land 4 (UE) [!].png"></img></td></tr>
+<tr><td>Wario Ware Inc.</td><td>WARIOWAREIN</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Wario Ware Inc..gba" alt="Wario Ware Inc..png"></img></td></tr>
+<tr><td>Yggdra Union - We_ll Never Fight Alone (USA)</td><td>YGGDRA UNIO</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Yggdra Union - We_ll Never Fight Alone (USA).gba" alt="Yggdra Union - We_ll Never Fight Alone (USA).png"></img></td></tr>
+<tr><td>Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!]</td><td>YU-GI-OH!ED</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!].gba" alt="Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!].png"></img></td></tr>
+<tr><td>Zelda - the Minish Cap</td><td>GBAZELDA MC</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Zelda - the Minish Cap.gba" alt="Zelda - the Minish Cap.png"></img></td></tr>
+</table>

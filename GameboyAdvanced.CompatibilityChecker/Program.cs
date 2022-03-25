@@ -43,6 +43,17 @@ internal class Program
                     .AppendLine("")
                     .AppendLine("This file contains a table with all ROMS tested along with some details parsed from the ROM and a screenshot from 100 frames in with no button presses")
                     .AppendLine("")
+                    .AppendLine("<table>")
+                    .AppendLine("  <thead>")
+                    .AppendLine("    <tr>")
+                    .Append("<td>Filename</td>")
+                    .Append("<td>Game Title</td>")
+                    .Append("<td>Bootable</td>")
+                    .Append("<td>Save Type</td>")
+                    .Append("<td>Image</td>")
+                    .AppendLine("    </tr>")
+                    .AppendLine("  </thead>")
+                    .AppendLine("  <tbody>")
                     .AppendLine("| Filename | Game Title | Bootable | Save Type | Image |")
                     .AppendLine("| -------- | ---------- | -------- | --------- | ----- |");
 
@@ -65,8 +76,7 @@ internal class Program
                     }
                     catch (Exception ex)
                     {
-                        bootable = ":x:";
-                        Console.WriteLine(ex);
+                        bootable = $":x: - {ex.Message}";
                     }
 
                     var frameBuffer = device.GetFrame();
@@ -77,12 +87,19 @@ internal class Program
 
                     var imgLink = bootable == ":x:" 
                         ? ""
-                        : $"<img src\"=./images/{romFilename}\" alt=\"{romFilename} image\"></img>";
+                        : $"<img src=\"./images/{romFilename}\" alt=\"{romFilename.Replace(".gba", ".png")}\"></img>";
 
                     _ = compatibilityDatabaseContents
-                        .AppendLine($"| {romFilename} | {device.Gamepak.GameTitle} | {bootable} | {device.Gamepak.RomBackupType} | {imgLink} |");
+                        .Append("<tr>")
+                        .Append($"<td>{romFilename.Replace(".gba", "")}</td>")
+                        .Append($"<td>{device.Gamepak.GameTitle}</td>")
+                        .Append($"<td>{bootable}</td>")
+                        .Append($"<td>{device.Gamepak.RomBackupType}</td>")
+                        .Append($"<td>{imgLink}</td>")
+                        .AppendLine("</tr>");
                 }
 
+                _ = compatibilityDatabaseContents.AppendLine("</table>");
                 File.WriteAllText(Path.Join(o.OutputDirectory, "readme.md"), compatibilityDatabaseContents.ToString());
             })
             .WithNotParsed(o =>
