@@ -95,7 +95,7 @@ public partial class MemoryBus
                 {
                     uint _ when address is >= 0x0400_0000 and <= 0x0400_0056 => _ppu.ReadRegisterByte(address, D),
                     uint _ when address is >= 0x0400_0060 and <= 0x0400_00A8 => _apu.ReadByte(address, D),
-                    uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadByte(address),
+                    uint _ when address is >= 0x0400_00B0 and <= 0x0400_00DE => _dma.ReadByte(address, D),
                     uint _ when address is >= 0x0400_0100 and <= 0x0400_010F => _timerController.ReadByte(address),
                     uint _ when address is >= 0x0400_0120 and <= 0x0400_012C => _serialController.ReadByte(address),
                     uint _ when address is >= 0x0400_0130 and <= 0x0400_0132 => _gamepad.ReadByte(address),

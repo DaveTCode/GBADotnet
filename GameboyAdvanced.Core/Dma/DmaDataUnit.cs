@@ -28,10 +28,7 @@ public class DmaDataUnit
         }
     }
 
-    internal byte ReadByte(uint address) => address switch
-    {
-        _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped for DMA read byte") // TODO - Handle unused addresses properly
-    };
+    internal byte ReadByte(uint address, uint openbus) => (byte)(ReadHalfWord(address & 0xFFFF_FFFE, openbus) >> (int)(8 * (address & 0b1)));
 
     internal ushort ReadHalfWord(uint address, uint openbus) => address switch
     {
