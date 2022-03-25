@@ -960,24 +960,28 @@ internal static unsafe partial class Arm
     }
     internal static void msr_rs(Core core, uint instruction)
     {
-        // TODO - What does this do in user mode when there is no SPSR register?
-        var rm = instruction & 0b1111;
-        var val = core.R[rm];
-        // "In User mode, the control bits of the CPSR are protected from change, so only
-        // the condition code flags of the CPSR can be changed. In other(privileged)
-        // modes the entire CPSR can be changed"
-        // Special format of msr which only affects condition flags, can't disambiguate
-        // them in lookup table as bit 16 isn't included
-        if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User)
+        // Can't set SPSR in user/system modes because it doesn't exist
+        if (core.Cpsr.Mode is not (CPSRMode.User or CPSRMode.OldUser or CPSRMode.System))
         {
-            val &= 0xF000_0000;
-            _ = core.CurrentSpsr().Set(val);
+            var rm = instruction & 0b1111;
+            var val = core.R[rm];
+            // "In User mode, the control bits of the CPSR are protected from change, so only
+            // the condition code flags of the CPSR can be changed. In other(privileged)
+            // modes the entire CPSR can be changed"
+            // Special format of msr which only affects condition flags, can't disambiguate
+            // them in lookup table as bit 16 isn't included
+            if (((instruction >> 16) & 1) == 0)
+            {
+                val &= 0xF000_0000;
+                _ = core.CurrentSpsr().Set(val);
+            }
+            else
+            {
+                core.CurrentSpsr().Mode = core.CurrentSpsr().Set(val);
+                core.CurrentSpsr().ThumbMode = (val & 0x20) == 0x20;
+            }
         }
-        else
-        {
-            core.CurrentSpsr().Mode = core.CurrentSpsr().Set(val);
-            core.CurrentSpsr().ThumbMode = (val & 0x20) == 0x20;
-        }
+
         core.MoveExecutePipelineToNextInstruction();
     }
     internal static void msr_imm_cpsr(Core core, uint instruction)
@@ -1008,23 +1012,27 @@ internal static unsafe partial class Arm
     }
     internal static void msr_imm_spsr(Core core, uint instruction)
     {
-        var offset = instruction & 0xFF;
-        var rot = ((instruction >> 8) & 0b1111) * 2;
-        var val = Shifter.RORInternal(offset, (byte)rot);
+        // Can't set SPSR in user/system modes because it doesn't exist
+        if (core.Cpsr.Mode is not (CPSRMode.User or CPSRMode.OldUser or CPSRMode.System))
+        {
+            var offset = instruction & 0xFF;
+            var rot = ((instruction >> 8) & 0b1111) * 2;
+            var val = Shifter.RORInternal(offset, (byte)rot);
 
-        // "In User mode, the control bits of the CPSR are protected from change, so only
-        // the condition code flags of the CPSR can be changed. In other(privileged)
-        // modes the entire CPSR can be changed"
-        // Special format of msr which only affects condition flags, can't disambiguate
-        // them in lookup table as bit 16 isn't included
-        if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User)
-        {
-            val &= 0xF000_0000;
-            _ = core.CurrentSpsr().Set(val);
-        }
-        else
-        {
-            core.CurrentSpsr().Mode = core.CurrentSpsr().Set(val); 
+            // "In User mode, the control bits of the CPSR are protected from change, so only
+            // the condition code flags of the CPSR can be changed. In other(privileged)
+            // modes the entire CPSR can be changed"
+            // Special format of msr which only affects condition flags, can't disambiguate
+            // them in lookup table as bit 16 isn't included
+            if (((instruction >> 16) & 1) == 0 || core.Cpsr.Mode == CPSRMode.User)
+            {
+                val &= 0xF000_0000;
+                _ = core.CurrentSpsr().Set(val);
+            }
+            else
+            {
+                core.CurrentSpsr().Mode = core.CurrentSpsr().Set(val); 
+            }
         }
         core.MoveExecutePipelineToNextInstruction();
     }
