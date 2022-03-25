@@ -38,14 +38,6 @@ public partial class Ppu
     /// </summary>
     internal PaletteEntry BackdropColor;
 
-    /// <summary>
-    /// Since internally palette memory is stored in 16 bit sections
-    /// writing a byte actually writes that byte to both bytes of the
-    /// half word aligned area in memory.
-    /// </summary>
-    internal void WritePaletteByte(uint address, byte value) => 
-        WritePaletteHalfWord(address & 0xFFFF_FFFE, (ushort)((value << 8) | value));
-
     internal void WritePaletteHalfWord(uint address, ushort value)
     {
         var paletteIx = (address & 0x3FF) >> 1;

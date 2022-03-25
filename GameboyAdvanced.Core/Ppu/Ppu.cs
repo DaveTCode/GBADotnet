@@ -477,28 +477,23 @@ public partial class Ppu
         {
             case uint _ when address is >= 0x0500_0000 and <= 0x05FF_FFFF:
                 {
-                    WritePaletteByte(address, value);
+                    // Since internally palette memory is stored in 16 bit sections
+                    // writing a byte actually writes that byte to both bytes of the
+                    // half word aligned area in memory.
+                    WritePaletteHalfWord(address & 0xFFFF_FFFE, (ushort)(value * 0x0101));
                     break;
                 }
             case uint _ when address is >= 0x0600_0000 and <= 0x06FF_FFFF:
                 {
-                    var hwAddress = address & 0xFFFF_FFFE;
-                    var maskedAddress = MaskVRamAddress(hwAddress);
+                    var maskedAddress = MaskVRamAddress(address & 0xFFFF_FFFE);
+                    var objStartAddress = (int)Dispcnt.BgMode >= 3 ? 0x1_4000 : 0x1_0000;
+
                     // 8 bit writes to OBJ are ignored
-                    if ((int)Dispcnt.BgMode >= 3 && maskedAddress >= 0x0001_4000)
+                    if (maskedAddress < objStartAddress)
                     {
-                        break;
+                        Utils.WriteHalfWord(Vram, 0xF_FFFF, maskedAddress, (ushort)(value * 0x0101));
                     }
-                    else if (maskedAddress >= 0x0001_0000)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        var hwValue = (ushort)((value << 8) | value);
-                        Utils.WriteHalfWord(Vram, 0xF_FFFF, maskedAddress, hwValue);
-                        break;
-                    }
+                    break;
                 }
             case uint _ when address is >= 0x0700_0000 and <= 0x07FF_FFFF:
                 // 8 bit writes to OAM are ignored
