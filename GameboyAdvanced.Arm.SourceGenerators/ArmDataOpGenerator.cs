@@ -128,9 +128,9 @@ internal static unsafe partial class Arm
 
                     var setCpsr = s
                         ? @"var newMode = core.Cpsr.Set(core.CurrentSpsr().Get());
+        var needsThumbMode = core.CurrentSpsr().ThumbMode;
         if (core.CurrentSpsr().ThumbMode)
         {
-            core.SwitchToThumb();
             core.R[15] = core.R[15] & 0xFFFF_FFFE;
         }
         else
@@ -141,6 +141,11 @@ internal static unsafe partial class Arm
         if (newMode != core.Cpsr.Mode)
         {
             core.SwitchMode(newMode);
+        }
+
+        if (needsThumbMode)
+        {
+            core.SwitchToThumb();
         }"
                         : "";
 
