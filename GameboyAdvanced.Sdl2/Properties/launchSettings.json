@@ -552,10 +552,6 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Game _ Watch Gallery Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "gba_bios.bin": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\gba_bios.bin --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
     "Golden Sun - The Lost Age (USA, Europe)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Golden Sun - The Lost Age (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
