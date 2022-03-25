@@ -77,7 +77,7 @@ internal class Program
 
                     var imgLink = bootable == ":x:" 
                         ? ""
-                        : $"<img src\"=./images/{romFile.Replace(".gba", ".png")}\" alt=\"{romFilename} image\"></img>";
+                        : $"<img src\"=./images/{romFilename}\" alt=\"{romFilename} image\"></img>";
 
                     _ = compatibilityDatabaseContents
                         .AppendLine($"| {romFilename} | {device.Gamepak.GameTitle} | {bootable} | {device.Gamepak.RomBackupType} | {imgLink} |");
