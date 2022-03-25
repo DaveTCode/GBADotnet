@@ -490,7 +490,17 @@ public unsafe class Core
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal ref CPSR CurrentSpsr() => ref Spsr[Cpsr.Mode.Index()];
+    internal ref CPSR CurrentSpsr()
+    {
+        if (Cpsr.Mode is CPSRMode.OldUser or CPSRMode.User or CPSRMode.System)
+        {
+            return ref Cpsr;
+        }
+        else
+        {
+            return ref Spsr[Cpsr.Mode.Index()];
+        }
+    }
 
     internal uint GetUserModeRegister(int reg) => (reg, Cpsr.Mode) switch
     {
@@ -567,16 +577,19 @@ public unsafe class Core
             }
         }
 
-        // Put the current CPSR into SPSR for the destination mode
-        _ = Spsr[newMode.Index()].Set(Cpsr.Get());
-        Spsr[newMode.Index()].Mode = Cpsr.Mode;
-        Spsr[newMode.Index()].ThumbMode = Cpsr.ThumbMode;
-
         Cpsr.Mode = newMode;
     }
 
     internal void HandleInterrupt(uint irqVector, uint retAddress, CPSRMode newMode)
     {
+        // Put the current CPSR into SPSR for the destination mode
+        if (newMode is not (CPSRMode.User or CPSRMode.OldUser or CPSRMode.System))
+        {
+            _ = Spsr[newMode.Index()].Set(Cpsr.Get());
+            Spsr[newMode.Index()].Mode = Cpsr.Mode;
+            Spsr[newMode.Index()].ThumbMode = Cpsr.ThumbMode;
+        }
+
         SwitchMode(newMode);
 
         SwitchToArm();
@@ -612,6 +625,7 @@ public unsafe class Core
  r8:{R[8]:X8}   r9:{R[9]:X8}  r10:{R[10]:X8}  r11:{R[11]:X8} 
 r12:{R[12]:X8}  r13:{R[13]:X8}  r14:{R[14]:X8}  r15:{R[15]:X8}
 cpsr: {Cpsr}
+spsr: {CurrentSpsr()}
 Cycle: {Cycles}
 {disassembly}";
     }

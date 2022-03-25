@@ -148,3 +148,5 @@ how the pipeline is wired up to the data bus.
 - Donkey Kong uses x scrolling on a BG to scroll clouds on title screen
 - Super Monkey Ball Jr seems to use 256 color mode and 256*256 size screen during logo screens
 - Super monkey ball (After failed save) uses large palette sprites and crashes due to out of bounds vram access. Large palette sprites are probs broken
+- Openlara uses 8 bit writes to VRAM in BG mode 3 so relies on the edge case where OBJ writes are ignored
+- Rhythm Tengoku is the first rom which does a switch from Supervisor -> IRQ -> Supervisor without updating SPSR and therefore requires that SPSR is not updated on mode switching unless done via an interrupt
