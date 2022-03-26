@@ -87,7 +87,7 @@ internal class Program
 
                     var imgLink = bootable == ":x:" 
                         ? ""
-                        : $"<img src=\"./images/{romFilename}\" alt=\"{romFilename.Replace(".gba", ".png")}\"></img>";
+                        : $"<img src=\"./images/{romFilename.Replace(".gba", ".png")}\" alt=\"{romFilename.Replace(".gba", "")}\"></img>";
 
                     _ = compatibilityDatabaseContents
                         .Append("<tr>")
