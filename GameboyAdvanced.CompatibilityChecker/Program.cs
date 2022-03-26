@@ -54,8 +54,6 @@ internal class Program
                     .AppendLine("    </tr>")
                     .AppendLine("  </thead>")
                     .AppendLine("  <tbody>")
-                    .AppendLine("| Filename | Game Title | Bootable | Save Type | Image |")
-                    .AppendLine("| -------- | ---------- | -------- | --------- | ----- |");
 
                 _ = Directory.CreateDirectory(Path.Join(o.OutputDirectory, "images"));
 

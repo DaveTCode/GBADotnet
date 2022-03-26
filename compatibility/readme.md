@@ -8,8 +8,6 @@ This file contains a table with all ROMS tested along with some details parsed f
 <td>Filename</td><td>Game Title</td><td>Bootable</td><td>Save Type</td><td>Image</td>    </tr>
   </thead>
   <tbody>
-| Filename | Game Title | Bootable | Save Type | Image |
-| -------- | ---------- | -------- | --------- | ----- |
 <tr><td>Advance Wars 2 - Black Hole Rising (USA, Australia)</td><td>ADVANCEWARS</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Advance Wars 2 - Black Hole Rising (USA, Australia).png" alt="Advance Wars 2 - Black Hole Rising (USA, Australia)"></img></td></tr>
 <tr><td>Advanced Wars</td><td>ADVANCEWARS</td><td>:heavy_check_mark:</td><td>FLASH64</td><td><img src="./images/Advanced Wars.png" alt="Advanced Wars"></img></td></tr>
 <tr><td>Aero the Acrobat - Rascal Rival Revenge</td><td>AEROACROBAT</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Aero the Acrobat - Rascal Rival Revenge.png" alt="Aero the Acrobat - Rascal Rival Revenge"></img></td></tr>
