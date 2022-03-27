@@ -53,7 +53,7 @@ internal class Program
                     .Append("<td>Image</td>")
                     .AppendLine("    </tr>")
                     .AppendLine("  </thead>")
-                    .AppendLine("  <tbody>")
+                    .AppendLine("  <tbody>");
 
                 _ = Directory.CreateDirectory(Path.Join(o.OutputDirectory, "images"));
 
