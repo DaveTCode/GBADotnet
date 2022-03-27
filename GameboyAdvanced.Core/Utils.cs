@@ -44,7 +44,7 @@ public static class Utils
         buffer[0] = color.R;
         buffer[1] = color.G;
         buffer[2] = color.B;
-        buffer[3] = 0; // Alpha channel
+        buffer[3] = 0xFF; // Alpha channel
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,6 +53,6 @@ public static class Utils
         buffer[0] = (byte)((color & 0b11111) << 3);
         buffer[1] = (byte)(((color >> 5) & 0b11111) << 3);
         buffer[2] = (byte)(((color >> 10) & 0b11111) << 3);
-        buffer[3] = 0; // Alpha channel
+        buffer[3] = 0xFF; // Alpha channel
     }
 }
