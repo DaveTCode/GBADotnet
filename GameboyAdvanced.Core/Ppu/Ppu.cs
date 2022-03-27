@@ -427,7 +427,7 @@ public partial class Ppu
     }
 
     internal byte ReadRegisterByte(uint address, uint openbus) => 
-        (byte)(ReadRegisterHalfWord(address, openbus) >> (int)(8 * (address & 1))); // TODO - Not 100% confident about this although beeg.gba does it and the result works in that specific case (read VCOUNT with high byte being 0)
+        (byte)(ReadRegisterHalfWord(address & 0xFFFF_FFFE, openbus) >> (int)(8 * (address & 1))); // TODO - Not 100% confident about this although beeg.gba does it and the result works in that specific case (read VCOUNT with high byte being 0)
 
     internal ushort ReadRegisterHalfWord(uint address, uint openbus) => address switch
     {
