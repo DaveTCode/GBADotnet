@@ -1,6 +1,5 @@
 ﻿using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Interrupts;
-using static GameboyAdvanced.Core.IORegs;
 
 namespace GameboyAdvanced.Core.Serial;
 

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GameboyAdvanced.Core.Rom;
+﻿namespace GameboyAdvanced.Core.Rom;
 
 /// <summary>
 /// Some games used persistent backup memory with a flash chip on the gamepak 
@@ -66,13 +60,14 @@ internal class FlashBackup
                 switch (_state)
                 {
                     case FlashChipState.Writing:
-                        _data[(_bank * 0xFFFF) + (address & 0xFFFF)] = value;
+                        _data[(_bank * 0x1_0000) + (address & 0xFFFF)] = value;
                         _state = FlashChipState.Ready;
                         break;
                     case FlashChipState.SettingMemoryBank:
                         if (address == 0x0E00_0000)
                         {
                             _bank = value & 0b1;
+                            _state = FlashChipState.Ready;
                         }
                         break;
                     default:
@@ -121,12 +116,14 @@ internal class FlashBackup
                         else if ((address & 0xFFFF_0FFF) == 0x0E00_0000 && value == 0x30)
                         {
                             // Erase 4KB sector
-                            Array.Fill(_data, (byte)0xFF, (int)(address & 0xF000) + (_bank * 0xFFFF), 0x1000);
+                            Array.Fill(_data, (byte)0xFF, (int)(address & 0xF000) + (_bank * 0x1_0000), 0x1000);
                             _state = FlashChipState.Ready;
                         }
                         break;
                 }
-                
+
+                _commandState = FlashCommandState.NotStarted;
+
                 break;
         }
     }
@@ -147,6 +144,8 @@ internal class FlashBackup
             }
         }
 
-        return _data[(_bank * 0xFFFF) + maskedAddress];
+        return _data[(_bank * 0x1_0000) + maskedAddress];
     }
+
+    public override string ToString() => $"{_commandState}, {_state}, Bank{_bank}";
 }

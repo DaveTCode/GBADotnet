@@ -1,5 +1,4 @@
-﻿using static GameboyAdvanced.Core.IORegs;
-using GameboyAdvanced.Core.Debug;
+﻿using GameboyAdvanced.Core.Debug;
 
 namespace GameboyAdvanced.Core.Interrupts;
 

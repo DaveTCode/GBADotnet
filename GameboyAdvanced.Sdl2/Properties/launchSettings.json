@@ -68,6 +68,18 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\DenSinH\\Arm_DataProcessing.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "DenSinH - EEProm Test": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\DenSinH\\eeprom-test\\main.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "DenSinH - Flash Test": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\DenSinH\\flash-test\\main.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "DenSinH - Mandelbrot": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\DenSinH\\mandelbrot\\main.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "CPU Test": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\cpu_test\\CPUTest.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"

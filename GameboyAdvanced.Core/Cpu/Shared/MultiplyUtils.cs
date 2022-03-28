@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-
-namespace GameboyAdvanced.Core.Cpu.Shared;
+﻿namespace GameboyAdvanced.Core.Cpu.Shared;
 
 /// <summary>
 /// All the multiply operations across Arm/Thumb have aspects in common which 
