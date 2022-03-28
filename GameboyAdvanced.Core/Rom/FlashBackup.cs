@@ -6,6 +6,11 @@
 /// 
 /// This class encapsulates the state machine required to read/write data 
 /// from that flash memory.
+/// 
+/// Note: Many edge cases around this state machine are not well understood at
+/// all. e.g. What happens if a command is interrupted whilst being prepared?
+/// These edge cases can't be easily tested because we can't flash the right 
+/// sort of cartridge to test them on a genuine device.
 /// </summary>
 internal class FlashBackup
 {

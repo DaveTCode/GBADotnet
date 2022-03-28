@@ -162,7 +162,7 @@ This file contains a table with all ROMS tested along with some details parsed f
 <tr><td>TMNT (U)</td><td>TMNT</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/TMNT (U).png" alt="TMNT (U)"></img></td></tr>
 <tr><td>Tony Hawk_s Downhill Jam</td><td>TONYHAWKDJ</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Downhill Jam.png" alt="Tony Hawk_s Downhill Jam"></img></td></tr>
 <tr><td>Tony Hawk_s Pro Skater 2</td><td>TONY HAWK 2</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Pro Skater 2.png" alt="Tony Hawk_s Pro Skater 2"></img></td></tr>
-<tr><td>Tony Hawk_s Pro Skater 3 (U) [!]</td><td>TONY HAWK 3</td><td>:x: - Index was outside the bounds of the array.</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Pro Skater 3 (U) [!].png" alt="Tony Hawk_s Pro Skater 3 (U) [!]"></img></td></tr>
+<tr><td>Tony Hawk_s Pro Skater 3 (U) [!]</td><td>TONY HAWK 3</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Pro Skater 3 (U) [!].png" alt="Tony Hawk_s Pro Skater 3 (U) [!]"></img></td></tr>
 <tr><td>Tony Hawk_s Pro Skater 4</td><td>TONY HAWK 4</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Pro Skater 4.png" alt="Tony Hawk_s Pro Skater 4"></img></td></tr>
 <tr><td>Tony Hawk_s Underground (U)</td><td>THUGTHUGTHU</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Underground (U).png" alt="Tony Hawk_s Underground (U)"></img></td></tr>
 <tr><td>Tony Hawk_s Underground 2</td><td>THUG2</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Tony Hawk_s Underground 2.png" alt="Tony Hawk_s Underground 2"></img></td></tr>
