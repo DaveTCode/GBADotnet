@@ -1,5 +1,6 @@
 ﻿using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Interrupts;
+using static GameboyAdvanced.Core.IORegs;
 
 namespace GameboyAdvanced.Core.Serial;
 
@@ -11,6 +12,12 @@ public class SerialController
     private readonly BaseDebugger _debugger;
     private readonly InterruptInterconnect _interruptInterconnect;
 
+    /// <summary>
+    /// Some games check that RCNT has bit 8 set by the BIOS _despite_ that 
+    /// bit not doing anything. Bloody Sonic.
+    /// </summary>
+    public ushort _rcnt = 0x8000;
+
     internal SerialController(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
     {
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
@@ -18,23 +25,39 @@ public class SerialController
     }
 
 
-    internal byte ReadByte(uint address) => 0; // TODO - Implement serial controller
-
-    internal ushort ReadHalfWord(uint address) => 0; // TODO - Implement serial controller
-
-    internal uint ReadWord(uint address)
+    internal byte ReadByte(uint address) => address switch
     {
-        return (uint)(ReadHalfWord(address) | (ReadHalfWord(address + 2) << 16));
-    }
+        RCNT => (byte)_rcnt,
+        RCNT + 1 => (byte)(_rcnt >> 8),
+        _ => 0, // TODO - Implement serial controller
+    };
+
+    internal ushort ReadHalfWord(uint address) => 
+        (ushort)(ReadByte(address) | (ReadByte(address + 1) << 8));
+
+    internal uint ReadWord(uint address) => 
+        (uint)(ReadHalfWord(address) | (ReadHalfWord(address + 2) << 16));
 
     internal void WriteByte(uint address, byte value)
     {
-        // TODO
+        switch (address)
+        {
+            case RCNT:
+                _rcnt = (ushort)((_rcnt & 0xFF0F) | (value & 0b1111_0000));
+                break;
+            case RCNT + 1:
+                _rcnt = (ushort)((_rcnt & 0xFF00) | ((value & 0b0100_0001) << 8));
+                break;
+            default:
+                // TODO
+                break;
+        }
     }
 
     internal void WriteHalfWord(uint address, ushort value)
     {
-        // TODO
+        WriteByte(address, (byte)value);
+        WriteByte(address + 1, (byte)(value >> 8));
     }
 
     internal void WriteWord(uint address, uint value)
