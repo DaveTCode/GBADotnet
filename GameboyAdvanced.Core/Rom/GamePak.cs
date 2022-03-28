@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using GameboyAdvanced.Core.Dma;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace GameboyAdvanced.Core.Rom;
@@ -17,6 +18,7 @@ public class GamePak
     private readonly byte[] _data;
     private readonly byte[] _sram = new byte[0x1_0000];
     private readonly FlashBackup? _flashBackup;
+    private readonly EEPromBackup? _eepromBackup;
 
     public readonly uint RomEntryPoint;
     public readonly byte[] LogoCompressed = new byte[156];
@@ -64,6 +66,20 @@ public class GamePak
         {
             _flashBackup = new FlashBackup(0xBF, 0xD4); // SST
         }
+        else if (RomBackupType == RomBackupType.EEPROM)
+        {
+            var mask = _data.Length > 0x0100_0000 ? 0x01FF_FF00u : 0x0100_0000u;
+
+            _eepromBackup = new EEPromBackup(mask);
+        }
+    }
+
+    internal void SetDmaDataUnit(DmaDataUnit dma)
+    {
+        if (_eepromBackup != null)
+        {
+            _eepromBackup.DmaDataUnit = dma;
+        }
     }
 
     private static RomBackupType CalculateRomBackupType(byte[] bin)
@@ -105,7 +121,8 @@ public class GamePak
         RomBackupType.SRAM => _sram[address & 0x0EFF_FFFF & 0x7FFF],
         RomBackupType.FLASH64 => _flashBackup!.Read(address),
         RomBackupType.FLASH128 => _flashBackup!.Read(address),
-        RomBackupType.EEPROM => throw new NotImplementedException("EEPROM not implemented"),
+        RomBackupType.EEPROM => _eepromBackup!.Read(address),
+        _ => throw new Exception($"Invalid backup storage type {RomBackupType}")
     };
 
     internal void WriteBackupStorage(uint address, byte value)
@@ -120,22 +137,53 @@ public class GamePak
                 _flashBackup!.Write(address, value);
                 break;
             case RomBackupType.EEPROM:
-                // TODO - Handle EEPROM type backups
                 break;
         }
     }
 
-    internal byte ReadByte(uint address) => address < _data.Length ? 
-        _data[address] : 
-        (byte)(address >> 1 >> (int)((address & 1) * 8));
+    internal void Write(uint address, byte value)
+    {
+        if (RomBackupType == RomBackupType.EEPROM && _eepromBackup!.IsEEPromAddress(address))
+        {
+            _eepromBackup!.Write(address, value);
+        }
+    }
 
-    internal ushort ReadHalfWord(uint address) => address < _data.Length 
-        ? Utils.ReadHalfWord(_data, address, 0x1FF_FFFF) 
-        : (ushort)(address >> 1);
+    internal byte ReadByte(uint address)
+    {
+        if (_eepromBackup != null && _eepromBackup.IsEEPromAddress(address))
+        {
+            return _eepromBackup.Read(address);
+        }
 
-    internal uint ReadWord(uint address) => address < _data.Length 
-        ? Utils.ReadWord(_data, address, 0x1FF_FFFF) 
-        : (((address & 0xFFFF_FFFC) >> 1) & 0xFFFF) | (((((address & 0xFFFF_FFFC) + 2) >> 1) & 0xFFFF) << 16);
+        return address < _data.Length ?
+            _data[address] :
+            (byte)(address >> 1 >> (int)((address & 1) * 8));
+    }
+
+    internal ushort ReadHalfWord(uint address)
+    {
+        if (_eepromBackup != null && _eepromBackup.IsEEPromAddress(address))
+        {
+            return _eepromBackup.Read(address);
+        }
+
+        return address < _data.Length
+            ? Utils.ReadHalfWord(_data, address, 0x1FF_FFFF)
+            : (ushort)(address >> 1);
+    }
+
+    internal uint ReadWord(uint address)
+    {
+        if (_eepromBackup != null && _eepromBackup.IsEEPromAddress(address))
+        {
+            return _eepromBackup.Read(address);
+        }
+
+        return address < _data.Length
+            ? Utils.ReadWord(_data, address, 0x1FF_FFFF)
+            : (((address & 0xFFFF_FFFC) >> 1) & 0xFFFF) | (((((address & 0xFFFF_FFFC) + 2) >> 1) & 0xFFFF) << 16);
+    }
 
     public override string ToString()
     {
