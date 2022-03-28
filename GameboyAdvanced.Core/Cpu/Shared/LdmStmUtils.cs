@@ -134,6 +134,7 @@ internal static class LdmStmUtils
 
             if (_writebackRegister == 15)
             {
+                core.R[_writebackRegister] &= core.Cpsr.ThumbMode ? 0xFFFF_FFFE : 0xFFFF_FFFC;
                 core.ClearPipeline();
             }
         }
@@ -151,6 +152,7 @@ internal static class LdmStmUtils
 
             if (_storeLoadMultipleState[_storeLoadMultiplePtr - 1] == 15)
             {
+                core.R[_storeLoadMultipleState[_storeLoadMultiplePtr - 1]] &= core.Cpsr.ThumbMode ? 0xFFFF_FFFE : 0xFFFF_FFFC;
                 core.ClearPipeline();
             }
         }
