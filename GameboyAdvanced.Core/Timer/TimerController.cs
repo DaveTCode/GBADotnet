@@ -24,13 +24,14 @@ public unsafe class TimerController
         _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
     }
 
+    // Outside the function as otherwise this causes a malloc on each call and takes ~13% total CPU time for timer controller
+    private readonly bool[] _timersReloaded = new bool[4];
     internal void Step()
     {
-        var timerReloaded = new bool[4];
-
         // TODO - Very inefficient timer implementation ticking on each clock cycle, shown to take up 20% of cpu time and could be offloaded to scheduler
         for (var ix = 0; ix < _timers.Length; ix++)
         {
+            _timersReloaded[ix] = false;
             if (_timers[ix].Start || _timers[ix].CyclesToStop > 0)
             {
                 // Emulate startup delay
@@ -56,9 +57,9 @@ public unsafe class TimerController
 
                 if (_timers[ix].CountUpTiming && ix > 0) // Count up timing on TIMER0 is ignored (TODO - is it? Or does it hang?)
                 {
-                    if (timerReloaded[ix - 1])
+                    if (_timersReloaded[ix - 1])
                     {
-                        timerReloaded[ix] = TickTimer(ref _timers[ix], ix);
+                        _timersReloaded[ix] = TickTimer(ref _timers[ix], ix);
                     }
                 }
                 else
@@ -67,7 +68,7 @@ public unsafe class TimerController
                     if (_timerSteps[ix] == 0)
                     {
                         _timerSteps[ix] = _timers[ix].PrescalerSelection.Cycles();
-                        timerReloaded[ix] = TickTimer(ref _timers[ix], ix);
+                        _timersReloaded[ix] = TickTimer(ref _timers[ix], ix);
                     }
                 }
             }
