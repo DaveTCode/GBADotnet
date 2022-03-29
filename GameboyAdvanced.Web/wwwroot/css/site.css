@@ -40,4 +40,8 @@ li.rom-tree-directory {
 li.rom-tree-file:hover {
     text-decoration: underline;
 }
- 
+
+.canvas-container {
+    height: 510px;
+    width: 660px;
+}

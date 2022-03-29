@@ -28,8 +28,8 @@ public partial class MemoryBus
     private readonly InterruptRegisters _interruptRegisters;
     private readonly SerialController _serialController;
     private readonly Bios _bios;
-    private readonly byte[] _onBoardWRam = new byte[0x4_0000];
-    private readonly byte[] _onChipWRam = new byte[0x8000];
+    public readonly byte[] OnBoardWRam = new byte[0x4_0000];
+    public readonly byte[] OnChipWRam = new byte[0x8000];
     private readonly WaitControl _waitControl;
     private InternalMemoryControl _intMemoryControl;
     public HaltMode HaltMode = HaltMode.None;
@@ -76,8 +76,8 @@ public partial class MemoryBus
 
     internal void Reset(bool skipBios)
     {
-        Array.Clear(_onBoardWRam);
-        Array.Clear(_onChipWRam);
+        Array.Clear(OnBoardWRam);
+        Array.Clear(OnChipWRam);
         _waitControl.Reset();
         _intMemoryControl.Reset();
         _bios.Reset(skipBios);
@@ -93,9 +93,9 @@ public partial class MemoryBus
                 return _bios.ReadByte(address, r15);
             case uint _ when address is >= 0x0200_0000 and <= 0x02FF_FFFF:
                 waitStates += _intMemoryControl.WaitControlWRAM;
-                return _onBoardWRam[address & 0x3_FFFF];
+                return OnBoardWRam[address & 0x3_FFFF];
             case uint _ when address is >= 0x0300_0000 and <= 0x03FF_FFFF:
-                return _onChipWRam[address & 0x7FFF];
+                return OnChipWRam[address & 0x7FFF];
             case uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE:
                 return address switch
                 {
@@ -157,9 +157,9 @@ public partial class MemoryBus
                 return _bios.ReadHalfWord(unalignedAddress, r15);
             case uint _ when alignedAddress is >= 0x0200_0000 and <= 0x02FF_FFFF:
                 waitStates += _intMemoryControl.WaitControlWRAM;
-                return Utils.ReadHalfWord(_onBoardWRam, alignedAddress, 0x3_FFFF);
+                return Utils.ReadHalfWord(OnBoardWRam, alignedAddress, 0x3_FFFF);
             case uint a when a is >= 0x0300_0000 and <= 0x03FF_FFFF:
-                return Utils.ReadHalfWord(_onChipWRam, alignedAddress, 0x7FFF);
+                return Utils.ReadHalfWord(OnChipWRam, alignedAddress, 0x7FFF);
             case uint a when a is >= 0x0400_0000 and <= 0x0400_03FE:
                 return alignedAddress switch
                 {
@@ -226,9 +226,9 @@ public partial class MemoryBus
                 return _bios.ReadWord(unalignedAddress, r15);
             case uint _ when alignedAddress is >= 0x0200_0000 and <= 0x02FF_FFFF:
                 waitStates += 1 + (_intMemoryControl.WaitControlWRAM * 2); // Additional wait state as 16 bit bus
-                return Utils.ReadWord(_onBoardWRam, alignedAddress, 0x3_FFFF);
+                return Utils.ReadWord(OnBoardWRam, alignedAddress, 0x3_FFFF);
             case uint _ when alignedAddress is >= 0x0300_0000 and <= 0x03FF_FFFF:
-                return Utils.ReadWord(_onChipWRam, alignedAddress, 0x7FFF);
+                return Utils.ReadWord(OnChipWRam, alignedAddress, 0x7FFF);
             case uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_03FE:
                 return alignedAddress switch
                 {
@@ -288,10 +288,10 @@ public partial class MemoryBus
             case uint _ when address <= 0x0000_3FFF:
                 return 0;
             case uint _ when address is >= 0x0200_0000 and <= 0x02FF_FFFF:
-                _onBoardWRam[address & 0x3_FFFF] = value;
+                OnBoardWRam[address & 0x3_FFFF] = value;
                 return _intMemoryControl.WaitControlWRAM;
             case uint _ when address is >= 0x0300_0000 and <= 0x03FF_FFFF:
-                _onChipWRam[address & 0x7FFF] = value;
+                OnChipWRam[address & 0x7FFF] = value;
                 return 0;
             case uint _ when address is >= 0x0400_0000 and <= 0x0400_03FE:
                 switch (address)
@@ -392,10 +392,10 @@ public partial class MemoryBus
             case uint _ when alignedAddress <= 0x0000_3FFF:
                 return 0;
             case uint _ when alignedAddress is >= 0x0200_0000 and <= 0x02FF_FFFF:
-                Utils.WriteHalfWord(_onBoardWRam, 0x3_FFFF, alignedAddress, value);
+                Utils.WriteHalfWord(OnBoardWRam, 0x3_FFFF, alignedAddress, value);
                 return _intMemoryControl.WaitControlWRAM;
             case uint _ when alignedAddress is >= 0x0300_0000 and <= 0x03FF_FFFF:
-                Utils.WriteHalfWord(_onChipWRam, 0x7FFF, alignedAddress, value);
+                Utils.WriteHalfWord(OnChipWRam, 0x7FFF, alignedAddress, value);
                 return 0;
             case uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_03FE:
                 switch (alignedAddress)
@@ -490,10 +490,10 @@ public partial class MemoryBus
             case uint _ when alignedAddress <= 0x0000_3FFF:
                 return 0;
             case uint _ when alignedAddress is >= 0x0200_0000 and <= 0x02FF_FFFF:
-                Utils.WriteWord(_onBoardWRam, 0x3_FFFF, alignedAddress, value);
+                Utils.WriteWord(OnBoardWRam, 0x3_FFFF, alignedAddress, value);
                 return 1 + (_intMemoryControl.WaitControlWRAM * 2); // Extra cycle as this is a 16 bit bus
             case uint _ when alignedAddress is >= 0x0300_0000 and <= 0x03FF_FFFF:
-                Utils.WriteWord(_onChipWRam, 0x7FFF, alignedAddress, value);
+                Utils.WriteWord(OnChipWRam, 0x7FFF, alignedAddress, value);
                 return 0;
             case uint _ when alignedAddress is >= 0x0400_0000 and <= 0x0400_03FE:
                 switch (alignedAddress)

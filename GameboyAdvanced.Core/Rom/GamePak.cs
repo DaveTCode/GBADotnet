@@ -15,7 +15,7 @@ public enum RomBackupType
 public class GamePak
 {
     private readonly byte[] _header = new byte[0xC0];
-    private readonly byte[] _data;
+    public readonly byte[] Data;
     private readonly byte[] _sram = new byte[0x1_0000];
     private readonly FlashBackup? _flashBackup;
     private readonly EEPromBackup? _eepromBackup;
@@ -41,7 +41,7 @@ public class GamePak
         if (bin == null) throw new ArgumentNullException(nameof(bin));
         if (bin.LongLength < 0xC0) throw new ArgumentException("Rom must be >= 0xC0 in size to fit cartridge header", nameof(bin));
         Array.Copy(bin, 0, _header, 0, _header.Length);
-        _data = (byte[])bin.Clone();
+        Data = (byte[])bin.Clone();
 
         RomEntryPoint = Utils.ReadWord(_header, 0, 0xFFFF_FFFF);
         Array.Copy(_header, 4, LogoCompressed, 0, LogoCompressed.Length);
@@ -68,7 +68,7 @@ public class GamePak
         }
         else if (RomBackupType == RomBackupType.EEPROM)
         {
-            var mask = _data.Length > 0x0100_0000 ? 0x01FF_FF00u : 0x0100_0000u;
+            var mask = Data.Length > 0x0100_0000 ? 0x01FF_FF00u : 0x0100_0000u;
 
             _eepromBackup = new EEPromBackup(mask);
         }
@@ -156,8 +156,8 @@ public class GamePak
             return _eepromBackup.Read(address);
         }
 
-        return address < _data.Length ?
-            _data[address] :
+        return address < Data.Length ?
+            Data[address] :
             (byte)(address >> 1 >> (int)((address & 1) * 8));
     }
 
@@ -168,8 +168,8 @@ public class GamePak
             return _eepromBackup.Read(address);
         }
 
-        return address < _data.Length
-            ? Utils.ReadHalfWord(_data, address, 0x1FF_FFFF)
+        return address < Data.Length
+            ? Utils.ReadHalfWord(Data, address, 0x1FF_FFFF)
             : (ushort)(address >> 1);
     }
 
@@ -180,8 +180,8 @@ public class GamePak
             return _eepromBackup.Read(address);
         }
 
-        return address < _data.Length
-            ? Utils.ReadWord(_data, address, 0x1FF_FFFF)
+        return address < Data.Length
+            ? Utils.ReadWord(Data, address, 0x1FF_FFFF)
             : (((address & 0xFFFF_FFFC) >> 1) & 0xFFFF) | (((((address & 0xFFFF_FFFC) + 2) >> 1) & 0xFFFF) << 16);
     }
 

@@ -368,21 +368,9 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\timer\\reload\\reload.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Golden Sun - The Lost Age (USA, Europe)": {
+    "Pokemon Pinball - Ruby _ Sapphire (E)": {
       "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Golden Sun - The Lost Age (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
-    "Mario Golf - Advance Tour": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Golf - Advance Tour.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
-    "Mario Tennis - Power Tour": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Tennis - Power Tour.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
-    "Max Payne (USA)": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Max Payne (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon Pinball - Ruby _ Sapphire (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Advance Wars 2 - Black Hole Rising (USA, Australia)": {
       "commandName": "Project",
@@ -584,6 +572,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Golden Sun.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Golden Sun - The Lost Age (USA, Europe)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Golden Sun - The Lost Age (USA, Europe).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Gradius Galaxies (USA)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Gradius Galaxies (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -692,6 +684,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Advanced 4 - Mario Bros. 3.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Mario Golf - Advance Tour": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Golf - Advance Tour.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Mario and Luigi - Superstar Saga": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario and Luigi - Superstar Saga.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -700,9 +696,17 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Kart - Super Circuit.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Mario Tennis - Power Tour": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario Tennis - Power Tour.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Mario vs. Donkey Kong": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Mario vs. Donkey Kong.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Max Payne (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Max Payne (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Medal of Honor - Infiltrator (U)": {
       "commandName": "Project",
@@ -839,10 +843,6 @@
     "Pokemon Mystery Dungeon - Red Rescue Team": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon Mystery Dungeon - Red Rescue Team.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
-    "Pokemon Pinball - Ruby _ Sapphire (E)": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon Pinball - Ruby _ Sapphire (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Puyo Pop": {
       "commandName": "Project",

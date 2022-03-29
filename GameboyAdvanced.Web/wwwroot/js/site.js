@@ -44,7 +44,9 @@ connection.on("SendFrame", function (data) {
  * so that we can pull interesting debug information out
  */
 connection.on("SendDevice", function (device) {
-    console.log(device);
+    for (var ii = 0; ii < 16; ii++) {
+        document.querySelector(`#cpu-r${ii}-td`).innerHTML = device.cpu.r[ii].toString(16);
+    }
 });
 
 // Start up the connection to the signalr backend

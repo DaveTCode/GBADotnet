@@ -32,6 +32,7 @@ public class LoadRomController : Controller
 
         await _backgroundEmulatorThread.RunRomAsync(romBytes);
         
+        _logger.LogInformation("Rom loaded");
         return Ok();
     }
 }

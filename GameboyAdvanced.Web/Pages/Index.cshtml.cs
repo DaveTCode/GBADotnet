@@ -1,3 +1,4 @@
+using GameboyAdvanced.Core;
 using GameboyAdvanced.Web.Nointro;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 

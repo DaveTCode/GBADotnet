@@ -8,6 +8,13 @@ using System.Diagnostics;
 
 namespace GameboyAdvanced.Web.Emulation;
 
+public enum BackgroundEmulatorState
+{
+    WaitingForRom,
+    Paused,
+    Running,
+}
+
 public class BackgroundEmulatorThread
 {
     private readonly ILogger<BackgroundEmulatorThread> _logger;
@@ -32,8 +39,7 @@ public class BackgroundEmulatorThread
         { Key.R, false },
     };
 
-    private readonly SemaphoreSlim _pauseStateSempahore = new(1);
-    private bool _paused;
+    private volatile BackgroundEmulatorState _state;
 
     public BackgroundEmulatorThread(
         ILogger<BackgroundEmulatorThread> logger,
@@ -50,13 +56,13 @@ public class BackgroundEmulatorThread
         var acquiredSemaphore = await _romSemaphore.WaitAsync(5000);
         if (!acquiredSemaphore)
         {
-            _logger.LogError("Can't acquire rom semaphore");
+            _logger.LogError("Can't acquire rom semaphore to load rom");
         }
 
         _gamePak = new GamePak(rom);
 
         _ = _romSemaphore.Release();
-        await Task.Delay(5000);
+        _state = BackgroundEmulatorState.WaitingForRom;
     }
 
     private async Task<Device?> WaitForRomLoadAsync(CancellationToken cancellationToken)
@@ -66,10 +72,16 @@ public class BackgroundEmulatorThread
             var acquiredSemaphore = await _romSemaphore.WaitAsync(5000, cancellationToken);
             if (!acquiredSemaphore)
             {
-                _logger.LogError("Can't acquire rom semaphore");
+                _logger.LogError("Can't acquire rom semaphore to check for loaded rom");
             }
 
-            if (_gamePak != null) return new Device(_bios, _gamePak, new TestDebugger(), true);
+            if (_gamePak != null) 
+            {
+                var device = new Device(_bios, _gamePak, new TestDebugger(), true);
+                _state = BackgroundEmulatorState.Running;
+                _ = _romSemaphore.Release();
+                return device;
+            }
 
             _ = _romSemaphore.Release();
             await Task.Delay(5000, cancellationToken);
@@ -92,11 +104,9 @@ public class BackgroundEmulatorThread
         _ = _keyStateSemaphore.Release();
     }
 
-    public async Task SetPause(bool pause)
+    public void SetState(BackgroundEmulatorState state)
     {
-        await _pauseStateSempahore.WaitAsync();
-        _paused = pause;
-        _ = _pauseStateSempahore.Release();
+        _state = state;
     }
 
     public Device? GetDevice()
@@ -129,25 +139,28 @@ public class BackgroundEmulatorThread
             }
             _ = _keyStateSemaphore.Release();
 
-            await _pauseStateSempahore.WaitAsync(cancellationToken);
-            if (_paused)
+            switch (_state)
             {
-                await Task.Delay(100, cancellationToken);
-            }
-            else
-            {
-                _device.RunFrame();
-                await _emulatorHubContext.Clients.All.SendFrame(Convert.ToBase64String(_device.GetFrame())); // TODO - awaiting these might slow frames down, could we fire and forget?
-                sw.Stop();
+                case BackgroundEmulatorState.WaitingForRom:
+                    _device = await WaitForRomLoadAsync(cancellationToken);
+                    if (_device == null) return;
+                    break;
+                case BackgroundEmulatorState.Running:
+                    _device.RunFrame();
+                    await _emulatorHubContext.Clients.All.SendFrame(Convert.ToBase64String(_device.GetFrame())); // TODO - awaiting these might slow frames down, could we fire and forget?
+                    sw.Stop();
 
-                var remainingMsInFrame = (int)(16.67 - sw.ElapsedMilliseconds);
+                    var remainingMsInFrame = (int)(16.67 - sw.ElapsedMilliseconds);
 
-                if (remainingMsInFrame > 0)
-                {
-                    await Task.Delay(remainingMsInFrame, cancellationToken);
-                }
+                    if (remainingMsInFrame > 0)
+                    {
+                        await Task.Delay(remainingMsInFrame, cancellationToken);
+                    }
+                    break;
+                case BackgroundEmulatorState.Paused:
+                    await Task.Delay(100, cancellationToken);
+                    break;
             }
-            _ = _pauseStateSempahore.Release();
         }
     }
 }

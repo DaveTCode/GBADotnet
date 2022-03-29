@@ -17,61 +17,53 @@ namespace GameboyAdvanced.Core.Ppu;
 /// in regular (also known as text) mode which means they use the X/YOffset
 /// insteda of RefPointX/Y and friends.
 /// </summary>
-public struct Background
+public class Background
 {
     /// <summary>
     /// Just used to disambiguate backgrounds for debugging
     /// </summary>
-    internal int Index;
+    public int Index;
 
     /// <summary>
     /// Control register used to specify the behaviour of the background
     /// <see cref="BgControlReg"/>
     /// </summary>
-    internal BgControlReg Control;
+    public BgControlReg Control;
 
     /// <summary>
     /// XOffset is used to scroll the backgroung by specifying which xcoord 
     /// should go on the left of the screen.
     /// </summary>
-    internal int XOffset;
+    public int XOffset;
 
     /// <summary>
     /// YOffset is used to scroll the backgroung by specifying which ycoord 
     /// should go on the top of the screen.
     /// </summary>
-    internal int YOffset;
+    public int YOffset;
 
     // These fields are all specific to affine transforms on BG2/3 but because
     // we're being obnoxiously efficient with coding we aren't using an
     // inheritance heirachy to avoid virtual function calls so they're stored
     // but unused on all backgrounds
-    internal int RefPointX;
-    internal int RefPointY;
-    internal short Dx;
-    internal short Dmx;
-    internal short Dy;
-    internal short Dmy;
+    public int RefPointX;
+    public int RefPointY;
+    public short Dx;
+    public short Dmx;
+    public short Dy;
+    public short Dmy;
 
     internal Background(int index)
     {
         Index = index;
-        XOffset = 0;
-        YOffset = 0;
-        Control = new BgControlReg();
-        RefPointX = 0;
-        RefPointY = 0;
-        Dx = 0;
-        Dmx = 0;
-        Dy = 0;
-        Dmy = 0;
+        Reset();
     }
 
     internal void Reset()
     {
         XOffset = 0;
         YOffset = 0;
-        Control = new BgControlReg();
+        Control.Reset();
         RefPointX = 0;
         RefPointY = 0;
         Dx = 0;

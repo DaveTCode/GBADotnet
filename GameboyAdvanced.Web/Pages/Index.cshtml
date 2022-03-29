@@ -19,7 +19,7 @@
                     {
                         <partial name="RomTree/_Romtree" model="subdir" />
                     }
-                
+
                     @foreach (var rom in Model.RomDirectoryTree!.RomTreeEntries)
                     {
                         <li class="rom-tree-file">
@@ -31,18 +31,101 @@
         }
     </div>
     <div class="col vh-100 overflow-auto" id="emulator-col">
-        <div class="canvas-container position-relative">
-            <img src="/images/screen_backdrop.png" class="position-absolute top-0 start-0"/>
-            <canvas id="backing-canvas" width="240" height="160" class="d-none "></canvas>
-            <canvas id="screen-canvas" width="480" height="320" class="position-absolute" style="top:64px;left:100px"></canvas>
-            <div class="position-absolute" style="left:100px;top:420px;">
-                <button class="btn btn-secondary disabled" id="pause-button">Pause</button>
-                <button class="btn btn-secondary d-none" id="resume-button">Resume</button>
+        <div class="row">
+            <div class="canvas-container position-relative">
+                <img src="/images/screen_backdrop.png" class="position-absolute top-0 start-0" />
+                <canvas id="backing-canvas" width="240" height="160" class="d-none "></canvas>
+                <canvas id="screen-canvas" width="480" height="320" class="position-absolute" style="top:64px;left:100px"></canvas>
+                <div class="position-absolute" style="left:100px;top:420px;">
+                    <button class="btn btn-secondary disabled" id="pause-button">Pause</button>
+                    <button class="btn btn-secondary d-none" id="resume-button">Resume</button>
+                </div>
+                <div class="position-absolute" style="left:520px;top:420px;">
+                    <button class="btn btn-danger disabled" id="stop-button">Stop</button>
+                </div>
             </div>
-            <div class="position-absolute" style="left:520px;top:420px;">
-                <button class="btn btn-danger disabled" id="stop-button">Stop</button>
+        </div>
+        <div class="row">
+            <ul class="nav nav-tabs" id="debug-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="cpu-debug-tab" data-bs-toggle="tab" data-bs-target="#cpu" type="button" role="tab" aria-controls="cpu-debug" aria-selected="true">CPU</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ppu-debug-tab" data-bs-toggle="tab" data-bs-target="#ppu" type="button" role="tab" aria-controls="ppu-debug" aria-selected="false">PPU</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="debug-tabs-content">
+                <div class="tab-pane fade show active" id="cpu-debug" role="tabpanel" aria-labelledby="cpu-debug-tab">
+                    <table role="presentation">
+                        <tr>
+                            <td>r0</td>
+                            <td id="cpu-r0-td"></td>
+                            <td>r1</td>
+                            <td id="cpu-r1-td"></td>
+                            <td>r2</td>
+                            <td id="cpu-r2-td"></td>
+                            <td>r3</td>
+                            <td id="cpu-r3-td"></td>
+                        </tr>
+                        <tr>
+                            <td>r4</td>
+                            <td id="cpu-r4-td"></td>
+                            <td>r5</td>
+                            <td id="cpu-r5-td"></td>
+                            <td>r6</td>
+                            <td id="cpu-r6-td"></td>
+                            <td>r7</td>
+                            <td id="cpu-r7-td"></td>
+                        </tr>
+                        <tr>
+                            <td>r8</td>
+                            <td id="cpu-r8-td"></td>
+                            <td>r9</td>
+                            <td id="cpu-r9-td"></td>
+                            <td>r10</td>
+                            <td id="cpu-r10-td"></td>
+                            <td>r11</td>
+                            <td id="cpu-r11-td"></td>
+                        </tr>
+                        <tr>
+                            <td>r12</td>
+                            <td id="cpu-r12-td"></td>
+                            <td>r13</td>
+                            <td id="cpu-r13-td"></td>
+                            <td>r14</td>
+                            <td id="cpu-r14-td"></td>
+                            <td>r15</td>
+                            <td id="cpu-r15-td"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="ppu-debug" role="tabpanel" aria-labelledby="ppu-debug-tab">
+                    <div class="row">
+                        <div class="col">
+                            <table role="presentation">
+                                <tr>
+                                    <td>DISPCNT</td>
+                                    <td id="ppu-dispcnt-td"></td>
+                                    <td>DISPSTAT</td>
+                                    <td id="ppu-dispstat-td"></td>
+                                    <td>VCOUNT</td>
+                                    <td id="ppu-vcount-td"></td>
+                                    <td>BG0CNT</td>
+                                    <td id="ppu-dispcnt-td"></td>
+                                    <td>BG1CNT</td>
+                                    <td id="ppu-dispcnt-td"></td>
+                                    <td>BG2CNT</td>
+                                    <td id="ppu-dispcnt-td"></td>
+                                    <td>BG3CNT</td>
+                                    <td id="ppu-dispcnt-td"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 vh-100 overflow-auto" id=""></div>
+    <div class="col-md-3 vh-100 overflow-auto">
+    </div>
 </div>

@@ -23,13 +23,13 @@ public class EmulatorHub : Hub<IEmulatorClient>
 
     public async Task Pause()
     {
-        await _backgroundEmulatorThread.SetPause(true);
+        _backgroundEmulatorThread.SetState(BackgroundEmulatorState.Paused);
         await Clients.All.SendDevice(_backgroundEmulatorThread.GetDevice());
     }
 
-    public async Task Resume()
+    public void Resume()
     {
-        await _backgroundEmulatorThread.SetPause(false);
+        _backgroundEmulatorThread.SetState(BackgroundEmulatorState.Running);
     }
 
     public async Task KeyUp(Key key)
