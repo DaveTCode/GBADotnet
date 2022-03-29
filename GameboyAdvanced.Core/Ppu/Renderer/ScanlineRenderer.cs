@@ -71,8 +71,8 @@ public partial class Ppu
                 }
                 break;
             case BgMode.Video1:
-                // Background 0-1 are text mode, 2-3 are affine
-                for (var ii = 0; ii < 4; ii++)
+                // Background 0-1 are text mode, 2 is affine
+                for (var ii = 0; ii < 3; ii++)
                 {
                     if (Dispcnt.ScreenDisplayBg[ii])
                     {
@@ -88,7 +88,7 @@ public partial class Ppu
                 }
                 break;
             case BgMode.Video2:
-                for (var ii = 0; ii < 4; ii++)
+                for (var ii = 3; ii < 4; ii++)
                 {
                     if (Dispcnt.ScreenDisplayBg[ii])
                     {
