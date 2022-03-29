@@ -334,6 +334,12 @@ public partial class Ppu
             sortedBgIxs[1] = sortedBgIxs[2];
             sortedBgIxs[2] = tmp;
         }
+        if (Backgrounds[sortedBgIxs[1]].Control.BgPriority >= Backgrounds[sortedBgIxs[2]].Control.BgPriority && sortedBgIxs[1] > sortedBgIxs[2])
+        {
+            var tmp = sortedBgIxs[1];
+            sortedBgIxs[1] = sortedBgIxs[2];
+            sortedBgIxs[2] = tmp;
+        }
     }
 
     private void DrawSpritesOnLine(bool bitmapMode)
