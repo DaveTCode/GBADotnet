@@ -15,7 +15,6 @@ internal class Sdl2Application : IDisposable
     private IntPtr _window;
     private IntPtr _renderer;
     private IntPtr _texture;
-    private readonly Stopwatch _stopwatch = new();
     private bool _disposedValue;
     private readonly int _msPerFrame = (int)(1.0 / 60 * 1000);
 
@@ -82,7 +81,11 @@ internal class Sdl2Application : IDisposable
     internal void Run()
     {
         SetupSdl2();
-        _stopwatch.Start();
+        var frameTimeStopwatch = new Stopwatch();
+        var adjustStopwatch = new Stopwatch();
+        frameTimeStopwatch.Start();
+        adjustStopwatch.Start();
+        var adjustTicks = 0L;
         var running = true;
 
         while (running)
@@ -135,13 +138,15 @@ internal class Sdl2Application : IDisposable
             _ = SDL.SDL_RenderCopy(_renderer, _texture, IntPtr.Zero, IntPtr.Zero);
             SDL.SDL_RenderPresent(_renderer);
 
-            var msToSleep = _msPerFrame - (_stopwatch.ElapsedTicks / (double)Stopwatch.Frequency * 1000);
-            //Console.WriteLine(msToSleep);
+            var msToSleep = _msPerFrame - ((frameTimeStopwatch.ElapsedTicks + adjustTicks) / (double)Stopwatch.Frequency * 1000);
+            Console.WriteLine(msToSleep);
+            adjustStopwatch.Restart();
             if (msToSleep > 0)
             {
                 SDL.SDL_Delay((uint)msToSleep);
             }
-            _stopwatch.Restart();
+            adjustTicks = adjustStopwatch.ElapsedTicks;
+            frameTimeStopwatch.Restart();
         }
     }
 
