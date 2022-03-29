@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Ppu.Registers;
 
-internal enum BgMode
+public enum BgMode
 {
     Video0 = 0b000,
     Video1 = 0b001,
@@ -14,16 +14,16 @@ internal enum BgMode
 
 public struct DisplayCtrl
 {
-    internal BgMode BgMode;
-    internal bool IsCGB;
-    internal bool Frame1Select;
-    internal bool AllowOamDuringHblank;
-    internal bool OneDimObjCharVramMapping;
-    internal bool ForcedBlank;
-    internal bool[] ScreenDisplayBg;
-    internal bool ScreenDisplayObj;
-    internal bool[] WindowDisplay;
-    internal bool ObjWindowDisplay;
+    public BgMode BgMode;
+    public bool IsCGB;
+    public bool Frame1Select;
+    public bool AllowOamDuringHblank;
+    public bool OneDimObjCharVramMapping;
+    public bool ForcedBlank;
+    public bool[] ScreenDisplayBg;
+    public bool ScreenDisplayObj;
+    public bool[] WindowDisplay;
+    public bool ObjWindowDisplay;
 
     public DisplayCtrl()
     {

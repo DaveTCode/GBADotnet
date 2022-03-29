@@ -8,13 +8,13 @@
 /// </summary>
 public struct GeneralLcdStatus
 {
-    internal bool VBlankFlag;
-    internal bool HBlankFlag;
-    internal bool VCounterFlag;
-    internal bool VBlankIrqEnable;
-    internal bool HBlankIrqEnable;
-    internal bool VCounterIrqEnable;
-    internal ushort VCountSetting;
+    public bool VBlankFlag;
+    public bool HBlankFlag;
+    public bool VCounterFlag;
+    public bool VBlankIrqEnable;
+    public bool HBlankIrqEnable;
+    public bool VCounterIrqEnable;
+    public ushort VCountSetting;
 
     internal ushort Read() => (ushort)
         ((VBlankFlag ? 0b1 : 0u) |

@@ -15,8 +15,6 @@ internal enum PhiOutput
 /// - Wait State 0 = 0x0800_0000 (normal)
 /// - Wait State 1 = 0x0A00_0000
 /// - Wait State 2 = 0x0C00_0000
-/// 
-/// TODO - Not actually using these wait timings anywhere yet, assuming defaults in memory bus
 /// </summary>
 public class WaitControl
 {

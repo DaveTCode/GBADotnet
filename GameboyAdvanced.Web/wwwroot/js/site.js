@@ -47,6 +47,37 @@ connection.on("SendDevice", function (device) {
     for (var ii = 0; ii < 16; ii++) {
         document.querySelector(`#cpu-r${ii}-td`).innerHTML = device.cpu.r[ii].toString(16);
     }
+
+    document.querySelector("#dispcnt-td").innerHTML = JSON.stringify(device.ppu.dispcnt);
+    document.querySelector("#greenswap-td").innerHTML = device.ppu.greenSwap.toString(16);
+    document.querySelector("#dispstat-td").innerHTML = JSON.stringify(device.ppu.dispstat);
+    document.querySelector("#vcount-td").innerHTML = device.ppu.currentLine;
+    document.querySelector("#bg0cnt-td").innerHTML = JSON.stringify(device.ppu.backgrounds[0].control);
+    document.querySelector("#bg1cnt-td").innerHTML = JSON.stringify(device.ppu.backgrounds[1].control);
+    document.querySelector("#bg2cnt-td").innerHTML = JSON.stringify(device.ppu.backgrounds[2].control);
+    document.querySelector("#bg3cnt-td").innerHTML = JSON.stringify(device.ppu.backgrounds[3].control);
+    document.querySelector("#bg0hofs-td").innerHTML = device.ppu.backgrounds[0].xOffset;
+    document.querySelector("#bg0vofs-td").innerHTML = device.ppu.backgrounds[0].yOffset;
+    document.querySelector("#bg1hofs-td").innerHTML = device.ppu.backgrounds[1].xOffset;
+    document.querySelector("#bg1vofs-td").innerHTML = device.ppu.backgrounds[1].yOffset;
+    document.querySelector("#bg2hofs-td").innerHTML = device.ppu.backgrounds[2].xOffset;
+    document.querySelector("#bg2vofs-td").innerHTML = device.ppu.backgrounds[2].yOffset;
+    document.querySelector("#bg3hofs-td").innerHTML = device.ppu.backgrounds[3].xOffset;
+    document.querySelector("#bg3vofs-td").innerHTML = device.ppu.backgrounds[3].yOffset;
+    document.querySelector("#bg2pa-td").innerHTML = device.ppu.backgrounds[2].dx;
+    document.querySelector("#bg2pb-td").innerHTML = device.ppu.backgrounds[2].dmx;
+    document.querySelector("#bg2pc-td").innerHTML = device.ppu.backgrounds[2].dy;
+    document.querySelector("#bg2pd-td").innerHTML = device.ppu.backgrounds[2].dmy;
+    document.querySelector("#bg2x-td").innerHTML = device.ppu.backgrounds[2].RefPointX;
+    document.querySelector("#bg2y-td").innerHTML = device.ppu.backgrounds[2].RefPointY;
+    document.querySelector("#bg3pa-td").innerHTML = device.ppu.backgrounds[3].dx;
+    document.querySelector("#bg3pb-td").innerHTML = device.ppu.backgrounds[3].dmx;
+    document.querySelector("#bg3pc-td").innerHTML = device.ppu.backgrounds[3].dy;
+    document.querySelector("#bg3pd-td").innerHTML = device.ppu.backgrounds[3].dmy;
+    document.querySelector("#bg3x-td").innerHTML = device.ppu.backgrounds[3].RefPointX;
+    document.querySelector("#bg3y-td").innerHTML = device.ppu.backgrounds[3].RefPointY;
+    document.querySelector("#mosaic-td").innerHTML = JSON.stringify(device.ppu.mosaic);
+    document.querySelector("#bldcnt-td").innerHTML = JSON.stringify(device.ppu.colorEffects);
 });
 
 // Start up the connection to the signalr backend
@@ -66,13 +97,13 @@ var keyMap = {
     "s": 9, // R
 }
 
-document.querySelector("#screen-canvas").addEventListener("keyup", function (e) {
+document.addEventListener("keyup", function (e) {
     if (keyMap[e.key]) {
         connection.invoke("KeyUp", keyMap[e.key]);
     }
 });
 
-document.querySelector("#screen-canvas").addEventListener("keydown", function(e) {
+document.addEventListener("keydown", function(e) {
     if (keyMap[e.key]) {
         connection.invoke("KeyDown", keyMap[e.key]);
     }

@@ -12,10 +12,10 @@
 /// </summary>
 public struct Mosaic
 {
-    internal int BGHSize;
-    internal int BGVSize;
-    internal int ObjHSize;
-    internal int ObjVSize;
+    public int BGHSize;
+    public int BGVSize;
+    public int ObjHSize;
+    public int ObjVSize;
 
     internal ushort Get() =>
         (ushort)(BGHSize | (BGVSize << 4) | (ObjHSize << 8) | (ObjVSize << 12));
