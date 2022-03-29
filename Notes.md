@@ -151,3 +151,4 @@ how the pipeline is wired up to the data bus.
 - Openlara uses 8 bit writes to VRAM in BG mode 3 so relies on the edge case where OBJ writes are ignored
 - Rhythm Tengoku is the first rom which does a switch from Supervisor -> IRQ -> Supervisor without updating SPSR and therefore requires that SPSR is not updated on mode switching unless done via an interrupt
 - Spyro uses LDRB/STRB to update DISPCNT high byte so needs working read/write unaligned byte wide read/write from PPU
+- Pokemon pinball makes good use of semi-transparent sprites on the machine select screen to grey out the unused table. It also requires correct handling of semi transparent sprites which have backdrop color (ignore) otherwise you get a grey square on the selected table

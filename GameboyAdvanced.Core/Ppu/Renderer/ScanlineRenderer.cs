@@ -20,6 +20,8 @@ public partial class Ppu
         internal int PaletteColor;
         internal SpriteMode PixelMode;
         internal int Priority;
+
+        public override string ToString() => $"Prio={Priority}, Mode={PixelMode}, Color={PaletteColor}";
     }
 
     private struct BgPixelProperties
@@ -35,6 +37,11 @@ public partial class Ppu
             Priority = new int[2];
             ColorIsPaletteIndex = new bool[2];
             BgId = new int[2];
+        }
+
+        public override string ToString()
+        {
+            return $"BG{BgId[0]},Prio={Priority[0]}, {PaletteColor[0]:X2} - BG{BgId[1]},Prio={Priority[1]}, {PaletteColor[1]:X2}";
         }
     }
 
@@ -178,10 +185,27 @@ public partial class Ppu
             // Work out what are the top target palette entries and determine
             // if those targets were enabled for color effects
             var colorEffectsValid = ColorEffects.SpecialEffect != SpecialEffect.None;
+            var colorEffectUsed = ColorEffects.SpecialEffect;
             var objLayerUsed = false;
             var bgLayerIx = 0;
             for (var target = 0; target < (ColorEffects.SpecialEffect == SpecialEffect.AlphaBlend ? 2 : 1); target++)
             {
+                // Semi transparent sprites always take the highest priority and force alpha blending
+                if (spriteEntry.PixelMode == SpriteMode.SemiTransparent && !objLayerUsed)
+                {
+                    objLayerUsed = true;
+                    if ((spriteEntry.PaletteColor & 0b1111) != 0)
+                    {
+                        Utils.ColorToRgb(_paletteEntries[0x100 + spriteEntry.PaletteColor], _pixels[target]);
+                        colorEffectUsed = SpecialEffect.AlphaBlend;
+                        continue;
+                    }
+                    else
+                    {
+                        colorEffectsValid = false;
+                    }
+                }
+
                 if (bgEntry.ColorIsPaletteIndex[bgLayerIx])
                 {
                     PaletteEntry paletteEntry;
@@ -243,14 +267,14 @@ public partial class Ppu
                 }
             }
 
-            if (!colorEffectsValid || ColorEffects.SpecialEffect == SpecialEffect.None)
+            if (!colorEffectsValid || colorEffectUsed == SpecialEffect.None)
             {
                 // Just copy the highest priority pixel into the frame buffer as no color effects to apply
                 Array.Copy(_pixels[0], 0, FrameBuffer, fbPtr, 4);
             }
             else
             {
-                switch (ColorEffects.SpecialEffect)
+                switch (colorEffectUsed)
                 {
                     case SpecialEffect.AlphaBlend:
                         for (int i = 0; i < 4; i++)
