@@ -144,6 +144,12 @@ public partial class Ppu
             // part of so we know which backgrounds/objects might be present
             var activeWindow = _windows.GetHighestPriorityWindow(Dispcnt, x, CurrentLine);
 
+            // OBJ window has lowest priority of the 3 windows
+            if (activeWindow == -1 && _objBuffer[x].PixelMode == SpriteMode.ObjWindow && Dispcnt.ObjWindowDisplay)
+            {
+                activeWindow = 2;
+            }
+
             // Then fill in the bgBuffer with the top two highest priority
             // opaque pixels
             var filledBgPixels = 0;
@@ -157,7 +163,8 @@ public partial class Ppu
                     // Now check that the window this background is in (if any) has that background enabled
                     if (!usingWindows ||
                         (activeWindow == -1 && _windows.BgEnableOutside[sortedBgIx]) ||
-                        (activeWindow != -1 && _windows.BgEnableInside[activeWindow][sortedBgIx]))
+                        (activeWindow > -1 && activeWindow < 2 && _windows.BgEnableInside[activeWindow][sortedBgIx]) ||
+                        (activeWindow == 2 && _windows.ObjWindowBgEnable[sortedBgIx]))
                     {
                         _bgBuffer[x].PaletteColor[filledBgPixels] = _scanlineBgBuffer[sortedBgIx][x];
                         _bgBuffer[x].Priority[filledBgPixels] = Backgrounds[sortedBgIx].Control.BgPriority;
@@ -184,7 +191,14 @@ public partial class Ppu
 
             // Work out what are the top target palette entries and determine
             // if those targets were enabled for color effects
-            var colorEffectsValid = ColorEffects.SpecialEffect != SpecialEffect.None;
+
+            // Color effects are only going to be valid if they're enabled and
+            // the window this pixel is in also has color effects enabled
+            var colorEffectsValid = ColorEffects.SpecialEffect != SpecialEffect.None 
+                && ((activeWindow == -1 && _windows.ColorSpecialEffectEnableOutside) || 
+                    ((activeWindow == 0 || activeWindow == 1) && _windows.ColorSpecialEffectEnableInside[activeWindow]) ||
+                    (activeWindow == 2 && _windows.ObjWindowColorSpecialEffect));
+
             var colorEffectUsed = ColorEffects.SpecialEffect;
             var objLayerUsed = false;
             var bgLayerIx = 0;

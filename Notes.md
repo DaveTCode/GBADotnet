@@ -152,3 +152,4 @@ how the pipeline is wired up to the data bus.
 - Rhythm Tengoku is the first rom which does a switch from Supervisor -> IRQ -> Supervisor without updating SPSR and therefore requires that SPSR is not updated on mode switching unless done via an interrupt
 - Spyro uses LDRB/STRB to update DISPCNT high byte so needs working read/write unaligned byte wide read/write from PPU
 - Pokemon pinball makes good use of semi-transparent sprites on the machine select screen to grey out the unused table. It also requires correct handling of semi transparent sprites which have backdrop color (ignore) otherwise you get a grey square on the selected table
+- Pokemon firered uses object windows to disable blend effects on BG0 in the "Press Start" screen, if not enabled the Pokemon logo goes very white
