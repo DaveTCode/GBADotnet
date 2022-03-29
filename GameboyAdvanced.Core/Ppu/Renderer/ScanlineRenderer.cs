@@ -492,7 +492,7 @@ public partial class Ppu
             var screenBlockOffset = background.Control.ScreenSize switch
             {
                 BgSize.Regular32x32 => 0,
-                BgSize.Regular32x64 => (screenBlockTileY / 32) * 2,
+                BgSize.Regular32x64 => (screenBlockTileY / 32),
                 BgSize.Regular64x32 => (screenBlockTileX / 32),
                 BgSize.Regular64x64 => (screenBlockTileX / 32) + ((screenBlockTileY / 32) * 2),
                 _ => throw new Exception("Invalid bg size")
