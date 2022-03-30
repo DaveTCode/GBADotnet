@@ -1,9 +1,62 @@
 # Gameboy Advanced Emulator - C#
 
-This is a WIP Gameboy Advanced emulator which is nowhere near something you'd want to play games actual roms.
+This is a WIP Gameboy Advanced emulator which is nowhere near something you'd want to play actual games on.
 
 - [Compatibility](./compatibility)
 - [Notes](./Notes.md)
+
+## Projects
+
+Within this repository there are a number of projects:
+
+1. [GameboyAdvanced.Arm.SourceGenerators](./GameboyAdvanced.Arm.SourceGenerators) - Roslyn source generators to template our various common operations in the ARM core
+2. [GameboyAdvanced.CompatibilityChecker](./GameboyAdvanced.CompatibilityChecker) - A console application which runs the emulator against all roms in a directory and outputs 1 image per rom along with a github flavour markdown doc showing compatibility
+3. [GameboyAdvanced.Core.Benchmarks](./GameboyAdvanced.Core.Benchmarks) - A (mostly unused) project to generate benchmarks of low level parts of the emulator
+4. [GameboyAdvanced.Core.Tests](./GameboyAdvanced.Core.Tests) - A small handful of unit tests written whilst validating the CPU. Not really used any more as test roms are more useful
+5. [GameboyAdvanced.Core](./GameboyAdvanced.Core) - The fundamental core of the emulator which provides a `Device` class that takes a gamepak and allows single/frame stepping
+6. [GameboyAdvanced.Headless](./GameboyAdvanced.Headless) - A dotnet console application which allows running the core without a UI but has debugging commands
+7. [GameboyAdvanced.Sdl2](./GameboyAdvanced.Sdl2) - An SDL2 based UI for emulator which provides no features beyond running the application
+8. [GameboyAdvanced.Web](./GameboyAdvanced.Web) - A [SignalR]() based websockets implementation of the emulator which runs the emulator on the server and passes frames to a web ui which includes some debugging information
+
+## Architecture
+
+The core question for any low level emulator is what granularity it steps the various components. This can be done in a number of ways but the most common are:
+- 1 step per instruction
+- 1 step per memory access
+- 1 step per master clock cycle
+
+Typically good 8 bit system (NES/GB) emulators will act at the master clock cycle level but this can be prohitibitively expensive to once working on more modern
+devices.
+
+*This* emulator aims to step all of the components of a GBA at the master clock cycle speed, specifically it aims to accurately emulate the various signals in/out of
+the arm7tdmi core. _Some_ effort has been taken to ensure that the correct signals appear on the rising/falling edge of each cycle but since the core is stepped once 
+per master clock cycle rather than once for each of the rising/falling edge this is not reliably accurate. I don't believe that it impacts accuracy of the overarching 
+system emulation.
+
+The various components are then listed below with links to the code handling their step function:
+
+- [CPU - ARM7TDMI](./GameboyAdvanced.Core/Cpu/Core.cs)
+- [PPU](./GameboyAdvanced.Core/Ppu/Ppu.cs)
+- [Timer](./GameboyAdvanced.Core/Timer/TimerController.cs)
+- [Dma](./GameboyAdvanced.Core/Dma/DmaController.cs)
+- [APU](./GameboyAdvanced.Core/Apu/Apu.cs) - TODO, register implemented but no cycle step function
+
+### Scheduler or not?
+
+All good GBA emulators make use of a scheduler instead of single stepping components which don't need running each cycle (e.g. timers). This emulator does
+not have a scheduler although it's likely that I'll need to add one at some point to resolve the performance issues tracked here: https://github.com/DaveTCode/GBADotnet/issues/48.
+
+### Low level coding decisions
+
+*Q. Why use source generators?*
+A. C# sadly doesn't come with a macro/preprocessor/templating system and so our only options here for e.g. ALU operations are either to write 
+functions with _loads_ of branches (bad performance), pre-generate a bunch of copy paste functions (even worse than what I've done) or bastardise a
+macro system out of source generators.
+
+*Q. Why is the code so bad it makes my eyes hurt?*
+A. To be clear, I would slap anyone who submitted this to me for code review. Generally this emulator makes the concious decision to prioritise performance over
+readable code. So e.g. there's almost no inheritance or properties. I've also prioritised practicality over good practice. So everything is `public` scoped
+in order to make serializing data easy for use by the web based UI and save/load state functionality.
 
 ## Test Rom Status
 
@@ -94,7 +147,7 @@ This is a WIP Gameboy Advanced emulator which is nowhere near something you'd wa
 | NBA        | DMA - Burst into tears   | :x:                |                                                                                                                                                                                                           |
 | NBA        | DMA - Latch              | :heavy_check_mark: |                                                                                                                                                                                                           |
 | NBA        | DMA - Start Delay        | :heavy_check_mark: | 20 on real GBA and 20 here, fixed by getting write cycles correct                                                                                                                                         |
-| NBA        | Haltcnt                  | :x:                |                                                                                                                                                                                                           |
+| NBA        | Haltcnt                  | :x:                | Pass direct and cpuset but fail on iwram and rom by 1 cycle in each case                                                                                                                                  |
 | NBA        | PPU - Basic Timing       | :heavy_check_mark: | HDMA doesn't bloody stop when HBlank turns off. FFS. Idiot.                                                                                                                                               |
 | NBA        | Timer - Start Stop       | :heavy_check_mark: | Fixed by adding 1 cycle delay from register write to stopping timer                                                                                                                                       |
 | NBA        | Timer - Reload           | :x:                | First 3 tests pass, last two don't and I'm not quite sure why.                                                                                                                                            |
