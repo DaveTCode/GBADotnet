@@ -105,7 +105,14 @@ public class DmaChannel
             IntSourceAddress = SourceAddress & (ControlReg.Is32Bit ? 0xFFFF_FFFC : 0xFFFF_FFFE);
             IntDestinationAddress = DestinationAddress & (ControlReg.Is32Bit ? 0xFFFF_FFFC : 0xFFFF_FFFE);
             IntCachedValue = null;
-            IntWordCount = (WordCount == 0) ? MaxWordCounts[Id] : WordCount; // 0 is a special case that means copy MAX bytes
+            if (Id is 1 or 2 && ControlReg.StartTiming == StartTiming.Special)
+            {
+                IntWordCount = 4;
+            }
+            else
+            {
+                IntWordCount = (WordCount == 0) ? MaxWordCounts[Id] : WordCount; // 0 is a special case that means copy MAX bytes
+            }
             IntDestAddressIncrement = (ControlReg.Is32Bit, ControlReg.DestAddressCtrl) switch
             {
                 (_, DestAddressCtrl.Fixed) => 0,
