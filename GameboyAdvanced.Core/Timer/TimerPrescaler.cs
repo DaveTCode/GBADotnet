@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Timer;
 
-internal enum TimerPrescaler
+public enum TimerPrescaler
 {
     F_1 = 0b00,
     F_64 = 0b01,
@@ -8,9 +8,9 @@ internal enum TimerPrescaler
     F_1024 = 0b11,
 }
 
-internal static class TimerPrescalerExtensions
+public static class TimerPrescalerExtensions
 {
-    internal static int Cycles(this TimerPrescaler prescaler) => prescaler switch
+    public static int Cycles(this TimerPrescaler prescaler) => prescaler switch
     {
         TimerPrescaler.F_1 => 1,
         TimerPrescaler.F_64 => 64,
