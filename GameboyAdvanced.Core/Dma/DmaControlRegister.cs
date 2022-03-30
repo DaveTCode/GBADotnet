@@ -95,4 +95,8 @@ public struct DmaControlRegister
         IrqOnEnd = false;
         DmaEnable = false;
     }
+
+    public override string ToString() => 
+        $"Enabled={DmaEnable}, SrcAddressCtrl={SrcAddressCtrl}, Repeat={Repeat}, 32={Is32Bit}, DRQ={GamePakDRQ}, Start={StartTiming}, IRQ={IrqOnEnd}";
+
 }
