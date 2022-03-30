@@ -5,16 +5,16 @@
 /// </summary>
 public class SoundChannel3 : GBSoundChannel
 {
-    private readonly byte[][] _waveRamBanks = new byte[2][];
+    public readonly byte[][] _waveRamBanks = new byte[2][];
 
-    private int _length;
-    private bool _isTwoBankRam;
-    private int _waveRamBankIndex;
-    private bool _on;
+    public int _length;
+    public bool _isTwoBankRam;
+    public int _waveRamBankIndex;
+    public bool _on;
 
-    private int _volume;
-    private bool _force75PctVolume;
-    private int _sampleRate;
+    public int _volume;
+    public bool _force75PctVolume;
+    public int _sampleRate;
 
     internal SoundChannel3() : base(3)
     {

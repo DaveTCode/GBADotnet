@@ -4,11 +4,11 @@ namespace GameboyAdvanced.Core.Apu.Channels;
 
 public abstract class ToneChannel : GBSoundChannel
 {
-    readonly protected Envelope _envelope = new();
+    public readonly Envelope _envelope = new();
 
-    protected int _frequency;
-    protected int _length;
-    protected int _dutyPattern;
+    public int _frequency;
+    public int _length;
+    public int _dutyPattern;
 
     internal ToneChannel(int index) : base(index) { }
 

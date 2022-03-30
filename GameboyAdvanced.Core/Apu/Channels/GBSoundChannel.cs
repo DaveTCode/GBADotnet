@@ -2,7 +2,7 @@
 
 public abstract class BaseChannel
 {
-    internal int Index;
+    public int Index;
 
     internal BaseChannel(int index)
     {
@@ -16,8 +16,8 @@ public abstract class BaseChannel
 
 public abstract class GBSoundChannel : BaseChannel
 {
-    protected bool _lengthFlag;
-    protected bool _restartScheduled;
+    public bool _lengthFlag;
+    public bool _restartScheduled;
 
     internal GBSoundChannel(int index) : base(index) {}
 

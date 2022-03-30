@@ -8,21 +8,21 @@ public class Apu
 {
     private readonly BaseDebugger _debugger;
 
-    private readonly DmaChannel[] _dmaChannels = new DmaChannel[2]
+    public readonly DmaChannel[] _dmaChannels = new DmaChannel[2]
     {
         new DmaChannel(1), new DmaChannel(2),
     };
-    private readonly GBSoundChannel[] _channels = new GBSoundChannel[4]
+    public readonly GBSoundChannel[] _channels = new GBSoundChannel[4]
     {
         new SoundChannel1(), 
         new SoundChannel2(), 
         new SoundChannel3(),
         new SoundChannel4(),
     };
-    private readonly SoundControlRegister _soundControlRegister;
-    private bool _psgFifoMasterEnable;
-    private int _biasLevel;
-    private int _samplingCycle;
+    public readonly SoundControlRegister _soundControlRegister;
+    public bool _psgFifoMasterEnable;
+    public int _biasLevel;
+    public int _samplingCycle;
 
     internal Apu(BaseDebugger debugger)
     {

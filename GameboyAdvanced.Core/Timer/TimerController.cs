@@ -12,11 +12,11 @@ public unsafe class TimerController
 {
     private readonly BaseDebugger _debugger;
     private readonly InterruptInterconnect _interruptInterconnect;
-    private readonly TimerRegister[] _timers = new TimerRegister[4]
+    public readonly TimerRegister[] _timers = new TimerRegister[4]
     {
         new TimerRegister(0), new TimerRegister(1), new TimerRegister(2), new TimerRegister(3)
     };
-    private readonly int[] _timerSteps = new int[4];
+    public readonly int[] _timerSteps = new int[4];
 
     internal TimerController(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
     {

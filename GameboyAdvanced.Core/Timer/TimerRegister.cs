@@ -2,17 +2,17 @@
 
 public struct TimerRegister
 {
-    internal int Index;
-    internal ushort Reload;
-    internal bool ReloadNeedsLatch;
-    internal ushort ReloadLatch;
-    internal ushort Counter;
-    internal TimerPrescaler PrescalerSelection;
-    internal bool CountUpTiming;
-    internal bool IrqEnabled;
-    internal bool Start;
-    internal int CyclesToStart;
-    internal int CyclesToStop;
+    public int Index;
+    public ushort Reload;
+    public bool ReloadNeedsLatch;
+    public ushort ReloadLatch;
+    public ushort Counter;
+    public TimerPrescaler PrescalerSelection;
+    public bool CountUpTiming;
+    public bool IrqEnabled;
+    public bool Start;
+    public int CyclesToStart;
+    public int CyclesToStop;
 
     public TimerRegister(int index)
     {

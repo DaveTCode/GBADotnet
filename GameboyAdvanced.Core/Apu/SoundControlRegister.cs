@@ -4,15 +4,15 @@ namespace GameboyAdvanced.Core.Apu;
 
 public class SoundControlRegister
 {
-    internal int Sound1to4MasterVolumeRight;
-    internal int Sound1to4MasterVolumeLeft;
+    public int Sound1to4MasterVolumeRight;
+    public int Sound1to4MasterVolumeLeft;
 
-    internal bool[] GbChannelEnableFlagsRight = new bool[4];
-    internal bool[] GbChannelEnableFlagsLeft = new bool[4];
+    public bool[] GbChannelEnableFlagsRight = new bool[4];
+    public bool[] GbChannelEnableFlagsLeft = new bool[4];
 
-    internal int Sound1to4Volume;
+    public int Sound1to4Volume;
 
-    private readonly DmaChannel[] _dmaChannels;
+    public readonly DmaChannel[] _dmaChannels;
 
     public SoundControlRegister(DmaChannel[] dmaChannels)
     {

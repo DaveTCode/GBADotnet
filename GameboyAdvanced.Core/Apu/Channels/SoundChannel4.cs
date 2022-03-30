@@ -7,12 +7,12 @@ namespace GameboyAdvanced.Core.Apu.Channels;
 /// </summary>
 public class SoundChannel4 : GBSoundChannel
 {
-    private readonly Envelope _envelope = new();
+    public readonly Envelope _envelope = new();
 
-    private int _length;
-    private int _ratio;
-    private bool _isShortWidth;
-    private int _shiftClockFrequency;
+    public int _length;
+    public int _ratio;
+    public bool _isShortWidth;
+    public int _shiftClockFrequency;
 
     internal SoundChannel4() : base(4)
     {

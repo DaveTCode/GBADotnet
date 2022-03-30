@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Dma;
 
-internal enum DestAddressCtrl
+public enum DestAddressCtrl
 {
     Increment = 0b00,
     Decrement = 0b01,
@@ -8,7 +8,7 @@ internal enum DestAddressCtrl
     IncrementReload = 0b11,
 }
 
-internal enum SrcAddressCtrl
+public enum SrcAddressCtrl
 {
     Increment = 0b00,
     Decrement = 0b01,
@@ -16,7 +16,7 @@ internal enum SrcAddressCtrl
     Prohibited = 0b11,
 }
 
-internal enum StartTiming
+public enum StartTiming
 {
     Immediate = 0b00,
     VBlank = 0b01,
@@ -27,14 +27,18 @@ internal enum StartTiming
 public struct DmaControlRegister
 {
     private readonly int _dmaChannelId;
-    internal DestAddressCtrl DestAddressCtrl;
-    internal SrcAddressCtrl SrcAddressCtrl;
-    internal bool Repeat;
-    internal bool Is32Bit;
-    internal bool GamePakDRQ;
-    internal StartTiming StartTiming;
-    internal bool IrqOnEnd;
-    internal bool DmaEnable;
+    public DestAddressCtrl DestAddressCtrl;
+    public SrcAddressCtrl SrcAddressCtrl;
+    public bool Repeat;
+    public bool Is32Bit;
+
+    /// <summary>
+    /// Apparently this is entirely unused so it's ignored throughout my emulator
+    /// </summary>
+    public bool GamePakDRQ;
+    public StartTiming StartTiming;
+    public bool IrqOnEnd;
+    public bool DmaEnable;
 
     internal DmaControlRegister(int id)
     {

@@ -2,9 +2,9 @@
 
 public class SweepUnit
 {
-    internal int NumberOfSweepShift;
-    internal bool IsDecrease;
-    private int _sweepTime;
+    public int NumberOfSweepShift;
+    public bool IsDecrease;
+    public int _sweepTime;
 
     internal void Reset()
     {

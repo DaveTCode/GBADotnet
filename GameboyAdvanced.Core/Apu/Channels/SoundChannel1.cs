@@ -8,7 +8,7 @@ namespace GameboyAdvanced.Core.Apu.Channels;
 /// </summary>
 public class SoundChannel1 : ToneChannel
 {
-    private readonly SweepUnit _sweepUnit = new();
+    public readonly SweepUnit _sweepUnit = new();
 
     internal SoundChannel1() : base(1) { Reset(); }
 

@@ -2,11 +2,11 @@
 
 public class Envelope
 {
-    internal int EnvelopeStepTime;
+    public int EnvelopeStepTime;
 
-    internal bool IsIncrease;
-    
-    internal int InitialVolume;
+    public bool IsIncrease;
+
+    public int InitialVolume;
 
     internal void Reset()
     {

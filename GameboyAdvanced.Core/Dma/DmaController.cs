@@ -86,6 +86,10 @@ public class DmaController
                         }
                         break;
                     case StartTiming.Special:
+                        if (ii == 3)
+                        {
+                            throw new NotImplementedException("Video capture DMA not implemented");
+                        }
                         continue; // TODO - Implement special DMA
                     default:
                         throw new Exception($"Invalid DMA start timing {_dmaDataUnit.Channels[ii].ControlReg.StartTiming}");

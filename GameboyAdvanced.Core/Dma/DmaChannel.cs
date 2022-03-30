@@ -6,29 +6,29 @@ public class DmaChannel
 {
     internal readonly static int[] MaxWordCounts = new int[] { 0x4000, 0x4000, 0x4000, 0x10000 };
 
-    internal int Id;
-    private readonly ushort _wordMask;
-    private readonly uint _srcMask;
-    private readonly uint _destMask;
-    internal uint SourceAddress;
-    internal uint DestinationAddress;
-    internal ushort WordCount;
+    public int Id;
+    public readonly ushort _wordMask;
+    public readonly uint _srcMask;
+    public readonly uint _destMask;
+    public uint SourceAddress;
+    public uint DestinationAddress;
+    public ushort WordCount;
 
-    internal uint IntSourceAddress;
-    internal uint IntDestinationAddress;
-    internal uint? IntCachedValue;
-    internal int IntWordCount;
-    internal int IntDestAddressIncrement;
-    internal int IntSrcAddressIncrement;
-    internal uint InternalLatch;
-    internal int IntDestSeqAccess;
-    internal int IntSrcSeqAccess;
+    public uint IntSourceAddress;
+    public uint IntDestinationAddress;
+    public uint? IntCachedValue;
+    public int IntWordCount;
+    public int IntDestAddressIncrement;
+    public int IntSrcAddressIncrement;
+    public uint InternalLatch;
+    public int IntDestSeqAccess;
+    public int IntSrcSeqAccess;
 
-    internal bool IsRunning;
+    public bool IsRunning;
 
-    internal DmaControlRegister ControlReg;
+    public DmaControlRegister ControlReg;
 
-    internal int ClocksToStart;
+    public int ClocksToStart;
 
     internal DmaChannel(int id, ushort wordMask, uint srcMask, uint destMask)
     {

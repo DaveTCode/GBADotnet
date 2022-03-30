@@ -2,10 +2,10 @@
 
 public class DmaChannel : BaseChannel
 {
-    internal bool FullVolume;
-    internal bool EnableRight;
-    internal bool EnableLeft;
-    internal bool SelectTimer1;
+    public bool FullVolume;
+    public bool EnableRight;
+    public bool EnableLeft;
+    public bool SelectTimer1;
 
     public DmaChannel(int index) : base(index)
     {
