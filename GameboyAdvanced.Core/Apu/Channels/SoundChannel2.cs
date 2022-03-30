@@ -6,7 +6,7 @@
 /// </summary>
 public class SoundChannel2 : ToneChannel
 {
-    internal SoundChannel2() : base(2) 
+    public SoundChannel2() : base(2) 
     {
         Reset();
     }

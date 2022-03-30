@@ -7,11 +7,11 @@
 public struct InternalMemoryControl
 {
     private const uint Mask = 0b1111_1111_0000_0000_0000_0000_0010_1111;
-    private uint _raw;
+    public uint _raw;
 
-    internal bool IsWRAMDisabled;
-    internal bool Is256KBWRAM;
-    internal int WaitControlWRAM;
+    public bool IsWRAMDisabled;
+    public bool Is256KBWRAM;
+    public int WaitControlWRAM;
 
     public InternalMemoryControl()
     {

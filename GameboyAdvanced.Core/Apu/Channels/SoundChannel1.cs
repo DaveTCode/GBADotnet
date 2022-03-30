@@ -10,7 +10,7 @@ public class SoundChannel1 : ToneChannel
 {
     public readonly SweepUnit _sweepUnit = new();
 
-    internal SoundChannel1() : base(1) { Reset(); }
+    public SoundChannel1() : base(1) { Reset(); }
 
     internal override ushort ReadControlL() => _sweepUnit.Get();
 

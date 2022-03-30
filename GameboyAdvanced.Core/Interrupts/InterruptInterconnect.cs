@@ -2,7 +2,7 @@
 
 namespace GameboyAdvanced.Core.Interrupts;
 
-internal enum Interrupt
+public enum Interrupt
 {
     LCDVBlank = 0b0000_0000_0000_0001,
     LCDHBlank = 0b0000_0000_0000_0010,
@@ -30,7 +30,7 @@ internal enum Interrupt
 public class InterruptInterconnect
 {
     private readonly BaseDebugger _debugger;
-    private readonly InterruptRegisters _registers;
+    public readonly InterruptRegisters _registers;
 
     internal InterruptInterconnect(BaseDebugger debugger, InterruptRegisters registers)
     {

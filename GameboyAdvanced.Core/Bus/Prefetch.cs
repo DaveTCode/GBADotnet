@@ -15,12 +15,12 @@ namespace GameboyAdvanced.Core.Bus;
 /// </summary>
 public class Prefetcher
 {
-    private uint _currentPreFetchBase;
-    private ulong _cycleBurstStart;
-    private readonly WaitControl _waitControl;
-    private readonly GamePak _gamePak;
+    public uint _currentPreFetchBase;
+    public ulong _cycleBurstStart;
+    public readonly WaitControl _waitControl;
+    public readonly GamePak _gamePak;
 
-    internal Prefetcher(WaitControl waitControl, GamePak gamePak)
+    public Prefetcher(WaitControl waitControl, GamePak gamePak)
     {
         _waitControl = waitControl;
         _gamePak = gamePak;

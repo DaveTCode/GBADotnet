@@ -12,9 +12,9 @@
 /// These edge cases can't be easily tested because we can't flash the right 
 /// sort of cartridge to test them on a genuine device.
 /// </summary>
-internal class FlashBackup
+public class FlashBackup
 {
-    private enum FlashChipState
+    public enum FlashChipState
     {
         Ready,
         ChipIdentification,
@@ -23,14 +23,14 @@ internal class FlashBackup
         SettingMemoryBank,
     }
 
-    private enum FlashCommandState
+    public enum FlashCommandState
     {
         NotStarted,
         Command1,
         Command2,
     }
 
-    private enum FlashCommand
+    public enum FlashCommand
     {
         EraseChip = 0x10,
         Erase4KBSector = 0x30,
@@ -41,15 +41,15 @@ internal class FlashBackup
         ExitIdentificationMode = 0xF0,
     }
 
-    private readonly byte[] _data = new byte[2 * 0x1_0000];
-    private readonly byte _manufacturerId;
-    private readonly byte _deviceId;
-    private int _bank;
+    public readonly byte[] _data = new byte[2 * 0x1_0000];
+    public readonly byte _manufacturerId;
+    public readonly byte _deviceId;
+    public int _bank;
 
-    private FlashChipState _state;
-    private FlashCommandState _commandState;
+    public FlashChipState _state;
+    public FlashCommandState _commandState;
 
-    internal FlashBackup(byte manufacturerId, byte deviceId)
+    public FlashBackup(byte manufacturerId, byte deviceId)
     {
         _manufacturerId = manufacturerId;
         _deviceId = deviceId;

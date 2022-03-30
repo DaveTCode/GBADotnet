@@ -11,22 +11,22 @@ namespace GameboyAdvanced.Core.Interrupts;
 /// </summary>
 public class InterruptRegisters
 {
-    private struct InterruptRegister
+    public struct InterruptRegister
     {
-        private bool _lcdVBlank;
-        private bool _lcdHBlank;
-        private bool _lcdVCounterMatch;
-        private bool _timer0Overflow;
-        private bool _timer1Overflow;
-        private bool _timer2Overflow;
-        private bool _timer3Overflow;
-        private bool _serialComms;
-        private bool _dma0;
-        private bool _dma1;
-        private bool _dma2;
-        private bool _dma3;
-        private bool _keypad;
-        private bool _gamepak;
+        public bool _lcdVBlank;
+        public bool _lcdHBlank;
+        public bool _lcdVCounterMatch;
+        public bool _timer0Overflow;
+        public bool _timer1Overflow;
+        public bool _timer2Overflow;
+        public bool _timer3Overflow;
+        public bool _serialComms;
+        public bool _dma0;
+        public bool _dma1;
+        public bool _dma2;
+        public bool _dma3;
+        public bool _keypad;
+        public bool _gamepak;
 
         internal ushort Get() =>
             (ushort)((_lcdVBlank ? (1u << 0) : 0u) |
@@ -116,11 +116,11 @@ public class InterruptRegisters
         }
     }
 
-    private bool _interruptMasterEnable;
-    private InterruptRegister _interruptEnable;
-    private InterruptRegister _interruptRequest;
-    internal bool CpuShouldIrq;
-    internal bool ShouldBreakHalt;
+    public bool _interruptMasterEnable;
+    public InterruptRegister _interruptEnable;
+    public InterruptRegister _interruptRequest;
+    public bool CpuShouldIrq;
+    public bool ShouldBreakHalt;
 
     internal void Reset()
     {

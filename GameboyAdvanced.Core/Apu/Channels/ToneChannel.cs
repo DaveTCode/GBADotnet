@@ -10,7 +10,7 @@ public abstract class ToneChannel : GBSoundChannel
     public int _length;
     public int _dutyPattern;
 
-    internal ToneChannel(int index) : base(index) { }
+    public ToneChannel(int index) : base(index) { }
 
     protected void WriteDutyLength(byte value)
     {

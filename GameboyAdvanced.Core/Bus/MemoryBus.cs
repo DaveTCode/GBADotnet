@@ -17,25 +17,25 @@ namespace GameboyAdvanced.Core.Bus;
 /// </summary>
 public partial class MemoryBus
 {
-    private readonly Prefetcher _prefetcher;
-    private readonly BaseDebugger _debugger;
-    private readonly Ppu.Ppu _ppu;
-    private readonly Apu.Apu _apu;
-    private readonly Gamepad _gamepad;
-    private readonly GamePak _gamePak;
-    private readonly DmaDataUnit _dma;
-    private readonly TimerController _timerController;
-    private readonly InterruptRegisters _interruptRegisters;
-    private readonly SerialController _serialController;
-    private readonly Bios _bios;
+    public readonly Prefetcher _prefetcher;
+    public readonly BaseDebugger _debugger;
+    public readonly Ppu.Ppu _ppu;
+    public readonly Apu.Apu _apu;
+    public readonly Gamepad _gamepad;
+    public readonly GamePak _gamePak;
+    public readonly DmaDataUnit _dma;
+    public readonly TimerController _timerController;
+    public readonly InterruptRegisters _interruptRegisters;
+    public readonly SerialController _serialController;
+    public readonly Bios _bios;
     public readonly byte[] OnBoardWRam = new byte[0x4_0000];
     public readonly byte[] OnChipWRam = new byte[0x8000];
-    private readonly WaitControl _waitControl;
-    private InternalMemoryControl _intMemoryControl;
+    public readonly WaitControl _waitControl;
+    public InternalMemoryControl _intMemoryControl;
     public HaltMode HaltMode = HaltMode.None;
     public byte PostFlag = 0;
 
-    internal MemoryBus(
+    public MemoryBus(
         byte[] bios,
         Gamepad gamepad,
         GamePak gamePak,

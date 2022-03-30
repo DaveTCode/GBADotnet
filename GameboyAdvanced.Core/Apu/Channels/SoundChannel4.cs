@@ -14,7 +14,7 @@ public class SoundChannel4 : GBSoundChannel
     public bool _isShortWidth;
     public int _shiftClockFrequency;
 
-    internal SoundChannel4() : base(4)
+    public SoundChannel4() : base(4)
     {
         Reset();
     }

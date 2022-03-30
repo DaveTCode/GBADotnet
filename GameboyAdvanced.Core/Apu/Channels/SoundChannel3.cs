@@ -16,7 +16,7 @@ public class SoundChannel3 : GBSoundChannel
     public bool _force75PctVolume;
     public int _sampleRate;
 
-    internal SoundChannel3() : base(3)
+    public SoundChannel3() : base(3)
     {
         _waveRamBanks[0] = new byte[16];
         _waveRamBanks[1] = new byte[16];

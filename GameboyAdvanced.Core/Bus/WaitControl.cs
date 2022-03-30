@@ -1,6 +1,6 @@
 ﻿namespace GameboyAdvanced.Core.Bus;
 
-internal enum PhiOutput
+public enum PhiOutput
 {   
     Disabled = 0,
     Phi4_19MHz = 1,
@@ -18,14 +18,14 @@ internal enum PhiOutput
 /// </summary>
 public class WaitControl
 {
-    internal int SRAMWaitStates;
-    internal int SRAMWaitControl;
-    internal int[] WaitState0 = new int[2];
-    internal int[] WaitState1 = new int[2];
-    internal int[] WaitState2 = new int[2];
-    internal PhiOutput PhiTerminalOutput;
-    internal bool EnableGamepakPrefetch;
-    internal bool GamepakIsCGB;
+    public int SRAMWaitStates;
+    public int SRAMWaitControl;
+    public int[] WaitState0 = new int[2];
+    public int[] WaitState1 = new int[2];
+    public int[] WaitState2 = new int[2];
+    public PhiOutput PhiTerminalOutput;
+    public bool EnableGamepakPrefetch;
+    public bool GamepakIsCGB;
 
     internal WaitControl()
     {

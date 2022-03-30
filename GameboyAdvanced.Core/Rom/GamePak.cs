@@ -1,5 +1,6 @@
 ﻿using GameboyAdvanced.Core.Dma;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace GameboyAdvanced.Core.Rom;
@@ -14,11 +15,11 @@ public enum RomBackupType
 
 public class GamePak
 {
-    private readonly byte[] _header = new byte[0xC0];
+    public readonly byte[] _header = new byte[0xC0];
     public readonly byte[] Data;
-    private readonly byte[] _sram = new byte[0x1_0000];
-    private readonly FlashBackup? _flashBackup;
-    private readonly EEPromBackup? _eepromBackup;
+    public readonly byte[] _sram = new byte[0x1_0000];
+    public readonly FlashBackup? _flashBackup;
+    public readonly EEPromBackup? _eepromBackup;
 
     public readonly uint RomEntryPoint;
     public readonly byte[] LogoCompressed = new byte[156];
@@ -36,12 +37,12 @@ public class GamePak
 
     // TODO - Multiboot details
 
-    public GamePak(byte[] bin, RomBackupType? romBackupType = null)
+    public GamePak(byte[] data, RomBackupType? romBackupType = null)
     {
-        if (bin == null) throw new ArgumentNullException(nameof(bin));
-        if (bin.LongLength < 0xC0) throw new ArgumentException("Rom must be >= 0xC0 in size to fit cartridge header", nameof(bin));
-        Array.Copy(bin, 0, _header, 0, _header.Length);
-        Data = (byte[])bin.Clone();
+        if (data == null) throw new ArgumentNullException(nameof(data));
+        if (data.LongLength < 0xC0) throw new ArgumentException("Rom must be >= 0xC0 in size to fit cartridge header", nameof(data));
+        Array.Copy(data, 0, _header, 0, _header.Length);
+        Data = (byte[])data.Clone();
 
         RomEntryPoint = Utils.ReadWord(_header, 0, 0xFFFF_FFFF);
         Array.Copy(_header, 4, LogoCompressed, 0, LogoCompressed.Length);
@@ -56,7 +57,7 @@ public class GamePak
         ComplementCheck = _header[189];
         Array.Copy(_header, 190, ReservedArea2, 0, ReservedArea2.Length);
 
-        RomBackupType = romBackupType ?? CalculateRomBackupType(bin);
+        RomBackupType = romBackupType ?? CalculateRomBackupType(data);
 
         if (RomBackupType == RomBackupType.FLASH128)
         {

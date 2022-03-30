@@ -41,14 +41,14 @@ public class EEPromBackup
     public EEPromSize Size;
     public EEPromState State;
     public EEPromCommand Command;
-    private readonly uint _eepromMask;
-    private int _maxAddressBits;
-    private int _addressBitsReceived;
-    private int _dataBitsReceived;
-    private int _addressBlock;
-    private int _address;
+    public readonly uint _eepromMask;
+    public int _maxAddressBits;
+    public int _addressBitsReceived;
+    public int _dataBitsReceived;
+    public int _addressBlock;
+    public int _address;
 
-    internal DmaDataUnit? DmaDataUnit;
+    public DmaDataUnit? DmaDataUnit;
 
     public EEPromBackup(uint eepromMask, EEPromSize size = EEPromSize.Unknown)
     {

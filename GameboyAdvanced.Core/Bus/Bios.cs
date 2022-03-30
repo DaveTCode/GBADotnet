@@ -4,7 +4,7 @@ namespace GameboyAdvanced.Core.Bus;
 
 public class Bios
 {
-    private readonly byte[] _bios = new byte[0x4000];
+    public readonly byte[] _bios = new byte[0x4000];
 
     /// <summary>
     /// Bios reads when R15>=0x4000 don't go through normal open bus but 
@@ -13,9 +13,9 @@ public class Bios
     /// No idea how that works on hardware though, is there a dedicated 
     /// line for bios?
     /// </summary>
-    private uint _latchedValue;
+    public uint _latchedValue;
 
-    internal Bios(byte[] bios, bool skipBios)
+    public Bios(byte[] bios, bool skipBios)
     {
         if (bios == null || bios.Length > _bios.Length) throw new ArgumentException($"Bios is invalid length {bios?.Length}", nameof(bios));
         Array.Fill<byte>(_bios, 0);

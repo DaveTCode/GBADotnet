@@ -4,7 +4,7 @@ public abstract class BaseChannel
 {
     public int Index;
 
-    internal BaseChannel(int index)
+    public BaseChannel(int index)
     {
         Index = index;
     }
@@ -19,7 +19,7 @@ public abstract class GBSoundChannel : BaseChannel
     public bool _lengthFlag;
     public bool _restartScheduled;
 
-    internal GBSoundChannel(int index) : base(index) {}
+    public GBSoundChannel(int index) : base(index) {}
 
     internal abstract ushort ReadControlL();
 

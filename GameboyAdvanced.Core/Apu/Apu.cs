@@ -6,7 +6,7 @@ namespace GameboyAdvanced.Core.Apu;
 
 public class Apu
 {
-    private readonly BaseDebugger _debugger;
+    public readonly BaseDebugger _debugger;
 
     public readonly DmaChannel[] _dmaChannels = new DmaChannel[2]
     {
@@ -24,7 +24,7 @@ public class Apu
     public int _biasLevel;
     public int _samplingCycle;
 
-    internal Apu(BaseDebugger debugger)
+    public Apu(BaseDebugger debugger)
     {
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
         _soundControlRegister = new SoundControlRegister(_dmaChannels);
