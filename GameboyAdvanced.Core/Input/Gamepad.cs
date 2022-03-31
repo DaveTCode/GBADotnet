@@ -6,7 +6,7 @@ namespace GameboyAdvanced.Core.Input;
 
 public class Gamepad
 {
-    private readonly Dictionary<Key, bool> _keyIrq = new()
+    public readonly Dictionary<Key, bool> _keyIrq = new()
     {
         { Key.A, false },
         { Key.B, false },
@@ -20,7 +20,7 @@ public class Gamepad
         { Key.R, false },
     };
 
-    private readonly Dictionary<Key, bool> _keyPressed = new()
+    public readonly Dictionary<Key, bool> _keyPressed = new()
     {
         { Key.A, false },
         { Key.B, false },
@@ -37,9 +37,8 @@ public class Gamepad
     private readonly BaseDebugger _debugger;
     private readonly InterruptInterconnect _interruptInterconnect;
 
-    // TODO - Actually do something with IRQs from input
-    private bool _irqEnabled;
-    private bool _irqConditionAnd;
+    public bool _irqEnabled;
+    public bool _irqConditionAnd;
 
     internal Gamepad(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
     {
@@ -96,7 +95,34 @@ public class Gamepad
         _ => throw new ArgumentOutOfRangeException(nameof(address), $"Address {address:X8} is not mapped to Gamepad memory space"),
     };
 
-    internal void WriteByte(uint address, byte value) => throw new NotImplementedException("Write byte not implemented for gamepad registers");
+    internal void WriteByte(uint address, byte value)
+    {
+        switch (address)
+        {
+            case KEYCNT:
+                _keyIrq[Key.A] = (value & (1 << 0)) == (1 << 0);
+                _keyIrq[Key.B] = (value & (1 << 1)) == (1 << 1);
+                _keyIrq[Key.Select] = (value & (1 << 2)) == (1 << 2);
+                _keyIrq[Key.Start] = (value & (1 << 3)) == (1 << 3);
+                _keyIrq[Key.Right] = (value & (1 << 4)) == (1 << 4);
+                _keyIrq[Key.Left] = (value & (1 << 5)) == (1 << 5);
+                _keyIrq[Key.Up] = (value & (1 << 6)) == (1 << 6);
+                _keyIrq[Key.Down] = (value & (1 << 7)) == (1 << 7);
+                
+                CheckIrqs();
+                break;
+            case KEYCNT + 1:
+                _keyIrq[Key.R] = (value & (1 << 0)) == (1 << 0);
+                _keyIrq[Key.L] = (value & (1 << 1)) == (1 << 1);
+                _irqEnabled = (value & (1 << 6)) == (1 << 6);
+                _irqConditionAnd = (value & (1 << 7)) == (1 << 7);
+
+                CheckIrqs();
+                break;
+            default:
+                break;
+        }
+    }
 
     internal void WriteHalfWord(uint address, ushort value)
     {
@@ -114,6 +140,8 @@ public class Gamepad
             _keyIrq[Key.L] = (value & (1 << 9)) == (1 << 9);
             _irqEnabled = (value & (1 << 14)) == (1 << 14);
             _irqConditionAnd = (value & (1 << 15)) == (1 << 15);
+            
+            CheckIrqs();
         }
     }
 
@@ -121,14 +149,52 @@ public class Gamepad
     {
         _keyPressed[key] = true;
 
-        if (_irqEnabled && _keyIrq[key])
-        {
-            _interruptInterconnect.RaiseInterrupt(Interrupt.Keypad);
-        }
+        CheckIrqs();
     }
 
     internal void ReleaseKey(Key key)
     {
         _keyPressed[key] = false;
+
+        CheckIrqs();
+    }
+
+    internal void CheckIrqs()
+    {
+        if (_irqEnabled)
+        {
+            var shouldIrq = true;
+            if (_irqConditionAnd)
+            {
+                for (var ii = 0; ii < 9; ii++)
+                {
+                    if (_keyIrq[(Key)ii])
+                    {
+                        if (!_keyPressed[(Key)ii])
+                        {
+                            shouldIrq = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (var ii = 0; ii < 9; ii++)
+                {
+                    shouldIrq = false;
+                    if (_keyIrq[(Key)ii] && _keyPressed[(Key)ii])
+                    {
+                        shouldIrq = true;
+                        break;
+                    }
+                }
+            }
+
+            if (shouldIrq)
+            {
+                _interruptInterconnect.RaiseInterrupt(Interrupt.Keypad);
+            }
+        }
     }
 }
