@@ -192,5 +192,5 @@ public class DmaChannel
         ControlReg.Reset();
     }
 
-    public override string ToString() => $"DMA Channel {Id}";
+    public override string ToString() => $"DMA{Id} {SourceAddress:X8}->{DestinationAddress:X8} ({WordCount})";
 }
