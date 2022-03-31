@@ -4,6 +4,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Aging Cartridge - Patched": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGS_patched.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Aging Cartridge - w/ BIOS": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin --runBios"
@@ -368,9 +372,9 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\timer\\reload\\reload.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Pokemon Pinball - Ruby _ Sapphire (E)": {
+    "Grand Theft Auto Advance": {
       "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon Pinball - Ruby _ Sapphire (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Grand Theft Auto Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Advance Wars 2 - Black Hole Rising (USA, Australia)": {
       "commandName": "Project",
@@ -579,10 +583,6 @@
     "Gradius Galaxies (USA)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Gradius Galaxies (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
-    "Grand Theft Auto Advance": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Grand Theft Auto Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Gunstar Super Heroes": {
       "commandName": "Project",
@@ -843,6 +843,10 @@
     "Pokemon Mystery Dungeon - Red Rescue Team": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon Mystery Dungeon - Red Rescue Team.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Pokemon Pinball - Ruby _ Sapphire (E)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Pokemon Pinball - Ruby _ Sapphire (E).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Puyo Pop": {
       "commandName": "Project",

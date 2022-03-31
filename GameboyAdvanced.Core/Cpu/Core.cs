@@ -134,16 +134,6 @@ public unsafe class Core
     public bool nRW;
 
     /// <summary>
-    /// Rather than emulating the nWAIT signal as a flag we instead set 
-    /// WaitStates to the number of cycles during which the CPU will perform
-    /// no actions.
-    /// 
-    /// This is set by the memory unit when reading/writing to the bus if the
-    /// bus returns that the component requires wait states (e.g. GamePak)
-    /// </summary>
-    public int WaitStates;
-
-    /// <summary>
     /// Contains the current state of the 3 stage pipeline
     /// </summary>
     public Pipeline Pipeline = new();
@@ -180,7 +170,6 @@ public unsafe class Core
         SEQ = 0;
         nOPC = false;
         nRW = false;
-        WaitStates = 0;
         Pipeline.DecodedOpcode = null;
         Pipeline.DecodedOpcodeAddress = null;
         Pipeline.FetchedOpcode = null;
@@ -229,11 +218,11 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            WaitStates += Bus.WriteByte(A, (byte)D, SEQ, R[15]);
+                            Bus.WriteByte(A, (byte)D, SEQ, R[15]);
                         }
                         else
                         {
-                            D = Bus.ReadByte(A, SEQ, R[15], D, Cycles, ref WaitStates);
+                            D = Bus.ReadByte(A, SEQ, R[15], D, Cycles);
                         }
                         break;
                     }
@@ -241,11 +230,11 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            WaitStates += Bus.WriteHalfWord(A, (ushort)D, SEQ, R[15]);
+                            Bus.WriteHalfWord(A, (ushort)D, SEQ, R[15]);
                         }
                         else
                         {
-                            D = Bus.ReadHalfWord(A, SEQ, R[15], D, Cycles, ref WaitStates);
+                            D = Bus.ReadHalfWord(A, SEQ, R[15], D, Cycles);
                         }
 
                         break;
@@ -253,11 +242,11 @@ public unsafe class Core
                 case BusWidth.Word:
                     if (nRW)
                     {
-                        WaitStates += Bus.WriteWord(A, D, SEQ, R[15]);
+                        Bus.WriteWord(A, D, SEQ, R[15]);
                     }
                     else
                     {
-                        D = Bus.ReadWord(A, SEQ, R[15], D, Cycles, ref WaitStates);
+                        D = Bus.ReadWord(A, SEQ, R[15], D, Cycles);
                     }
                     break;
                 default:
@@ -355,12 +344,6 @@ public unsafe class Core
     /// </remarks>
     internal void Clock()
     {
-        if (WaitStates > 0)
-        {
-            WaitStates--;
-            return;
-        }
-
         StepMemoryUnit();
 
         // SEQ defaults to true after a memory request and each operation is

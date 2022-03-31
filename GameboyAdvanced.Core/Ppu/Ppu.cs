@@ -1,4 +1,5 @@
 ﻿using GameboyAdvanced.Core.Debug;
+using GameboyAdvanced.Core.Dma;
 using GameboyAdvanced.Core.Interrupts;
 using GameboyAdvanced.Core.Ppu.Registers;
 using System.Runtime.CompilerServices;
@@ -25,6 +26,7 @@ public partial class Ppu
 
     private readonly BaseDebugger _debugger;
     private readonly InterruptInterconnect _interruptInterconnect;
+    private readonly DmaDataUnit _dmaData;
 
     // TODO - Might be more efficient to store as ushorts given access is over 16 bit bus?
     public readonly byte[] Vram = new byte[0x18000]; // 96KB
@@ -42,10 +44,11 @@ public partial class Ppu
 
     public int CurrentLineCycles;
 
-    internal Ppu(BaseDebugger debugger, InterruptInterconnect interruptInterconnect)
+    internal Ppu(BaseDebugger debugger, InterruptInterconnect interruptInterconnect, DmaDataUnit dmaData)
     {
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
         _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
+        _dmaData = dmaData ?? throw new ArgumentNullException(nameof(dmaData));
 
         for (var ii = 0; ii < 4; ii++)
         {
@@ -102,11 +105,6 @@ public partial class Ppu
         return FrameBuffer;
     }
 
-    internal bool CanVBlankDma() => CurrentLine == Device.HEIGHT && (CurrentLineCycles == 0);
-
-    // TODO - Not sure what the behaviour here is if accessing OAM while the bit on dispcnt isn't set, does it pause DMA or write nothing?
-    internal bool CanHBlankDma() => (CurrentLineCycles == HBlankFlagCycles) && (CurrentLine < Device.HEIGHT);
-
     /// <summary>
     /// Step the PPU by a single master clock cycle.
     /// 
@@ -120,6 +118,8 @@ public partial class Ppu
 
         if (CurrentLineCycles == HBlankFlagCycles)
         {
+            _dmaData.StartHdma(_interruptInterconnect, CurrentLine);
+
             if (CurrentLine < Device.HEIGHT)
             {
                 DrawCurrentScanline();
@@ -151,6 +151,8 @@ public partial class Ppu
 
             if (CurrentLine == Device.HEIGHT)
             {
+                _dmaData.StartVdma();
+
                 Dispstat.VBlankFlag = true;
                 if (Dispstat.VBlankIrqEnable)
                 {

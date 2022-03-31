@@ -13,14 +13,6 @@ public class DmaController
     private readonly Ppu.Ppu _ppu;
     private readonly Core _cpu;
 
-    /// <summary>
-    /// Like the CPU, when DMA accesses memory addresses it can stretch out N/S
-    /// cycles causing what's known as wait states.
-    /// 
-    /// These wait states block CPU/DMA from executing.
-    /// </summary>
-    private int _waitStates = 0;
-
     internal DmaController(MemoryBus bus, BaseDebugger debugger, DmaDataUnit dmaDataUnit, InterruptInterconnect interruptInterconnect, Ppu.Ppu ppu, Core cpu)
     {
         _bus = bus ?? throw new ArgumentNullException(nameof(bus));
@@ -33,7 +25,7 @@ public class DmaController
 
     internal void Reset()
     {
-        _waitStates = 0;
+        
     }
 
     /// <summary>
@@ -52,45 +44,10 @@ public class DmaController
     /// </returns>
     internal bool Step()
     {
-        if (_waitStates > 0)
-        {
-            _waitStates--;
-            return true;
-        }
-
         for (var ii = 0; ii < _dmaDataUnit.Channels.Length; ii++)
         {
-            if (_dmaDataUnit.Channels[ii].ControlReg.DmaEnable)
+            if (_dmaDataUnit.Channels[ii].ControlReg.DmaEnable && _dmaDataUnit.Channels[ii].IsRunning)
             {
-                switch (_dmaDataUnit.Channels[ii].ControlReg.StartTiming)
-                {
-                    case StartTiming.Immediate:
-                        _dmaDataUnit.Channels[ii].IsRunning = true;
-                        break;
-                    case StartTiming.VBlank:
-                        if (!_dmaDataUnit.Channels[ii].IsRunning)
-                        {
-                            // Wait until vblank to start DMA
-                            if (!_ppu.CanVBlankDma()) continue;
-
-                            _dmaDataUnit.Channels[ii].IsRunning = true;
-                        }
-                        break;
-                    case StartTiming.HBlank:
-                        if (!_dmaDataUnit.Channels[ii].IsRunning)
-                        {
-                            // Wait until hblank to start DMA
-                            if (!_ppu.CanHBlankDma()) continue;
-
-                            _dmaDataUnit.Channels[ii].IsRunning = true;
-                        }
-                        break;
-                    case StartTiming.Special:
-                        continue; // TODO - Implement video capture and FIFO audio dma
-                    default:
-                        throw new Exception($"Invalid DMA start timing {_dmaDataUnit.Channels[ii].ControlReg.StartTiming}");
-                }
-
                 // DMA takes 2 cycles to start and then 1 cycle before writing starts
                 // TODO - Lots about this I'm not sure about, No$ docs say 4I cycles if both src/dest in gamepak but I bet that's not at the start
                 // TODO - Do these cycles cause paused CPU? Right now I say no. Do they count down on all channels at the same time? No for now.
@@ -103,9 +60,15 @@ public class DmaController
                 // DMA takes 2S cycles per read (apart from the first which is a pair of N cycles)
                 if (_dmaDataUnit.Channels[ii].IntCachedValue.HasValue)
                 {
-                    _waitStates += (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
-                        ? _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].IntDestSeqAccess, 0x4000)
-                        : _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].IntDestSeqAccess, 0x4000);
+                    if (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
+                    {
+                        _bus.WriteWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, _dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].IntDestSeqAccess, 0x4000);
+                    }
+                    else
+                    {
+                        _bus.WriteHalfWord(_dmaDataUnit.Channels[ii].IntDestinationAddress, (ushort)_dmaDataUnit.Channels[ii].IntCachedValue!.Value, _dmaDataUnit.Channels[ii].IntDestSeqAccess, 0x4000);
+                    }
+
                     _dmaDataUnit.Channels[ii].IntDestinationAddress = (uint)(_dmaDataUnit.Channels[ii].IntDestinationAddress + _dmaDataUnit.Channels[ii].IntDestAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
                     _dmaDataUnit.Channels[ii].IntWordCount--;
                     _dmaDataUnit.Channels[ii].IntCachedValue = null;
@@ -118,7 +81,7 @@ public class DmaController
                     if (_dmaDataUnit.Channels[ii].IntWordCount == 0)
                     {
                         // One additional cycle after DMA complete
-                        _waitStates++;
+                        _bus.WaitStates++;
                         _dmaDataUnit.Channels[ii].StopChannel(_interruptInterconnect);
                     }
                 }
@@ -127,7 +90,6 @@ public class DmaController
                     // After masking the internal source address if it falls
                     // inside the BIOS region then we don't read anything and
                     // instead rely on the dmas internal latch register
-                    var waitStates = 0;
                     if (_dmaDataUnit.Channels[ii].IntSourceAddress >= 0x0200_0000)
                     {
                         if (_dmaDataUnit.Channels[ii].ControlReg.Is32Bit)
@@ -137,8 +99,7 @@ public class DmaController
                                 _dmaDataUnit.Channels[ii].IntSrcSeqAccess, 
                                 _cpu.R[15], 
                                 _dmaDataUnit.Channels[ii].InternalLatch, 
-                                _cpu.Cycles, 
-                                ref waitStates);
+                                _cpu.Cycles);
                         }
                         else
                         {
@@ -147,8 +108,7 @@ public class DmaController
                                 _dmaDataUnit.Channels[ii].IntSrcSeqAccess, 
                                 _cpu.R[15], 
                                 _dmaDataUnit.Channels[ii].InternalLatch, 
-                                _cpu.Cycles, 
-                                ref waitStates);
+                                _cpu.Cycles);
                             _dmaDataUnit.Channels[ii].InternalLatch |= (_dmaDataUnit.Channels[ii].InternalLatch << 16);
                         }
                         _dmaDataUnit.Channels[ii].IntCachedValue = _dmaDataUnit.Channels[ii].InternalLatch;
@@ -165,7 +125,6 @@ public class DmaController
                         }
                     }
                     
-                    _waitStates += waitStates;
                     _dmaDataUnit.Channels[ii].IntSourceAddress = (uint)(_dmaDataUnit.Channels[ii].IntSourceAddress + _dmaDataUnit.Channels[ii].IntSrcAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
                     if (_dmaDataUnit.Channels[ii].IntSourceAddress >= 0x0800_0000)
                     {

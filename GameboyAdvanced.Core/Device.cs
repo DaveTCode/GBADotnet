@@ -62,13 +62,13 @@ public unsafe class Device
     public Device(byte[] bios, GamePak rom, BaseDebugger debugger, bool skipBios)
     {
         Gamepak = rom;
+        DmaData = new DmaDataUnit();
         InterruptRegisters = new InterruptRegisters();
         InterruptInterconnect = new InterruptInterconnect(debugger, InterruptRegisters);
         Gamepad = new Gamepad(debugger, InterruptInterconnect);
         TimerController = new TimerController(debugger, InterruptInterconnect);
-        Ppu = new Ppu.Ppu(debugger, InterruptInterconnect);
+        Ppu = new Ppu.Ppu(debugger, InterruptInterconnect, DmaData);
         Apu = new Apu.Apu(debugger);
-        DmaData = new DmaDataUnit();
         SerialController = new SerialController(debugger, InterruptInterconnect);
         Bus = new MemoryBus(bios, Gamepad, Gamepak, Ppu, Apu, DmaData, TimerController, InterruptRegisters, SerialController, debugger, skipBios);
         Cpu = new Core(Bus, skipBios, debugger, InterruptRegisters);
@@ -86,18 +86,28 @@ public unsafe class Device
         }
 #endif
         TimerController.Step();
-        if (!DmaCtrl.Step())
+
+        if (Bus.WaitStates > 0)
         {
-            // Only step the CPU unit if the DMA is inactive
-            if (Bus.HaltMode == HaltMode.None)
+            // Note that we step the DMA controller here anyway but block it internally if there are any
+            // wait states
+            Bus.WaitStates--;
+        }
+        else
+        {
+            if (!DmaCtrl.Step())
             {
-                Cpu.Clock();
-            }
-            else
-            {
-                if (InterruptRegisters.ShouldBreakHalt)
+                // Only step the CPU unit if the DMA is inactive
+                if (Bus.HaltMode == HaltMode.None)
                 {
-                    Bus.HaltMode = HaltMode.None;
+                    Cpu.Clock();
+                }
+                else
+                {
+                    if (InterruptRegisters.ShouldBreakHalt)
+                    {
+                        Bus.HaltMode = HaltMode.None;
+                    }
                 }
             }
         }
@@ -131,20 +141,17 @@ public unsafe class Device
 
     public uint InspectWord(uint address)
     {
-        int waitStates = 0;
-        return Bus.ReadWord(address, 0, 0, 0, 0, ref waitStates);
+        return Bus.ReadWord(address, 0, 0, 0, 0);
     }
 
     public ushort InspectHalfWord(uint address)
     {
-        int waitStates = 0;
-        return Bus.ReadHalfWord(address, 0, 0, 0, 0, ref waitStates);
+        return Bus.ReadHalfWord(address, 0, 0, 0, 0);
     }
 
     public byte InspectByte(uint address)
     {
-        int waitStates = 0;
-        return Bus.ReadByte(address, 0, 0, 0, 0, ref waitStates);
+        return Bus.ReadByte(address, 0, 0, 0, 0);
     }
 
     public string LoadedRomName() => Gamepak.GameTitle;

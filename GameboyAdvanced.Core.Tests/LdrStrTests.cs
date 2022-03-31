@@ -21,7 +21,7 @@ public class LdrStrTests
     private readonly static InterruptInterconnect _interruptInterconnect = new(_testDebugger, _interruptRegisters);
     private readonly static Gamepad _testGamepad = new(_testDebugger, _interruptInterconnect);
     private readonly static Apu.Apu _testApu = new(_testDebugger);
-    private readonly static Ppu.Ppu _testPpu = new(_testDebugger, _interruptInterconnect);
+    private readonly static Ppu.Ppu _testPpu = new(_testDebugger, _interruptInterconnect, _testDmaDataUnit);
     private readonly static TimerController _testTimerController = new(_testDebugger, _interruptInterconnect);
     private readonly static SerialController _serialController = new(_testDebugger, _interruptInterconnect);
 
@@ -40,7 +40,7 @@ public class LdrStrTests
         cpu.R[0] = 0x0300_1000u; // Set up where we're writing to
         cpu.R[1] = 0x0000_0004u; // Set up offset (so actual write will be to 0x0300_0001)
         cpu.R[2] = 0x1234_5678u;
-        _ = cpu.Bus.WriteWord(0x0300_1004, 0xBEEF_FEEDu, 1, 0);
+        cpu.Bus.WriteWord(0x0300_1004, 0xBEEF_FEEDu, 1, 0);
 
         cpu.Clock(); cpu.Clock(); // Fill decode stage of pipeline, not really part of this instruction
         cpu.Clock(); // Fill execute stage of pipeline and perform address translation

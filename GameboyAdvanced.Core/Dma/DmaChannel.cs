@@ -97,7 +97,15 @@ public class DmaChannel
 
         if (enableBitFlip)
         {
-            ClocksToStart = 3; // 2I cycles after setting register before DMA unit starts processing and THEN 1 cycle before write start (and one at the end)
+            if (ControlReg.StartTiming == StartTiming.Immediate)
+            {
+                // Changing a channel _to_ immediate isn't enough to start it
+                // running. An immediate channel only starts running when the
+                // enable bit flips
+                IsRunning = true;
+            }
+
+            ClocksToStart = 2; // 2I cycles after setting register before DMA unit starts processing and THEN 1 cycle before write start (and one at the end)
             IntSrcSeqAccess = 0; // 1st read/write pair are non-sequential
             IntDestSeqAccess = 0; // 1st read/write pair are non-sequential
 

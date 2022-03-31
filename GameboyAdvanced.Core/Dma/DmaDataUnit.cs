@@ -1,4 +1,5 @@
-﻿using static GameboyAdvanced.Core.IORegs;
+﻿using GameboyAdvanced.Core.Interrupts;
+using static GameboyAdvanced.Core.IORegs;
 
 namespace GameboyAdvanced.Core.Dma;
 
@@ -25,6 +26,53 @@ public class DmaDataUnit
         foreach (var channel in Channels)
         {
             channel.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Triggered by the PPU when it hits the exact cycle where HDMA is started
+    /// </summary>
+    internal void StartHdma(InterruptInterconnect interruptInterconnect, int line)
+    {
+        for (var ii = 0; ii < Channels.Length; ii++)
+        {
+            if (Channels[ii].ControlReg.DmaEnable)
+            {
+                switch (Channels[ii].ControlReg.StartTiming)
+                {
+                    case StartTiming.HBlank:
+                        if (line < Device.HEIGHT)
+                        {
+                            Channels[ii].IsRunning = true;
+                        }
+                        break;
+                    case StartTiming.Special:
+                        // Handle Video Capture Mode DMA
+                        if (line is >= 2 and < (Device.HEIGHT + 2) && ii == 3)
+                        {
+                            Channels[ii].IsRunning = true;
+                        }
+                        else if (line == Device.HEIGHT + 2)
+                        {
+                            Channels[ii].ControlReg.DmaEnable = false;
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Triggered by the PPU when it hits the exact cycle where VDMA is started
+    /// </summary>
+    internal void StartVdma()
+    {
+        for (var ii = 0; ii < Channels.Length; ii++)
+        {
+            if (Channels[ii].ControlReg.StartTiming == StartTiming.VBlank)
+            {
+                Channels[ii].IsRunning = true;
+            }
         }
     }
 
