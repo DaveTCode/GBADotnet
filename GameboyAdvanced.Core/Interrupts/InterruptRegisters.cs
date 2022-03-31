@@ -46,24 +46,24 @@ public class InterruptRegisters
 
         internal void SetB1(byte val)
         {
-            _lcdVBlank = ((val & (1u << 0)) == 1u << 0);
-            _lcdHBlank = ((val & (1u << 1)) == 1u << 1);
-            _lcdVCounterMatch = ((val & (1u << 2)) == 1u << 2);
-            _timer0Overflow = ((val & (1u << 3)) == 1u << 3);
-            _timer1Overflow = ((val & (1u << 4)) == 1u << 4);
-            _timer2Overflow = ((val & (1u << 5)) == 1u << 5);
-            _timer3Overflow = ((val & (1u << 6)) == 1u << 6);
-            _serialComms = ((val & (1u << 7)) == 1u << 7);
+            _lcdVBlank = (val & (1u << 0)) == 1u << 0;
+            _lcdHBlank = (val & (1u << 1)) == 1u << 1;
+            _lcdVCounterMatch = (val & (1u << 2)) == 1u << 2;
+            _timer0Overflow = (val & (1u << 3)) == 1u << 3;
+            _timer1Overflow = (val & (1u << 4)) == 1u << 4;
+            _timer2Overflow = (val & (1u << 5)) == 1u << 5;
+            _timer3Overflow = (val & (1u << 6)) == 1u << 6;
+            _serialComms = (val & (1u << 7)) == 1u << 7;
         }
 
         internal void SetB2(byte val)
         {
-            _dma0 = ((val & (1u << 0)) == 1u << 8);
-            _dma1 = ((val & (1u << 1)) == 1u << 9);
-            _dma2 = ((val & (1u << 2)) == 1u << 10);
-            _dma3 = ((val & (1u << 3)) == 1u << 11);
-            _keypad = ((val & (1u << 4)) == 1u << 12);
-            _gamepak = ((val & (1u << 5)) == 1u << 13);
+            _dma0 = (val & (1u << 0)) == 1u << 0;
+            _dma1 = (val & (1u << 1)) == 1u << 1;
+            _dma2 = (val & (1u << 2)) == 1u << 2;
+            _dma3 = (val & (1u << 3)) == 1u << 3;
+            _keypad = (val & (1u << 4)) == 1u << 4;
+            _gamepak = (val & (1u << 5)) == 1u << 5;
         }
 
         internal void Set(Interrupt interrupt)
@@ -170,14 +170,14 @@ public class InterruptRegisters
                 _interruptEnable.SetB2(val);
                 break;
             case IF:
-                var currentB1 = (byte)(_interruptRequest.Get());
+                var currentB1 = (byte)_interruptRequest.Get();
                 var newValB1 = (byte)(currentB1 & ~val);
                 _interruptRequest.SetB1(newValB1);
                 break;
             case IF + 1:
                 var currentB2 = (byte)(_interruptRequest.Get() >> 8);
                 var newValB2 = (byte)(currentB2 & ~val);
-                _interruptRequest.SetB1(newValB2);
+                _interruptRequest.SetB2(newValB2);
                 break;
             case IME:
                 _interruptMasterEnable = (val & 0b1) == 0b1;
