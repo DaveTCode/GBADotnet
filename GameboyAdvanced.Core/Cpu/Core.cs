@@ -134,6 +134,12 @@ public unsafe class Core
     public bool nRW;
 
     /// <summary>
+    /// IRQ signals come in through a syncroniser which takes either 3 or 4 
+    /// cycles before the IRQ is triggered.
+    /// </summary>
+    public int IrqSyncDelay;
+
+    /// <summary>
     /// Contains the current state of the 3 stage pipeline
     /// </summary>
     public Pipeline Pipeline = new();
@@ -176,6 +182,7 @@ public unsafe class Core
         Pipeline.FetchedOpcodeAddress = null;
         Pipeline.CurrentInstruction = null;
         Pipeline.CurrentInstructionAddress = null;
+        IrqSyncDelay = -1;
 
         Array.Clear(R, 0, R.Length);
 
@@ -280,11 +287,20 @@ public unsafe class Core
             return;
         }
 
-        if (core._interruptRegisters.CpuShouldIrq && !core.Cpsr.IrqDisable)
+        if (core.IrqSyncDelay == 0)
         {
+            core.IrqSyncDelay = -1;
             var retAddress = core.Pipeline.CurrentInstructionAddress.Value + 4;
             core.HandleInterrupt(0x0000_0018, retAddress, CPSRMode.Irq);
             return;
+        }
+        else if (core.IrqSyncDelay > 1 && core.Cpsr.IrqDisable)
+        {
+            core.IrqSyncDelay = -1;
+        }
+        else if (core.IrqSyncDelay == -1 && core._interruptRegisters.CpuShouldIrq && !core.Cpsr.IrqDisable)
+        {
+            core.IrqSyncDelay = 4;
         }
 
 #if DEBUG
@@ -344,6 +360,11 @@ public unsafe class Core
     /// </remarks>
     internal void Clock()
     {
+        if (IrqSyncDelay > 0)
+        {
+            IrqSyncDelay--;
+        }
+
         StepMemoryUnit();
 
         // SEQ defaults to true after a memory request and each operation is
