@@ -118,7 +118,7 @@ public partial class Ppu
 
         if (CurrentLineCycles == HBlankFlagCycles)
         {
-            _dmaData.StartHdma(_interruptInterconnect, CurrentLine);
+            _dmaData.StartHdma(CurrentLine);
 
             if (CurrentLine < Device.HEIGHT)
             {
@@ -514,7 +514,7 @@ public partial class Ppu
                 WritePaletteHalfWord(address, value);
                 break;
             case uint _ when address is >= 0x0600_0000 and <= 0x06FF_FFFF:
-                Utils.WriteHalfWord(Vram, 0x1_FFFF, MaskVRamAddress(address), value);
+                Utils.WriteHalfWord(Vram, 0xF_FFFF, MaskVRamAddress(address), value);
                 break;
             case uint _ when address is >= 0x0700_0000 and <= 0x07FF_FFFF:
                 WriteOamHalfWord(address, value);
