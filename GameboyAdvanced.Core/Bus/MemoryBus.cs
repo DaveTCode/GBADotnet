@@ -499,11 +499,6 @@ public partial class MemoryBus
 
     internal void WriteWord(uint unalignedAddress, uint value, int seq, uint r15)
     {
-        if (unalignedAddress == 0x4)
-        {
-            Console.WriteLine($"{value:X8}");
-        }
-
         var alignedAddress = unalignedAddress & 0xFFFF_FFFC;
 
         switch (alignedAddress)
