@@ -32,7 +32,7 @@ public unsafe class TimerController
         for (var ix = 0; ix < _timers.Length; ix++)
         {
             _timersReloaded[ix] = false;
-            if (_timers[ix].Start || _timers[ix].CyclesToStop > 0)
+            if (_timers[ix].StartLatch)
             {
                 // Emulate startup delay
                 if (_timers[ix].CyclesToStart > 0)
@@ -41,21 +41,7 @@ public unsafe class TimerController
                     continue;
                 }
 
-                if (_timers[ix].ReloadNeedsLatch)
-                {
-                    // The timer latches the reload value the cycle before it actually wraps
-                    // Thanks to Fleroviux for working this out
-                    _timers[ix].ReloadLatch = _timers[ix].Reload;
-                    _timers[ix].ReloadNeedsLatch = false;
-                }
-
-                // Emulate stop delay (from register write there's one more tick)
-                if (_timers[ix].CyclesToStop > 0)
-                {
-                    _timers[ix].CyclesToStop--;
-                }
-
-                if (_timers[ix].CountUpTiming && ix > 0) // Count up timing on TIMER0 is ignored (TODO - is it? Or does it hang?)
+                if (_timers[ix].CountUpTimingLatch && ix > 0) // Count up timing on TIMER0 is ignored (TODO - is it? Or does it hang?)
                 {
                     if (_timersReloaded[ix - 1])
                     {
@@ -67,10 +53,17 @@ public unsafe class TimerController
                     _timerSteps[ix]--;
                     if (_timerSteps[ix] == 0)
                     {
-                        _timerSteps[ix] = _timers[ix].PrescalerSelection.Cycles();
+                        _timerSteps[ix] = _timers[ix].PrescalerSelectionLatch.Cycles();
                         _timersReloaded[ix] = TickTimer(ref _timers[ix], ix);
                     }
                 }
+            }
+
+            if (_timers[ix].NeedsLatch)
+            {
+                // The timer latches the reload value the cycle before it actually wraps
+                // Thanks to Fleroviux for working this out
+                _timers[ix].LatchValues(ref _timerSteps[ix]);
             }
         }
     }
@@ -91,7 +84,7 @@ public unsafe class TimerController
         {
             timer.Counter = timer.ReloadLatch;
 
-            if (timer.IrqEnabled)
+            if (timer.IrqEnabledLatch)
             {
                 _interruptInterconnect.RaiseInterrupt(ix switch
                 {
@@ -136,51 +129,47 @@ public unsafe class TimerController
         {
             case TM0CNT_L:
                 _timers[0].Reload = (ushort)((_timers[0].Reload & 0xFF00) | value);
-                _timers[0].ReloadNeedsLatch = true;
+                _timers[0].NeedsLatch = true;
                 break;
             case TM0CNT_L + 1:
                 _timers[0].Reload = (ushort)((_timers[0].Reload & 0x00FF) | (value << 8));
-                _timers[0].ReloadNeedsLatch = true;
+                _timers[0].NeedsLatch = true;
                 break;
             case TM0CNT_H:
                 _timers[0].UpdateControl(value);
-                _timerSteps[0] = _timers[0].PrescalerSelection.Cycles();
                 break;
             case TM1CNT_L:
                 _timers[1].Reload = (ushort)((_timers[1].Reload & 0xFF00) | value);
-                _timers[1].ReloadNeedsLatch = true;
+                _timers[1].NeedsLatch = true;
                 break;
             case TM1CNT_L + 1:
                 _timers[1].Reload = (ushort)((_timers[1].Reload & 0x00FF) | (value << 8));
-                _timers[1].ReloadNeedsLatch = true;
+                _timers[1].NeedsLatch = true;
                 break;
             case TM1CNT_H:
                 _timers[1].UpdateControl(value);
-                _timerSteps[1] = _timers[1].PrescalerSelection.Cycles();
                 break;
             case TM2CNT_L:
                 _timers[2].Reload = (ushort)((_timers[2].Reload & 0xFF00) | value);
-                _timers[2].ReloadNeedsLatch = true;
+                _timers[2].NeedsLatch = true;
                 break;
             case TM2CNT_L + 1:
                 _timers[2].Reload = (ushort)((_timers[2].Reload & 0x00FF) | (value << 8));
-                _timers[2].ReloadNeedsLatch = true;
+                _timers[2].NeedsLatch = true;
                 break;
             case TM2CNT_H:
                 _timers[2].UpdateControl(value);
-                _timerSteps[2] = _timers[2].PrescalerSelection.Cycles();
                 break;
             case TM3CNT_L:
                 _timers[3].Reload = (ushort)((_timers[3].Reload & 0xFF00) | value);
-                _timers[3].ReloadNeedsLatch = true;
+                _timers[3].NeedsLatch = true;
                 break;
             case TM3CNT_L + 1:
                 _timers[3].Reload = (ushort)((_timers[3].Reload & 0x00FF) | (value << 8));
-                _timers[3].ReloadNeedsLatch = true;
+                _timers[3].NeedsLatch = true;
                 break;
             case TM3CNT_H:
                 _timers[3].UpdateControl(value);
-                _timerSteps[3] = _timers[3].PrescalerSelection.Cycles();
                 break;
             default:
                 break;
