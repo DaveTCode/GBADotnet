@@ -87,30 +87,27 @@ public unsafe class Device
 #endif
         TimerController.Step();
 
-        if (Bus.WaitStates > 0)
+        if (Bus.HaltMode == HaltMode.None)
         {
-            // Note that we step the DMA controller here anyway but block it internally if there are any
-            // wait states
-            Bus.WaitStates--;
-        }
-        else
-        {
-            if (!DmaCtrl.Step())
+            if (Bus.WaitStates > 0)
             {
-                // Only step the CPU unit if the DMA is inactive
-                if (Bus.HaltMode == HaltMode.None)
+                Bus.WaitStates--;
+            }
+            else
+            {
+                if (!DmaCtrl.Step())
                 {
+                    // Only step the CPU unit if the DMA is inactive
                     Cpu.Clock();
-                }
-                else
-                {
-                    if (InterruptRegisters.ShouldBreakHalt)
-                    {
-                        Bus.HaltMode = HaltMode.None;
-                    }
                 }
             }
         }
+        else if (InterruptRegisters.ShouldBreakHalt)
+        {
+            Bus.HaltMode = HaltMode.None;
+            Bus.WaitStates = 1;
+        }
+
         Ppu.Step();
     }
 
