@@ -1,4 +1,5 @@
-﻿using GameboyAdvanced.Core.Interrupts;
+﻿using GameboyAdvanced.Core.Apu.Channels;
+using GameboyAdvanced.Core.Interrupts;
 using static GameboyAdvanced.Core.IORegs;
 
 namespace GameboyAdvanced.Core.Dma;
@@ -32,7 +33,7 @@ public class DmaDataUnit
     /// <summary>
     /// Triggered by the PPU when it hits the exact cycle where HDMA is started
     /// </summary>
-    internal void StartHdma(InterruptInterconnect interruptInterconnect, int line)
+    internal void StartHdma(int line)
     {
         for (var ii = 0; ii < Channels.Length; ii++)
         {
@@ -54,6 +55,7 @@ public class DmaDataUnit
                         }
                         else if (line == Device.HEIGHT + 2)
                         {
+                            Channels[ii].IntCachedValue = null;
                             Channels[ii].ControlReg.DmaEnable = false;
                         }
                         break;

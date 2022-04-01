@@ -105,7 +105,7 @@ public class DmaChannel
                 IsRunning = true;
             }
 
-            ClocksToStart = 2; // 2I cycles after setting register before DMA unit starts processing and THEN 1 cycle before write start (and one at the end)
+            ClocksToStart = 3; // 2I cycles after setting register before DMA unit starts processing and THEN 1 cycle before write start (and one at the end)
             IntSrcSeqAccess = 0; // 1st read/write pair are non-sequential
             IntDestSeqAccess = 0; // 1st read/write pair are non-sequential
 
