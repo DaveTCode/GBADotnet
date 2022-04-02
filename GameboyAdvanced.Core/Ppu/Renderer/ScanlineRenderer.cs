@@ -62,39 +62,20 @@ public partial class Ppu
         switch (Dispcnt.BgMode)
         {
             case BgMode.Video0:
-                for (var ii = 0; ii < 4; ii++)
-                {
-                    if (Dispcnt.ScreenDisplayBg[ii])
-                    {
-                        DrawTextModeScanline(Backgrounds[ii], ref _scanlineBgBuffer[ii]);
-                    }
-                }
+                if (Dispcnt.ScreenDisplayBg[0]) DrawTextModeScanline(Backgrounds[0], ref _scanlineBgBuffer[0]);
+                if (Dispcnt.ScreenDisplayBg[1]) DrawTextModeScanline(Backgrounds[1], ref _scanlineBgBuffer[1]);
+                if (Dispcnt.ScreenDisplayBg[2]) DrawTextModeScanline(Backgrounds[2], ref _scanlineBgBuffer[2]);
+                if (Dispcnt.ScreenDisplayBg[3]) DrawTextModeScanline(Backgrounds[3], ref _scanlineBgBuffer[3]);
                 break;
             case BgMode.Video1:
                 // Background 0-1 are text mode, 2 is affine
-                for (var ii = 0; ii < 3; ii++)
-                {
-                    if (Dispcnt.ScreenDisplayBg[ii])
-                    {
-                        if (ii < 2)
-                        {
-                            DrawTextModeScanline(Backgrounds[ii], ref _scanlineBgBuffer[ii]);
-                        }
-                        else
-                        {
-                            DrawAffineModeScanline(Backgrounds[ii], ref _scanlineBgBuffer[ii]);
-                        }
-                    }
-                }
+                if (Dispcnt.ScreenDisplayBg[0]) DrawTextModeScanline(Backgrounds[0], ref _scanlineBgBuffer[0]);
+                if (Dispcnt.ScreenDisplayBg[1]) DrawTextModeScanline(Backgrounds[1], ref _scanlineBgBuffer[1]);
+                if (Dispcnt.ScreenDisplayBg[2]) DrawAffineModeScanline(Backgrounds[2], ref _scanlineBgBuffer[2]);
                 break;
             case BgMode.Video2:
-                for (var ii = 2; ii < 4; ii++)
-                {
-                    if (Dispcnt.ScreenDisplayBg[ii])
-                    {
-                        DrawAffineModeScanline(Backgrounds[ii], ref _scanlineBgBuffer[ii]);
-                    }
-                }
+                if (Dispcnt.ScreenDisplayBg[2]) DrawAffineModeScanline(Backgrounds[2], ref _scanlineBgBuffer[2]);
+                if (Dispcnt.ScreenDisplayBg[3]) DrawAffineModeScanline(Backgrounds[3], ref _scanlineBgBuffer[3]);
                 break;
             case BgMode.Video3:
                 if (Dispcnt.ScreenDisplayBg[2])

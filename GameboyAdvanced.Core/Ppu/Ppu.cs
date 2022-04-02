@@ -169,7 +169,17 @@ public partial class Ppu
             }
             else if (CurrentLine == VBlankLines + Device.HEIGHT)
             {
-                IncrementAffineBackgroundRegisters();
+                if (Dispcnt.BgMode != BgMode.Video0) // Mode 0 has no affine backgrounds
+                {
+                    for (var ii = 2; ii < 4; ii++)
+                    {
+                        if (Dispcnt.ScreenDisplayBg[ii])
+                        {
+                            Backgrounds[ii].RefPointXLatched = Backgrounds[ii].RefPointX;
+                            Backgrounds[ii].RefPointYLatched = Backgrounds[ii].RefPointY;
+                        }
+                    }
+                }
                 CurrentLine = 0;
             }
         }
