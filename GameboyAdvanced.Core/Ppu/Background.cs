@@ -47,7 +47,9 @@ public class Background
     // inheritance heirachy to avoid virtual function calls so they're stored
     // but unused on all backgrounds
     public int RefPointX;
+    public int RefPointXLatched;
     public int RefPointY;
+    public int RefPointYLatched;
     public short Dx;
     public short Dmx;
     public short Dy;
@@ -83,6 +85,7 @@ public class Background
         }
 
         RefPointX = (int)newVal;
+        RefPointXLatched = RefPointX;
     }
 
     internal void UpdateReferencePointY(byte value, int byteIndex, uint mask)
@@ -96,5 +99,6 @@ public class Background
         }
 
         RefPointY = (int)newVal;
+        RefPointYLatched = RefPointY;
     }
 }

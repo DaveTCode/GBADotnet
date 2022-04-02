@@ -88,7 +88,7 @@ public partial class Ppu
                 }
                 break;
             case BgMode.Video2:
-                for (var ii = 3; ii < 4; ii++)
+                for (var ii = 2; ii < 4; ii++)
                 {
                     if (Dispcnt.ScreenDisplayBg[ii])
                     {
@@ -483,8 +483,8 @@ public partial class Ppu
             BgSize.Regular64x64 => (1024, 128),
             _ => throw new Exception("Invalid bg size")
         };
-        var baseRefX = background.RefPointX + (background.Dmx * CurrentLine);
-        var baseRefY = background.RefPointY + (background.Dmy * CurrentLine);
+        var baseRefX = background.RefPointXLatched;
+        var baseRefY = background.RefPointYLatched;
 
         for (var pixel = 0; pixel < Device.WIDTH; pixel++)
         {

@@ -120,13 +120,6 @@ public partial class Ppu
         {
             _dmaData.StartHdma(CurrentLine);
 
-            if (CurrentLine < Device.HEIGHT)
-            {
-                DrawCurrentScanline();
-
-                // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
-                DrawSpritesOnLine((int)Dispcnt.BgMode >= 3);
-            }
             Dispstat.HBlankFlag = true;
             if (Dispstat.HBlankIrqEnable)
             {
@@ -135,6 +128,12 @@ public partial class Ppu
         }
         else if (CurrentLineCycles == CyclesPerLine - 1)
         {
+            if (CurrentLine < Device.HEIGHT)
+            {
+                IncrementAffineBackgroundRegisters();
+                DrawCurrentScanline();
+            }
+
             Dispstat.VCounterFlag = false;
             Dispstat.HBlankFlag = false;
             CurrentLine++;
@@ -149,7 +148,12 @@ public partial class Ppu
                 }
             }
 
-            if (CurrentLine == Device.HEIGHT)
+            if (CurrentLine < Device.HEIGHT)
+            {
+                // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
+                DrawSpritesOnLine((int)Dispcnt.BgMode >= 3);
+            }
+            else if (CurrentLine == Device.HEIGHT)
             {
                 _dmaData.StartVdma();
 
@@ -165,7 +169,23 @@ public partial class Ppu
             }
             else if (CurrentLine == VBlankLines + Device.HEIGHT)
             {
+                IncrementAffineBackgroundRegisters();
                 CurrentLine = 0;
+            }
+        }
+    }
+
+    private void IncrementAffineBackgroundRegisters()
+    {
+        if (Dispcnt.BgMode != BgMode.Video0) // Mode 0 has no affine backgrounds
+        {
+            for (var ii = 2; ii < 4; ii++)
+            {
+                if (Dispcnt.ScreenDisplayBg[ii])
+                {
+                    Backgrounds[ii].RefPointXLatched += Backgrounds[ii].Dmx;
+                    Backgrounds[ii].RefPointYLatched += Backgrounds[ii].Dmy;
+                }
             }
         }
     }
