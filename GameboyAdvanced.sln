@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		DmaTiming.md = DmaTiming.md
 		Notes.md = Notes.md
 		Readme.md = Readme.md
 	EndProjectSection
@@ -31,7 +32,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{
 		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameboyAdvanced.CompatibilityChecker", "GameboyAdvanced.CompatibilityChecker\GameboyAdvanced.CompatibilityChecker.csproj", "{86C1F4A4-5206-4CF1-BC59-736C5F93FB7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameboyAdvanced.CompatibilityChecker", "GameboyAdvanced.CompatibilityChecker\GameboyAdvanced.CompatibilityChecker.csproj", "{86C1F4A4-5206-4CF1-BC59-736C5F93FB7F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compatibility", "Compatibility", "{4AC8CDC7-8B69-40F1-99C8-8DFFB0F09E7F}"
 	ProjectSection(SolutionItems) = preProject

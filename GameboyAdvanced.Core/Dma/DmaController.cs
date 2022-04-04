@@ -87,7 +87,7 @@ public unsafe class DmaController
                 {
                     channel.ClocksToStart--;
 
-                    if (channel.ClocksToStart == 0)
+                    if (channel.ClocksToStart <= 1)
                     {
                         result = true;
                     }
@@ -162,12 +162,6 @@ public unsafe class DmaController
     /// Steps the DMA controller and returns a boolean indicating whether DMA 
     /// is active (and therefore the CPU should be paused)
     /// </summary>
-    /// 
-    /// <remarks>
-    /// TODO - Cycle timing of DMA isn't something I properly understand yet.
-    /// Likely right with memory read/writes and wait states but not with
-    /// where the additional I cycles go.
-    /// </remarks>
     /// 
     /// <returns>
     /// true if any DMA channel is active, false otherwise
