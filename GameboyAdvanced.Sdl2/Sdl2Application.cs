@@ -4,6 +4,7 @@ using SDL2;
 using Serilog.Core;
 using Serilog.Events;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace GameboyAdvanced.Sdl2;
 
@@ -107,6 +108,13 @@ internal class Sdl2Application : IDisposable
                         {
                             _consoleLevelLoggingSwitch.MinimumLevel = LogEventLevel.Debug;
                         }
+                        else if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_F2)
+                        {
+                            var deviceSerialized = JsonSerializer.Serialize(_device);
+                            File.WriteAllText("savestate", deviceSerialized);
+
+                            Console.WriteLine(_device.Cpu);
+                        }
                         break;
                     case SDL.SDL_EventType.SDL_KEYUP:
                         if (_keyMap.TryGetValue(e.key.keysym.sym, out var uKey))
@@ -139,7 +147,7 @@ internal class Sdl2Application : IDisposable
             SDL.SDL_RenderPresent(_renderer);
 
             var msToSleep = _msPerFrame - ((frameTimeStopwatch.ElapsedTicks + adjustTicks) / (double)Stopwatch.Frequency * 1000);
-            Console.WriteLine(msToSleep);
+            //Console.WriteLine(msToSleep);
             adjustStopwatch.Restart();
             if (msToSleep > 0)
             {

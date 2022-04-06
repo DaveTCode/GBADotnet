@@ -1,12 +1,12 @@
 {
   "profiles": {
+    "TONC SE2 Hack": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\..\\tonc-code\\code\\adv\\txt_se2\\txt_se2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Aging Cartridge": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
-    "Aging Cartridge - Patched": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGS_patched.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Aging Cartridge - w/ BIOS": {
       "commandName": "Project",
@@ -372,9 +372,17 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\timer\\reload\\reload.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Grand Theft Auto Advance": {
+    "Yeti 3D": {
       "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Grand Theft Auto Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\yeti3d.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Metroid - Fusion": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Metroid - Fusion.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Tactics Ogre - the Knight of Lodis": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tactics Ogre - the Knight of Lodis.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Advance Wars 2 - Black Hole Rising (USA, Australia)": {
       "commandName": "Project",
@@ -584,6 +592,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Gradius Galaxies (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Grand Theft Auto Advance": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Grand Theft Auto Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Gunstar Super Heroes": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Gunstar Super Heroes.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -776,10 +788,6 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Metal Slug Advance.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
-    "Metroid - Fusion": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Metroid - Fusion.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
     "Metroid - Zero Mission": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Metroid - Zero Mission.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -963,10 +971,6 @@
     "Sword of Mana (USA, Australia)": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Sword of Mana (USA, Australia).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
-    "Tactics Ogre - the Knight of Lodis": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Tactics Ogre - the Knight of Lodis.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Tales of Phantasia (USA, Australia)": {
       "commandName": "Project",

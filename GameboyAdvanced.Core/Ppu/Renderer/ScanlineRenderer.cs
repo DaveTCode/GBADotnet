@@ -108,7 +108,6 @@ public partial class Ppu
                 break;
         }
 
-        // Final step is to pick the highest priority pixel of each (bg vs obj)
         CombineBackgroundsAndSprites(sortedBgIxs);
     }
 
@@ -145,7 +144,7 @@ public partial class Ppu
                 var sortedBgIx = sortedBgIxs[unsortedBgIx];
 
                 // Check that the BG is both enabled and that the color is not the backdrop
-                if (Dispcnt.ScreenDisplayBg[sortedBgIx] && (_scanlineBgBuffer[sortedBgIx][x] != 0 || !usingPaletteIndex))
+                if (Dispcnt.ScreenDisplayBg[sortedBgIx] && _scanlineBgBuffer[sortedBgIx][x] != 0)
                 {
                     // Now check that the window this background is in (if any) has that background enabled
                     if (!usingWindows ||
@@ -174,104 +173,102 @@ public partial class Ppu
 
             var bgEntry = _bgBuffer[x];
             var spriteEntry = _objBuffer[x];
-            var spriteWindowEnabled = !usingWindows || (activeWindow == -1 && _windows.ObjEnableOutside) || (activeWindow != -1 && _windows.ObjEnableInside[activeWindow]);
 
             // Work out what are the top target palette entries and determine
             // if those targets were enabled for color effects
 
             // Color effects are only going to be valid if they're enabled and
             // the window this pixel is in also has color effects enabled
-            var colorEffectsValid = ColorEffects.SpecialEffect != SpecialEffect.None 
-                && ((activeWindow == -1 && _windows.ColorSpecialEffectEnableOutside) || 
+            var colorEffectsValid = ColorEffects.SpecialEffect != SpecialEffect.None;
+
+            if (usingWindows)
+            {
+                colorEffectsValid &= ((activeWindow == -1 && _windows.ColorSpecialEffectEnableOutside) ||
                     ((activeWindow == 0 || activeWindow == 1) && _windows.ColorSpecialEffectEnableInside[activeWindow]) ||
                     (activeWindow == 2 && _windows.ObjWindowColorSpecialEffect));
+            }
 
             var colorEffectUsed = ColorEffects.SpecialEffect;
+
+            // Object layer used tracks whether the obj value has already been
+            // used for this pixel
             var objLayerUsed = false;
+
+            // BG layer ix is incremented to 1 if the highest priority
+            // background has been used for this pixel already
             var bgLayerIx = 0;
             for (var target = 0; target < (ColorEffects.SpecialEffect == SpecialEffect.AlphaBlend ? 2 : 1); target++)
             {
-                // Semi transparent sprites always take the highest priority and force alpha blending
-                if (spriteEntry.PixelMode == SpriteMode.SemiTransparent && !objLayerUsed)
-                {
-                    objLayerUsed = true;
-                    if ((spriteEntry.PaletteColor & 0b1111) != 0)
-                    {
-                        Utils.ColorToRgb(_paletteEntries[0x100 + spriteEntry.PaletteColor], _pixels[target]);
-                        colorEffectUsed = SpecialEffect.AlphaBlend;
-                        continue;
-                    }
-                    else
-                    {
-                        colorEffectsValid = false;
-                    }
-                }
-
                 if (bgEntry.ColorIsPaletteIndex[bgLayerIx])
                 {
                     PaletteEntry paletteEntry;
-                    if (bgEntry.PaletteColor[bgLayerIx] == 0 && ((spriteEntry.PaletteColor & 0b1111) == 0))
+                    if (objLayerUsed // The OBJ layer has already been used for this pixel
+                        || ((spriteEntry.PaletteColor & 0b1111) == 0) // The sprite is transparent on this pixel
+                        || (bgEntry.Priority[target] < spriteEntry.Priority)) // The background is higher priority
                     {
-                        paletteEntry = BackdropColor;
-                        colorEffectsValid &= ColorEffects.TargetBackdrop[target];
+                        if (bgEntry.PaletteColor[bgLayerIx] == 0)
+                        {
+                            paletteEntry = BackdropColor;
+                            colorEffectsValid &= ColorEffects.TargetBackdrop[target];
+                        }
+                        else
+                        {
+                            paletteEntry = _paletteEntries[bgEntry.PaletteColor[bgLayerIx]];
+                            colorEffectsValid &= ColorEffects.TargetBg[target][bgEntry.BgId[bgLayerIx]];
+                        }
                         bgLayerIx++;
-                    }
-                    else if (bgEntry.PaletteColor[bgLayerIx] == 0 && !objLayerUsed)
-                    {
-                        paletteEntry = _paletteEntries[0x100 + spriteEntry.PaletteColor];
-                        colorEffectsValid &= ColorEffects.TargetObj[target];
-                        objLayerUsed = true;
-                    }
-                    else if ((spriteEntry.PaletteColor & 0b1111) == 0)
-                    {
-                        paletteEntry = _paletteEntries[bgEntry.PaletteColor[bgLayerIx]];
-                        colorEffectsValid &= ColorEffects.TargetBg[target][bgEntry.BgId[bgLayerIx]];
-                        bgLayerIx++;
-                    }
-                    else if (bgEntry.Priority[target] >= spriteEntry.Priority && spriteWindowEnabled && !objLayerUsed)
-                    {
-                        paletteEntry = _paletteEntries[0x100 + spriteEntry.PaletteColor];
-                        colorEffectsValid &= ColorEffects.TargetObj[target];
-                        objLayerUsed = true;
                     }
                     else
                     {
-                        paletteEntry = _paletteEntries[bgEntry.PaletteColor[bgLayerIx]];
-                        colorEffectsValid &= ColorEffects.TargetBg[target][bgEntry.BgId[bgLayerIx]];
-                        bgLayerIx++;
+                        paletteEntry = _paletteEntries[0x100 + spriteEntry.PaletteColor];
+
+                        // Semi transparent sprites
+                        if (spriteEntry.PixelMode == SpriteMode.SemiTransparent)
+                        {
+                            colorEffectUsed = SpecialEffect.AlphaBlend;
+                        }
+                        else
+                        {
+                            colorEffectsValid &= ColorEffects.TargetObj[target];
+                        }
+
+                        objLayerUsed = true;
                     }
 
                     Utils.ColorToRgb(paletteEntry, _pixels[target]);
                 }
                 else
                 {
-                    if (spriteEntry.Priority <= bgEntry.Priority[bgLayerIx] && (spriteEntry.PaletteColor & 0b1111) != 0 && spriteWindowEnabled && !objLayerUsed)
+                    if (objLayerUsed // The OBJ layer has already been used for this pixel
+                        || ((spriteEntry.PaletteColor & 0b1111) == 0) // The sprite is transparent on this pixel
+                        || (bgEntry.Priority[target] < spriteEntry.Priority)) // The background is higher priority
                     {
-                        colorEffectsValid &= ColorEffects.TargetObj[target];
-                        Utils.ColorToRgb(_paletteEntries[0x100 + spriteEntry.PaletteColor], _pixels[target]);
-                        objLayerUsed = true;
-                    }
-                    else
-                    {
-                        if (bgEntry.PaletteColor[bgLayerIx] == 0)
-                        {
-                            colorEffectsValid &= ColorEffects.TargetBackdrop[target];
-                        }
-                        else
-                        {
-                            colorEffectsValid &= ColorEffects.TargetBg[target][bgEntry.BgId[bgLayerIx]];
-                        }
-                        
                         if (bgEntry.PaletteColor[bgLayerIx] == -1)
                         {
+                            colorEffectsValid &= ColorEffects.TargetBackdrop[target];
                             Utils.ColorToRgb(BackdropColor, _pixels[target]);
                         }
                         else
                         {
+                            colorEffectsValid &= ColorEffects.TargetBg[target][bgEntry.BgId[bgLayerIx]];
                             Utils.ColorToRgb(bgEntry.PaletteColor[bgLayerIx], _pixels[target]);
                         }
-
                         bgLayerIx++;
+                    }
+                    else
+                    {
+                        // Semi transparent sprites
+                        if (spriteEntry.PixelMode == SpriteMode.SemiTransparent)
+                        {
+                            colorEffectUsed = SpecialEffect.AlphaBlend;
+                        }
+                        else
+                        {
+                            colorEffectsValid &= ColorEffects.TargetObj[target];
+                        }
+
+                        Utils.ColorToRgb(_paletteEntries[0x100 + spriteEntry.PaletteColor], _pixels[target]);
+                        objLayerUsed = true;
                     }
                 }
             }

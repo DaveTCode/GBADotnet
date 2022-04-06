@@ -128,16 +128,16 @@ public partial class Ppu
         }
         else if (CurrentLineCycles == CyclesPerLine - 1)
         {
-            Dispstat.VCounterFlag = false;
-            Dispstat.HBlankFlag = false;
-            CurrentLine++;
-            CurrentLineCycles = 0;
-
-            if (CurrentLine <= Device.HEIGHT)
+            if (CurrentLine < Device.HEIGHT)
             {
                 IncrementAffineBackgroundRegisters();
                 DrawCurrentScanline();
             }
+
+            Dispstat.VCounterFlag = false;
+            Dispstat.HBlankFlag = false;
+            CurrentLine++;
+            CurrentLineCycles = 0;
 
             if (CurrentLine == Dispstat.VCountSetting)
             {

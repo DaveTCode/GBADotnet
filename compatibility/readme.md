@@ -174,6 +174,7 @@ This file contains a table with all ROMS tested along with some details parsed f
 <tr><td>Wade Hixton_s Counter Punch (USA, Europe)</td><td>WADE HIXTON</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Wade Hixton_s Counter Punch (USA, Europe).png" alt="Wade Hixton_s Counter Punch (USA, Europe)"></img></td></tr>
 <tr><td>Wario Land 4 (UE) [!]</td><td>WARIOLANDE</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Wario Land 4 (UE) [!].png" alt="Wario Land 4 (UE) [!]"></img></td></tr>
 <tr><td>Wario Ware Inc.</td><td>WARIOWAREIN</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Wario Ware Inc..png" alt="Wario Ware Inc."></img></td></tr>
+<tr><td>yeti3d</td><td>UNTITLEDGAM</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/yeti3d.png" alt="yeti3d"></img></td></tr>
 <tr><td>Yggdra Union - We_ll Never Fight Alone (USA)</td><td>YGGDRA UNIO</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Yggdra Union - We_ll Never Fight Alone (USA).png" alt="Yggdra Union - We_ll Never Fight Alone (USA)"></img></td></tr>
 <tr><td>Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!]</td><td>YU-GI-OH!ED</td><td>:heavy_check_mark:</td><td>SRAM</td><td><img src="./images/Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!].png" alt="Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!]"></img></td></tr>
 <tr><td>Zelda - the Minish Cap</td><td>GBAZELDA MC</td><td>:heavy_check_mark:</td><td>EEPROM</td><td><img src="./images/Zelda - the Minish Cap.png" alt="Zelda - the Minish Cap"></img></td></tr>
