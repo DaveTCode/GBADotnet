@@ -56,6 +56,13 @@ public partial class Ppu
 
     internal void DrawCurrentScanline()
     {
+        // Forced blanking draws backdrop color across the whole scanline
+        if (Dispcnt.ForcedBlank)
+        {
+            DrawBlankScanline();
+            return;
+        }
+
         var sortedBgIxs = new[] { 0, 1, 2, 3 };
         SortBackgroundPriorities(sortedBgIxs);
 
@@ -102,7 +109,6 @@ public partial class Ppu
         }
 
         // Final step is to pick the highest priority pixel of each (bg vs obj)
-        // TODO - eventually I guess this will do alpha blending etc
         CombineBackgroundsAndSprites(sortedBgIxs);
     }
 
@@ -139,7 +145,7 @@ public partial class Ppu
                 var sortedBgIx = sortedBgIxs[unsortedBgIx];
 
                 // Check that the BG is both enabled and that the color is not the backdrop
-                if (Dispcnt.ScreenDisplayBg[sortedBgIx] && _scanlineBgBuffer[sortedBgIx][x] != 0)
+                if (Dispcnt.ScreenDisplayBg[sortedBgIx] && (_scanlineBgBuffer[sortedBgIx][x] != 0 || !usingPaletteIndex))
                 {
                     // Now check that the window this background is in (if any) has that background enabled
                     if (!usingWindows ||
@@ -256,7 +262,15 @@ public partial class Ppu
                             colorEffectsValid &= ColorEffects.TargetBg[target][bgEntry.BgId[bgLayerIx]];
                         }
                         
-                        Utils.ColorToRgb(bgEntry.PaletteColor[bgLayerIx], _pixels[target]);
+                        if (bgEntry.PaletteColor[bgLayerIx] == -1)
+                        {
+                            Utils.ColorToRgb(BackdropColor, _pixels[target]);
+                        }
+                        else
+                        {
+                            Utils.ColorToRgb(bgEntry.PaletteColor[bgLayerIx], _pixels[target]);
+                        }
+
                         bgLayerIx++;
                     }
                 }
@@ -442,13 +456,21 @@ public partial class Ppu
         }
     }
 
-    private void DrawProhibitedModeScanline()
+    private void DrawBlankScanline()
     {
         var fbPtr = Device.WIDTH * 4 * CurrentLine; // 4 bytes per pixel
         for (var x = 0; x < Device.WIDTH; x++)
         {
             Utils.ColorToRgb(BackdropColor, FrameBuffer.AsSpan(fbPtr));
             fbPtr += 4;
+        }
+    }
+
+    private void DrawProhibitedModeScanline()
+    {
+        for (var ii = 0; ii < _scanlineBgBuffer.Length; ii++)
+        {
+            Array.Clear(_scanlineBgBuffer, 0, _scanlineBgBuffer.Length);
         }
     }
 
@@ -548,51 +570,80 @@ public partial class Ppu
         }
     }
 
-    // TODO - Handle affine transformations in bitmap BG modes
+    private void DrawBitmapBgModeScanlineCommon(Background background, int width, int height, uint baseAddress, ref int[] scanlineBgBuffer, int backdropColor)
+    {
+        var baseRefX = background.RefPointXLatched;
+        var baseRefY = background.RefPointYLatched;
+
+        for (var pixel = 0; pixel < Device.WIDTH; pixel++)
+        {
+            var xBase = baseRefX >> 8;
+            var yBase = baseRefY >> 8;
+            baseRefX += background.Dx;
+            baseRefY += background.Dy;
+
+            // Affine backgrounds can either make things outside the area transparent or wrap for overflow
+            if (background.Control.DisplayAreaOverflow)
+            {
+                if (xBase >= width) xBase %= width;
+                else if (xBase < 0) xBase = width + (xBase % width);
+
+                if (yBase >= height) yBase %= height;
+                else if (yBase < 0) yBase = height + (yBase % height);
+            }
+            else if (xBase < 0 || xBase >= width || yBase < 0 || yBase >= height)
+            {
+                scanlineBgBuffer[pixel] = backdropColor;
+                continue;
+            }
+
+            switch (Dispcnt.BgMode)
+            {
+                case BgMode.Video3:
+                    {
+                        var address = baseAddress + (yBase * 480) + (xBase * 2);
+                        var color = Vram[address] | (Vram[address + 1] << 8);
+                        scanlineBgBuffer[pixel] = color;
+                    }
+                    break;
+                case BgMode.Video4:
+                    {
+                        var address = baseAddress + (yBase * 240) + xBase;
+                        var paletteIndex = Vram[address];
+                        scanlineBgBuffer[pixel] = paletteIndex;
+                    }
+                    break;
+                case BgMode.Video5:
+                    {
+                        var address = baseAddress + (yBase * 320) + (xBase * 2);
+                        var color = Vram[address] | (Vram[address + 1] << 8);
+                        scanlineBgBuffer[pixel] = color;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 
     private void DrawBgMode3CurrentScanline(ref int[] scanlineBgBuffer)
     {
-        var vramPtrBase = CurrentLine * 480;
-        for (var col = 0; col < 240; col++)
-        {
-            var vramPtr = vramPtrBase + (col * 2);
-            var hw = Vram[vramPtr] | (Vram[vramPtr + 1] << 8);
-            scanlineBgBuffer[col] = hw;
-        }
+        DrawBitmapBgModeScanlineCommon(Backgrounds[2], Device.WIDTH, Device.HEIGHT, 0, ref scanlineBgBuffer, -1);
     }
 
     private void DrawBgMode4CurrentScanline(ref int[] scanlineBgBuffer)
     {
         // BG Mode 4/5 have a double buffer that is switched using Frame1Select on DISPCNT
-        var baseAddress = Dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
-        var vramPtrBase = CurrentLine * 240;
-        for (var col = 0; col < 240; col++)
-        {
-            var vramPtr = vramPtrBase + col;
-            var paletteIndex = Vram[baseAddress + vramPtr];
-            scanlineBgBuffer[col] = paletteIndex;
-        }
+        var baseAddress = Dispcnt.Frame1Select ? 0x0000_A000u : 0x0;
+
+        DrawBitmapBgModeScanlineCommon(Backgrounds[2], Device.WIDTH, Device.HEIGHT, baseAddress, ref scanlineBgBuffer, 0);
     }
 
     private void DrawBgMode5CurrentScanline(ref int[] scanlineBgBuffer)
     {
         // Screen is 160*128 in this mode, the rest gets backdrop color
-        var baseAddress = Dispcnt.Frame1Select ? 0x0000_A000 : 0x0;
+        var baseAddress = Dispcnt.Frame1Select ? 0x0000_A000u : 0x0;
 
-        var vramPtrBase = baseAddress + (CurrentLine * 320);
-        for (var col = 0; col < 240; col++)
-        {
-            var vramPtr = vramPtrBase + (col * 2);
-            var hw = Vram[vramPtr] | (Vram[vramPtr + 1] << 8);
-
-            if (col >= 160 || CurrentLine >= 128)
-            {
-                scanlineBgBuffer[col] = 0;
-            }
-            else
-            {
-                scanlineBgBuffer[col] = hw;
-            }
-        }
+        DrawBitmapBgModeScanlineCommon(Backgrounds[2], 160, 128, baseAddress, ref scanlineBgBuffer, -1);
     }
 }

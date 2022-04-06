@@ -68,10 +68,10 @@ public class Background
         Control.Reset();
         RefPointX = 0;
         RefPointY = 0;
-        Dx = 0;
+        Dx = 0x100;
         Dmx = 0;
         Dy = 0;
-        Dmy = 0;
+        Dmy = 0x100;
     }
 
     internal void UpdateReferencePointX(byte value, int byteIndex, uint mask)
