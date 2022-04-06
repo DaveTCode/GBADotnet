@@ -36,6 +36,12 @@ public class Sprite
     internal int PriorityRelativeToBg;
     internal int PaletteNumber;
 
+    internal Sprite(int index)
+    {
+        Index = index;
+        Reset();
+    }
+
     /// <summary>
     /// This is a calculated property of a sprite based on size and shape
     /// cached to make determining whether a sprite is within a scanline 

@@ -57,10 +57,7 @@ public partial class Ppu
 
         for (var ii = 0; ii < _sprites.Length; ii++)
         {
-            _sprites[ii] = new Sprite
-            {
-                Index = ii,
-            };
+            _sprites[ii] = new Sprite(ii);
         }
 
         for (var ii = 0; ii < Device.WIDTH; ii++)
