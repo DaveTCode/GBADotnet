@@ -45,7 +45,7 @@ internal static class LdmStmUtils
     /// </summary>
     internal static void StmRegisterWriteCycle(Core core, uint _)
     {
-        core.SEQ = _storeLoadMultiplePtr == 0 ? 0 : 1;
+        core.SEQ = 1;
 
         if (_storeLoadMultiplePtr >= _storeLoadMultiplePopCount)
         {
@@ -159,7 +159,7 @@ internal static class LdmStmUtils
 
         _cachedLdmValue = core.D;
         core.A += 4;
-        core.SEQ = _storeLoadMultiplePtr == 0 ? 0 : 1;
+        core.SEQ = 1;
 
         if (_storeLoadMultiplePtr == _storeLoadMultiplePopCount - 1)
         {
