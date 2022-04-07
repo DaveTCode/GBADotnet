@@ -127,8 +127,8 @@ public partial class Ppu
         {
             if (CurrentLine < Device.HEIGHT)
             {
-                IncrementAffineBackgroundRegisters();
                 DrawCurrentScanline();
+                IncrementAffineBackgroundRegisters();
             }
 
             Dispstat.VCounterFlag = false;
