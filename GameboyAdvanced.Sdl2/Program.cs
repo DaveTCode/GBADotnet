@@ -49,7 +49,7 @@ internal class Program
                 var gamepak = new GamePak(rom);
                 var device = new Device(bios, gamepak, new Debugger(logger), !o.RunBios);
 
-                var application = new Sdl2Application(device, o.PixelSize, consoleLevelLoggingSwitch);
+                var application = new Sdl2Application(o.Rom, device, o.PixelSize, consoleLevelLoggingSwitch);
                 application.Run();
             })
             .WithNotParsed(o =>

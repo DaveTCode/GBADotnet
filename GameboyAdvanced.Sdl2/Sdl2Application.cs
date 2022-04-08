@@ -1,15 +1,18 @@
 ﻿using GameboyAdvanced.Core;
 using GameboyAdvanced.Core.Input;
+using GameboyAdvanced.Core.Ppu;
 using SDL2;
 using Serilog.Core;
 using Serilog.Events;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace GameboyAdvanced.Sdl2;
 
 internal class Sdl2Application : IDisposable
 {
+    private readonly string _originalFilePath;
     private readonly Device _device;
     private readonly int _pixelSize;
     private readonly LoggingLevelSwitch _consoleLevelLoggingSwitch;
@@ -33,8 +36,9 @@ internal class Sdl2Application : IDisposable
         { SDL.SDL_Keycode.SDLK_w, Key.Start },
     };
 
-    internal Sdl2Application(Device device, int pixelSize, LoggingLevelSwitch consoleLevelLoggingSwitch)
+    internal Sdl2Application(string originalFilePath, Device device, int pixelSize, LoggingLevelSwitch consoleLevelLoggingSwitch)
     {
+        _originalFilePath = originalFilePath;
         _device = device;
         _pixelSize = pixelSize;
         _consoleLevelLoggingSwitch = consoleLevelLoggingSwitch;
@@ -110,10 +114,11 @@ internal class Sdl2Application : IDisposable
                         }
                         else if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_F2)
                         {
-                            var deviceSerialized = JsonSerializer.Serialize(_device);
-                            File.WriteAllText("savestate", deviceSerialized);
+                            var frame = _device.GetFrame();
+                            using MD5 md5 = MD5.Create();
+                            byte[] hashBytes = md5.ComputeHash(frame);
 
-                            Console.WriteLine(_device.Cpu);
+                            Console.WriteLine($"[InlineData(@\"{_originalFilePath}\",\"{Convert.ToHexString(hashBytes)}\",{_device.Cpu.Cycles / Ppu.FrameCycles})]");
                         }
                         break;
                     case SDL.SDL_EventType.SDL_KEYUP:
