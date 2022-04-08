@@ -22,7 +22,7 @@ public partial class Ppu
     private const int VBlankLines = 68;
     private const int VisibleLineCycles = Device.HEIGHT * CyclesPerLine; // 197,120
     private const int VBlankCycles = VBlankLines * CyclesPerLine; // 83,776
-    private const int FrameCycles = VisibleLineCycles + VBlankCycles; // 280,896
+    public const int FrameCycles = VisibleLineCycles + VBlankCycles; // 280,896
 
     private readonly BaseDebugger _debugger;
     private readonly InterruptInterconnect _interruptInterconnect;
