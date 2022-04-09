@@ -6,11 +6,11 @@
     },
     "Aging Cartridge": {
       "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGS.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Aging Cartridge - w/ BIOS": {
       "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGB_CHECKER_TCHK10.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin --runBios"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGS.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin --runBios"
     },
     "ARM Wrestler": {
       "commandName": "Project",
@@ -331,6 +331,22 @@
     "JSMolka - Bios": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\bios\\bios.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - Save - Flash64": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\save\\flash64.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - Save - Flash128": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\save\\flash128.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - Save - None": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\save\\none.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "JSMolka - Save - SRAM": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\jsmolka\\save\\sram.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "JSMolka - Unsafe": {
       "commandName": "Project",
