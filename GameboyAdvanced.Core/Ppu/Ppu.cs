@@ -129,6 +129,7 @@ public partial class Ppu
             {
                 DrawCurrentScanline();
                 IncrementAffineBackgroundRegisters();
+                Array.Fill<int>(_windowState, -1); // Clear window state after rendering scanline so it's ready to refill
             }
 
             Dispstat.VCounterFlag = false;
@@ -178,6 +179,8 @@ public partial class Ppu
                     }
                 }
                 CurrentLine = 0;
+                // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
+                DrawSpritesOnLine((int)Dispcnt.BgMode >= 3);
             }
         }
     }

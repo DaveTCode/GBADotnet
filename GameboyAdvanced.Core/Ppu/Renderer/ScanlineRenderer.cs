@@ -45,6 +45,7 @@ public partial class Ppu
         }
     }
 
+    private int[] _windowState = new int[Device.WIDTH];
     private readonly int[][] _scanlineBgBuffer = new int[4][];
     private readonly SpritePixelProperties[] _objBuffer = new SpritePixelProperties[Device.WIDTH];
     private readonly BgPixelProperties[] _bgBuffer = new BgPixelProperties[Device.WIDTH];
@@ -62,6 +63,8 @@ public partial class Ppu
             DrawBlankScanline();
             return;
         }
+
+        CalculateScanlineWindowState();
 
         var sortedBgIxs = new[] { 0, 1, 2, 3 };
         SortBackgroundPriorities(sortedBgIxs);
@@ -111,6 +114,20 @@ public partial class Ppu
         CombineBackgroundsAndSprites(sortedBgIxs);
     }
 
+    private void CalculateScanlineWindowState()
+    {
+        if (Dispcnt.WindowDisplay[0] || Dispcnt.WindowDisplay[1] || Dispcnt.ObjWindowDisplay)
+        {
+            for (var x = 0; x < Device.WIDTH; x++)
+            {
+                var windowState = _windows.GetHighestPriorityWindow(Dispcnt, x, CurrentLine);
+
+                // Leave obj windows alone iff the non-obj windows are inactive
+                _windowState[x] = windowState != -1 ? windowState : _windowState[x];
+            }
+        }
+    }
+
     private void CombineBackgroundsAndSprites(int[] sortedBgIxs)
     {
         var fbPtr = CurrentLine * Device.WIDTH * 4;
@@ -126,15 +143,9 @@ public partial class Ppu
 
             var usingWindows = Dispcnt.WindowDisplay[0] | Dispcnt.WindowDisplay[1] | Dispcnt.ObjWindowDisplay;
 
-            // First step is to work out which window (if any) this pixel is
-            // part of so we know which backgrounds/objects might be present
-            var activeWindow = _windows.GetHighestPriorityWindow(Dispcnt, x, CurrentLine);
-
-            // OBJ window has lowest priority of the 3 windows
-            if (activeWindow == -1 && _objBuffer[x].PixelMode == SpriteMode.ObjWindow && Dispcnt.ObjWindowDisplay)
-            {
-                activeWindow = 2;
-            }
+            // The window state is cached per scanline by both the sprite
+            // handling and the normal window handling.
+            var activeWindow = _windowState[x];
 
             // Then fill in the bgBuffer with the top two highest priority
             // opaque pixels
@@ -180,12 +191,17 @@ public partial class Ppu
             // Color effects are only going to be valid if they're enabled and
             // the window this pixel is in also has color effects enabled
             var colorEffectsValid = ColorEffects.SpecialEffect != SpecialEffect.None;
+            var objHiddenByWindow = false;
 
             if (usingWindows)
             {
                 colorEffectsValid &= ((activeWindow == -1 && _windows.ColorSpecialEffectEnableOutside) ||
                     ((activeWindow == 0 || activeWindow == 1) && _windows.ColorSpecialEffectEnableInside[activeWindow]) ||
                     (activeWindow == 2 && _windows.ObjWindowColorSpecialEffect));
+
+                objHiddenByWindow = ((activeWindow == -1 && !_windows.ObjEnableOutside) ||
+                    ((activeWindow == 0 || activeWindow == 1) && !_windows.ObjEnableInside[activeWindow]) ||
+                    (activeWindow == 2 && !_windows.ObjWindowObjEnable));
             }
 
             var colorEffectUsed = ColorEffects.SpecialEffect;
@@ -204,7 +220,8 @@ public partial class Ppu
                     PaletteEntry paletteEntry;
                     if (objLayerUsed // The OBJ layer has already been used for this pixel
                         || ((spriteEntry.PaletteColor & 0b1111) == 0) // The sprite is transparent on this pixel
-                        || (bgEntry.Priority[target] < spriteEntry.Priority)) // The background is higher priority
+                        || (bgEntry.Priority[target] < spriteEntry.Priority) // The background is higher priority
+                        || objHiddenByWindow) // Windows are enabled and this pixel is in a window state that means no obj
                     {
                         if (bgEntry.PaletteColor[bgLayerIx] == 0)
                         {
@@ -241,7 +258,8 @@ public partial class Ppu
                 {
                     if (objLayerUsed // The OBJ layer has already been used for this pixel
                         || ((spriteEntry.PaletteColor & 0b1111) == 0) // The sprite is transparent on this pixel
-                        || (bgEntry.Priority[target] < spriteEntry.Priority)) // The background is higher priority
+                        || (bgEntry.Priority[target] < spriteEntry.Priority) // The background is higher priority
+                        || objHiddenByWindow)
                     {
                         if (bgEntry.PaletteColor[bgLayerIx] == -1)
                         {
@@ -375,9 +393,6 @@ public partial class Ppu
             // TODO - Double check this behaviour, do we skip prohibited mode sprites
             if (sprite.ObjMode == SpriteMode.Prohibited) continue;
 
-            // TODO - Implement window mode sprites instead of skipping them
-            if (sprite.ObjMode == SpriteMode.ObjWindow) continue;
-
             // Affine double size sprites are contained with a double size bounding box
             var spriteWidth = (sprite.IsAffine && sprite.DoubleSize) ? sprite.Width * 2 : sprite.Width;
             var spriteHeight = (sprite.IsAffine && sprite.DoubleSize) ? sprite.Height * 2 : sprite.Height;
@@ -394,7 +409,7 @@ public partial class Ppu
                 if (lineX is < 0 or >= Device.WIDTH) continue;
 
                 // Skip pixels if a higher priority sprite already occupies that pixel
-                if (_objBuffer[lineX].Priority <= sprite.PriorityRelativeToBg && (_objBuffer[lineX].PaletteColor & 0b1111) != 0) continue;
+                if (sprite.ObjMode != SpriteMode.ObjWindow && _objBuffer[lineX].Priority <= sprite.PriorityRelativeToBg && (_objBuffer[lineX].PaletteColor & 0b1111) != 0) continue;
 
                 // Work out which pixel relative to the sprite texture we're processing
                 var spriteX = sprite.HorizontalFlip && !sprite.IsAffine ? sprite.Width - ii - 1 : ii;
@@ -446,9 +461,18 @@ public partial class Ppu
                     false => (sprite.PaletteNumber << 4) | ((tileData >> (4 * (spriteX & 1))) & 0b1111),
                 };
 
-                _objBuffer[lineX].PaletteColor = pixelPalNo;
-                _objBuffer[lineX].Priority = sprite.PriorityRelativeToBg;
-                _objBuffer[lineX].PixelMode = sprite.ObjMode;
+                if (sprite.ObjMode == SpriteMode.ObjWindow)
+                {
+                    if (pixelPalNo == 0) continue; // Transparent pixels don't count towards obj window
+
+                    _windowState[lineX] = 2;
+                }
+                else
+                {
+                    _objBuffer[lineX].PaletteColor = pixelPalNo;
+                    _objBuffer[lineX].Priority = sprite.PriorityRelativeToBg;
+                    _objBuffer[lineX].PixelMode = sprite.ObjMode;
+                }
             }
         }
     }
