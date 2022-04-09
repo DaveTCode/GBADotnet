@@ -7,5 +7,5 @@
 roms/real/*
 *.sav
 /GameboyAdvanced.Blazor
-roms/
+*.sav
 **/publish
