@@ -57,6 +57,8 @@ public class GamePak
         ComplementCheck = _header[189];
         Array.Copy(_header, 190, ReservedArea2, 0, ReservedArea2.Length);
 
+        Array.Fill<byte>(_sram, 0xFF);
+
         RomBackupType = romBackupType ?? CalculateRomBackupType(data);
 
         if (RomBackupType == RomBackupType.FLASH128)
@@ -95,11 +97,11 @@ public class GamePak
         {
             return RomBackupType.SRAM;
         }
-        else if (Regex.IsMatch(romAsString, @"FLASH(512)?_V\d\d\d"))
+        else if (Regex.IsMatch(romAsString, @"FLASH(512)?_V(\d\d\d)?"))
         {
             return RomBackupType.FLASH64;
         }
-        else if (Regex.IsMatch(romAsString, @"FLASH1M_V\d\d\d"))
+        else if (Regex.IsMatch(romAsString, @"FLASH1M_V(\d\d\d)?"))
         {
             return RomBackupType.FLASH128;
         }

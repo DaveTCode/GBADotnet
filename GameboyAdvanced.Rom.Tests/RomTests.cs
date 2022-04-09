@@ -8,9 +8,40 @@ using Xunit;
 
 namespace GameboyAdvanced.Rom.Tests;
 
-public class RomTests
+public class BiosFixture : IDisposable
 {
     public const string BiosPath = @"..\..\..\..\roms\real\gba_bios.bin";
+    public readonly byte[] Bios;
+    private bool disposedValue;
+
+    public BiosFixture()
+    {
+        Bios = File.ReadAllBytes(BiosPath);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            disposedValue = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+}
+
+public class RomTests : IClassFixture<BiosFixture>
+{
+    private readonly byte[] _bios;
+
+    public RomTests(BiosFixture biosFixture)
+    {
+        _bios = biosFixture.Bios;
+    }
 
     [Theory]
     [InlineData(@"..\..\..\..\roms\test\panda.gba", "4FB353DB93F8ECD2A65F17368831EFAA", 20)]
@@ -43,6 +74,7 @@ public class RomTests
     [InlineData(@"..\..\..\..\roms\test\tonc\txt_obj.gba", "7C1E876E39469FC05CC1E6F565D47C3E", 27)]
     [InlineData(@"..\..\..\..\roms\test\tonc\txt_se1.gba", "236C416A76F83CB6913425AF8EADAB95", 39)]
     [InlineData(@"..\..\..\..\roms\test\tonc\txt_se2.gba", "EB37546021251F4125073DFA16845C83", 35)]
+    [InlineData(@"..\..\..\..\roms\test\tonc\win_demo.gba", "AF54C8D8336728A1082E14C1A2DA1FDE", 19)]
     [InlineData(@"..\..\..\..\roms\test\cpu_test\CPUTest.gba", "6298DFCB1E6057D7E8DE42C9678557AD", 27)]
     [InlineData(@"..\..\..\..\roms\test\DenSinH\THUMB_Any.gba", "339DDC3899B1FB235E0FADE4150CE1FF", 846)]
     [InlineData(@"..\..\..\..\roms\test\DenSinH\Arm_Any.gba", "339DDC3899B1FB235E0FADE4150CE1FF", 842)]
@@ -57,6 +89,10 @@ public class RomTests
     [InlineData(@"..\..\..\..\roms\test\jsmolka\ppu\shades.gba", "8D13296557FF246E0E1916647BCB1EFE", 22)]
     [InlineData(@"..\..\..\..\roms\test\jsmolka\ppu\stripes.gba", "09C9C8AED12CD0C3DEE87FC8B31DEBE9", 19)]
     [InlineData(@"..\..\..\..\roms\test\jsmolka\bios\bios.gba", "B2874BF21EB2362FB122BF974B169CF5", 18)]
+    [InlineData(@"..\..\..\..\roms\test\jsmolka\save\none.gba", "B2874BF21EB2362FB122BF974B169CF5", 21)]
+    [InlineData(@"..\..\..\..\roms\test\jsmolka\save\sram.gba", "B2874BF21EB2362FB122BF974B169CF5", 21)]
+    [InlineData(@"..\..\..\..\roms\test\jsmolka\save\flash64.gba", "B2874BF21EB2362FB122BF974B169CF5", 102)]
+    [InlineData(@"..\..\..\..\roms\test\jsmolka\save\flash128.gba", "B2874BF21EB2362FB122BF974B169CF5", 90)]
     [InlineData(@"..\..\..\..\roms\test\jsmolka\unsafe\unsafe.gba", "B2874BF21EB2362FB122BF974B169CF5", 27)]
     [InlineData(@"..\..\..\..\roms\test\nba\cpu\irqdelay\irqdelay.gba", "D26D24D84949983044A17075D9A77662", 14)]
     [InlineData(@"..\..\..\..\roms\test\nba\dma\latch\latch.gba", "4DF7BF7C2F11FB00DF18E477B23E207C", 25)]
@@ -108,12 +144,14 @@ public class RomTests
     [InlineData(@"..\..\..\..\roms\test\PeterLemon\BIOS\Sound\DriverVSync\BIOSSoundDriverVSync.gba", "C7128354D73A103C0AF64D169438CD92", 11)]
     [InlineData(@"..\..\..\..\roms\test\PeterLemon\BIOS\Sound\GetJumpList\BIOSSoundGetJumpList.gba", "EBBC6061C8D505B5D05E2213B2D72FD3", 22)]
     [InlineData(@"..\..\..\..\roms\test\PeterLemon\BIOS\Sound\MidiKey2Freq\BIOSMidiKey2Freq.gba", "A51545F574B9548FB2CB54703872AAB0", 19)]
+    [InlineData(@"..\..\..\..\roms\test\PeterLemon\Physics\2D\Acceleration\Acceleration.gba", "ABDD666AE87D954972F241FA9FFA96CE", 19)]
+    [InlineData(@"..\..\..\..\roms\test\PeterLemon\Physics\2D\Gravity\Gravity.gba", "A4D70DDFD0BE3C0C0F42764F82F2FC92", 12)]
+    [InlineData(@"..\..\..\..\roms\test\PeterLemon\Physics\2D\Velocity\Velocity.gba", "104AA1C171A3CC2B39063BCD3C4E9130", 16)]
     public void TestRom(string romPath, string md5ExpectedString, ulong frames)
     {
         var romBytes = File.ReadAllBytes(romPath);
-        var bios = File.ReadAllBytes(BiosPath);
         var rom = new GamePak(romBytes);
-        var device = new Device(bios, rom, new TestDebugger(), true);
+        var device = new Device(_bios, rom, new TestDebugger(), true);
 
         for (var ii = 0u; ii < frames; ii++)
         {

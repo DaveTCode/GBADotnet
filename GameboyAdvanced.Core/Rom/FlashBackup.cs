@@ -55,6 +55,8 @@ public class FlashBackup
         _deviceId = deviceId;
         _bank = 0;
         _state = FlashChipState.Ready;
+
+        Array.Fill<byte>(_data, 0xFF);
     }
 
     internal void Write(uint address, byte value)
@@ -115,13 +117,13 @@ public class FlashBackup
                         if (address == 0x0E00_5555 && value == 0x10)
                         {
                             // Erase entire chip
-                            Array.Fill(_data, (byte)0xFF); // Flash erases to 0xFF not 0x00
+                            Array.Fill<byte>(_data, 0xFF); // Flash erases to 0xFF not 0x00
                             _state = FlashChipState.Ready;
                         }
                         else if ((address & 0xFFFF_0FFF) == 0x0E00_0000 && value == 0x30)
                         {
                             // Erase 4KB sector
-                            Array.Fill(_data, (byte)0xFF, (int)(address & 0xF000) + (_bank * 0x1_0000), 0x1000);
+                            Array.Fill<byte>(_data, 0xFF, (int)(address & 0xF000) + (_bank * 0x1_0000), 0x1000);
                             _state = FlashChipState.Ready;
                         }
                         break;
