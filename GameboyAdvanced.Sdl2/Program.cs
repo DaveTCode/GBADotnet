@@ -23,12 +23,16 @@ internal class Program
         [Option("pixelSize", Default = 4, HelpText = "The number of pixels (squared) that represent each GBA pixel")]
         public int PixelSize { get; }
 
-        public Options(string rom, string bios, bool runBios, int pixelSize)
+        [Option("backupType", Default = null, HelpText = "The emulator will attempt to guess the backup type but if that fails you can specify it directly with this")]
+        public RomBackupType? BackupType { get; }
+
+        public Options(string rom, string bios, bool runBios, int pixelSize, RomBackupType? backupType)
         {
             Rom = rom ?? throw new ArgumentNullException(nameof(rom));
             Bios = bios ?? throw new ArgumentNullException(nameof(bios));
             RunBios = runBios;
             PixelSize = pixelSize;
+            BackupType = backupType;
         }
     }
 
@@ -46,7 +50,7 @@ internal class Program
                 var bios = File.ReadAllBytes(o.Bios);
                 var rom = File.ReadAllBytes(o.Rom);
 
-                var gamepak = new GamePak(rom);
+                var gamepak = new GamePak(rom, o.BackupType);
                 var device = new Device(bios, gamepak, new Debugger(logger), !o.RunBios);
 
                 var application = new Sdl2Application(o.Rom, device, o.PixelSize, consoleLevelLoggingSwitch);
