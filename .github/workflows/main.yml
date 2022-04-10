@@ -2,9 +2,9 @@ name: .NET
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -17,18 +17,10 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
-    - run: 'echo $BIOS_FILE_CONTENTS'
-      shell: bash
-      env:
-        BIOS_FILE_CONTENTS: ${{secrets.BIOS_FILE_CONTENTS}}
     - run: 'mkdir roms/real; echo $BIOS_FILE_CONTENTS | base64 -d > roms/real/gba_bios.bin'
       shell: bash
       env:
         BIOS_FILE_CONTENTS: ${{secrets.BIOS_FILE_CONTENTS}}
-    - run: 'pwd'
-      shell: bash
-    - run: 'ls -ltr roms/real'
-      shell: bash
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
