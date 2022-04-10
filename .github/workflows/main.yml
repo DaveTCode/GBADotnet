@@ -21,6 +21,10 @@ jobs:
       shell: bash
       env:
         BIOS_FILE_CONTENTS: ${{secrets.BIOS_FILE_CONTENTS}}
+    - run: 'pwd'
+      shell: bash
+    - run: 'ls -ltr roms\real'
+      shell: bash
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
