@@ -149,7 +149,8 @@ public class RomTests : IClassFixture<BiosFixture>
     [InlineData(@"..\..\..\..\roms\test\PeterLemon\Physics\2D\Velocity\Velocity.gba", "104AA1C171A3CC2B39063BCD3C4E9130", 16)]
     public void TestRom(string romPath, string md5ExpectedString, ulong frames)
     {
-        var romBytes = File.ReadAllBytes(romPath);
+        var romPathCanonical = Path.Join(romPath.Split(@"\"));
+        var romBytes = File.ReadAllBytes(romPathCanonical);
         var rom = new GamePak(romBytes);
         var device = new Device(_bios, rom, new TestDebugger(), true);
 
