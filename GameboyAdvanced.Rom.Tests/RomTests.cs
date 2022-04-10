@@ -10,7 +10,7 @@ namespace GameboyAdvanced.Rom.Tests;
 
 public class BiosFixture : IDisposable
 {
-    public const string BiosPath = @"..\..\..\..\roms\real\gba_bios.bin";
+    public static string BiosPath = Path.Join("..", "..", "..", "..", "roms", "real", "gba_bios.bin");
     public readonly byte[] Bios;
     private bool disposedValue;
 
