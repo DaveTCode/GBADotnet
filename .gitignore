@@ -1,6 +1,12 @@
 .vs/
 **/bin/
-**/obj/
+**/obj/Debug
+**/obj/*.json
+**/obj/*.cache
+**/obj/*.targets
+**/obj/*.props
+**/obj/*.sentinel
+**/obj/Release
 **/results/
 **/*.log
 *.user
