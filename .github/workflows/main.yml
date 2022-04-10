@@ -17,7 +17,7 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
-    - run: 'echo $BIOS_FILE_CONTENTS > roms/real/gba_bios.bin'
+    - run: 'echo $BIOS_FILE_CONTENTS > roms\real\gba_bios.bin'
       shell: bash
       env:
         BIOS_FILE_CONTENTS: ${{secrets.BIOS_FILE_CONTENTS}}
