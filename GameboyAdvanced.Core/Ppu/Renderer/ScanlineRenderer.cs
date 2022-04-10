@@ -20,8 +20,9 @@ public partial class Ppu
         internal int PaletteColor;
         internal SpriteMode PixelMode;
         internal int Priority;
+        internal bool IsBackdrop;
 
-        public override string ToString() => $"Prio={Priority}, Mode={PixelMode}, Color={PaletteColor}";
+        public override string ToString() => $"Prio={Priority}, Mode={PixelMode}, Color={PaletteColor}, IsBackdrop={IsBackdrop}";
     }
 
     private struct BgPixelProperties
@@ -219,7 +220,7 @@ public partial class Ppu
                 {
                     PaletteEntry paletteEntry;
                     if (objLayerUsed // The OBJ layer has already been used for this pixel
-                        || ((spriteEntry.PaletteColor & 0b1111) == 0) // The sprite is transparent on this pixel
+                        || spriteEntry.IsBackdrop // The sprite is transparent on this pixel
                         || (bgEntry.Priority[target] < spriteEntry.Priority) // The background is higher priority
                         || objHiddenByWindow) // Windows are enabled and this pixel is in a window state that means no obj
                     {
@@ -257,7 +258,7 @@ public partial class Ppu
                 else
                 {
                     if (objLayerUsed // The OBJ layer has already been used for this pixel
-                        || ((spriteEntry.PaletteColor & 0b1111) == 0) // The sprite is transparent on this pixel
+                        || spriteEntry.IsBackdrop // The sprite is transparent on this pixel
                         || (bgEntry.Priority[target] < spriteEntry.Priority) // The background is higher priority
                         || objHiddenByWindow)
                     {
@@ -374,6 +375,7 @@ public partial class Ppu
             _objBuffer[ii].PaletteColor = 0;
             _objBuffer[ii].Priority = 4;
             _objBuffer[ii].PixelMode = SpriteMode.Normal;
+            _objBuffer[ii].IsBackdrop = true;
         }
 
         // Check if OBJs are disabled globally on the PPU
@@ -409,7 +411,7 @@ public partial class Ppu
                 if (lineX is < 0 or >= Device.WIDTH) continue;
 
                 // Skip pixels if a higher priority sprite already occupies that pixel
-                if (sprite.ObjMode != SpriteMode.ObjWindow && _objBuffer[lineX].Priority <= sprite.PriorityRelativeToBg && (_objBuffer[lineX].PaletteColor & 0b1111) != 0) continue;
+                if (sprite.ObjMode != SpriteMode.ObjWindow && _objBuffer[lineX].Priority <= sprite.PriorityRelativeToBg && !_objBuffer[lineX].IsBackdrop) continue;
 
                 // Work out which pixel relative to the sprite texture we're processing
                 var spriteX = sprite.HorizontalFlip && !sprite.IsAffine ? sprite.Width - ii - 1 : ii;
@@ -472,6 +474,7 @@ public partial class Ppu
                     _objBuffer[lineX].PaletteColor = pixelPalNo;
                     _objBuffer[lineX].Priority = sprite.PriorityRelativeToBg;
                     _objBuffer[lineX].PixelMode = sprite.ObjMode;
+                    _objBuffer[lineX].IsBackdrop = sprite.LargePalette ? pixelPalNo == 0 : (pixelPalNo & 0b1111) == 0;
                 }
             }
         }
