@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - run: 'echo $BIOS_FILE_CONTENTS > roms/real/gba_bios.bin'
+      shell: bash
+      env:
+        BIOS_FILE_CONTENTS: ${{secrets.BIOS_FILE_CONTENTS}}
     - uses: actions/checkout@v3
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
