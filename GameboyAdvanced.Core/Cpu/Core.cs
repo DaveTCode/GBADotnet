@@ -426,6 +426,7 @@ public unsafe class Core
         AIncrement = (uint)MAS;
         Pipeline.ClearedThisCycle = true;
         SEQ = 0;
+        Bus._prefetcher.Reset();
     }
 
     /// <summary>
