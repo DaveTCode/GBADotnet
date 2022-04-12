@@ -20,9 +20,10 @@ public class WaitControl
 {
     public int SRAMWaitStates;
     public int SRAMWaitControl;
-    public int[] WaitState0 = new int[2];
-    public int[] WaitState1 = new int[2];
-    public int[] WaitState2 = new int[2];
+    public int[][] WaitStates = new int[3][]
+    {
+        new int[2], new int[2], new int[2],
+    };
     public PhiOutput PhiTerminalOutput;
     public bool EnableGamepakPrefetch;
     public bool GamepakIsCGB;
@@ -57,28 +58,28 @@ public class WaitControl
             3 => 8,
             _ => throw new Exception("Invalid SRAM wait control value")
         };
-        WaitState0[0] = WaitStatesNFromBitVal((value >> 2) & 0b11);
-        WaitState0[1] = ((value >> 4) & 0b1) == 0 ? 2 : 1;
-        WaitState1[0] = WaitStatesNFromBitVal((value >> 5) & 0b11);
-        WaitState1[1] = ((value >> 7) & 0b1) == 0 ? 4 : 1;
+        WaitStates[0][0] = WaitStatesNFromBitVal((value >> 2) & 0b11);
+        WaitStates[0][1] = ((value >> 4) & 0b1) == 0 ? 2 : 1;
+        WaitStates[1][0] = WaitStatesNFromBitVal((value >> 5) & 0b11);
+        WaitStates[1][1] = ((value >> 7) & 0b1) == 0 ? 4 : 1;
     }
 
     internal void SetByte2(byte value)
     {
-        WaitState2[0] = WaitStatesNFromBitVal(value & 0b11);
-        WaitState2[1] = ((value >> 2) & 0b1) == 0 ? 8 : 1;
+        WaitStates[2][0] = WaitStatesNFromBitVal(value & 0b11);
+        WaitStates[2][1] = ((value >> 2) & 0b1) == 0 ? 8 : 1;
         PhiTerminalOutput = (PhiOutput)((value >> 3) & 0b11);
         EnableGamepakPrefetch = ((value >> 6) & 0b1) == 0b1;
         GamepakIsCGB = ((value >> 7) & 0b1) == 0b1;
     }
 
     internal ushort Get() => (ushort)(SRAMWaitControl |
-            (BitValFromWaitStateN(WaitState0[0]) << 2) |
-            (WaitState0[1] == 2 ? 0 : (1 << 4)) |
-            (BitValFromWaitStateN(WaitState1[0]) << 5) |
-            (WaitState1[1] == 4 ? 0 : (1 << 7)) |
-            (BitValFromWaitStateN(WaitState2[0]) << 8) |
-            (WaitState2[1] == 8 ? 0 : (1 << 10)) |
+            (BitValFromWaitStateN(WaitStates[0][0]) << 2) |
+            (WaitStates[0][1] == 2 ? 0 : (1 << 4)) |
+            (BitValFromWaitStateN(WaitStates[1][0]) << 5) |
+            (WaitStates[1][1] == 4 ? 0 : (1 << 7)) |
+            (BitValFromWaitStateN(WaitStates[2][0]) << 8) |
+            (WaitStates[2][1] == 8 ? 0 : (1 << 10)) |
             ((ushort)PhiTerminalOutput << 11) |
             (EnableGamepakPrefetch ? (1 << 14) : 0) |
             (GamepakIsCGB ? (1 << 15) : 0));

@@ -65,7 +65,7 @@ public unsafe class Core
 {
     internal readonly BaseDebugger Debugger;
     private readonly InterruptRegisters _interruptRegisters;
-    public ulong Cycles;
+    public long Cycles;
     internal readonly MemoryBus Bus;
     public CPSR Cpsr;
     public readonly CPSR[] Spsr = new CPSR[6];

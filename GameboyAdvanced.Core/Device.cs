@@ -17,7 +17,7 @@ public unsafe class Device
 {
     public const int WIDTH = 240;
     public const int HEIGHT = 160;
-    private const int CPU_CYCLES_PER_FRAME = 280896;
+    public const int CPU_CYCLES_PER_FRAME = 280896;
 
     public readonly BaseDebugger Debugger;
 
