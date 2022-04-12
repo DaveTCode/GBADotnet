@@ -381,7 +381,7 @@ internal unsafe static class Thumb
                 core.MoveExecutePipelineToNextInstruction();
                 break;
             case 0xD: // MUL
-                MultiplyUtils.SetupForMultiplyFlags(core, rd, rs, rd);
+                MultiplyUtils.SetupForMultiplyFlags(core, rd, rd, rs);
                 break;
             case 0xE: // BIC
                 core.R[rd] = core.R[rd] & (~core.R[rs]);
