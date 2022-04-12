@@ -49,7 +49,7 @@ public class RomTests : IClassFixture<BiosFixture>
     [InlineData(@"..\..\..\..\roms\test\tonc\first.gba", "BCB71B5B5F0EC5806BF90281353814D6", 20)]
     [InlineData(@"..\..\..\..\roms\test\tonc\hello.gba", "B9E014043B3B7FF125F5E8D6BCC8DFC2", 26)]
     [InlineData(@"..\..\..\..\roms\test\tonc\irq_demo.gba", "85883617F354E4F6F1E5B1D1B38F0472", 33)]
-    [InlineData(@"..\..\..\..\roms\test\tonc\bigmap.gba", "817E89F50FD7FC33ED82B23D9999433B", 39)]
+    [InlineData(@"..\..\..\..\roms\test\tonc\bigmap.gba", "232EDF4D91A951545B92B49900A8FDCC", 39)]
     [InlineData(@"..\..\..\..\roms\test\tonc\bld_demo.gba", "F0D05565B6F6C358F6FBFAABB03079F5", 27)]
     [InlineData(@"..\..\..\..\roms\test\tonc\bm_modes.gba", "02706CBEF3C2D53C2026043447FFEAEE", 25)]
     [InlineData(@"..\..\..\..\roms\test\tonc\brin_demo.gba", "F564F81A77A78579E5EA581E45EBD026", 27)]
