@@ -416,7 +416,9 @@ public partial class Ppu
                 if (lineX is < 0 or >= Device.WIDTH) continue;
 
                 // Skip pixels if a higher priority sprite already occupies that pixel
-                if (sprite.ObjMode != SpriteMode.ObjWindow && _objBuffer[lineX].Priority <= sprite.PriorityRelativeToBg && !_objBuffer[lineX].IsBackdrop) continue;
+                if (sprite.ObjMode != SpriteMode.ObjWindow 
+                    && _objBuffer[lineX].Priority <= sprite.PriorityRelativeToBg
+                    && !_objBuffer[lineX].IsBackdrop) continue;
 
                 // Work out which pixel relative to the sprite texture we're processing
                 var spriteX = sprite.HorizontalFlip && !sprite.IsAffine ? sprite.Width - ii - 1 : ii;
@@ -468,6 +470,7 @@ public partial class Ppu
                     false => (sprite.PaletteNumber << 4) | ((tileData >> (4 * (spriteX & 1))) & 0b1111),
                 };
                 var isBackdrop = sprite.LargePalette ? pixelPalNo == 0 : (pixelPalNo & 0b1111) == 0;
+                if (isBackdrop) continue;
 
                 if (sprite.ObjMode == SpriteMode.ObjWindow)
                 {
