@@ -65,6 +65,12 @@ public partial class Ppu
             return;
         }
 
+        // Clear residual background state
+        for (var ii = 0; ii < _scanlineBgBuffer.Length; ii++)
+        {
+            Array.Clear(_scanlineBgBuffer[ii], 0, _scanlineBgBuffer[ii].Length);
+        }
+
         CalculateScanlineWindowState();
 
         var sortedBgIxs = new[] { 0, 1, 2, 3 };
@@ -108,7 +114,6 @@ public partial class Ppu
                 break;
             case BgMode.Prohibited6:
             case BgMode.Prohibited7:
-                DrawProhibitedModeScanline();
                 break;
         }
 
@@ -487,14 +492,6 @@ public partial class Ppu
         {
             Utils.ColorToRgb(BackdropColor, FrameBuffer.AsSpan(fbPtr));
             fbPtr += 4;
-        }
-    }
-
-    private void DrawProhibitedModeScanline()
-    {
-        for (var ii = 0; ii < _scanlineBgBuffer.Length; ii++)
-        {
-            Array.Clear(_scanlineBgBuffer, 0, _scanlineBgBuffer.Length);
         }
     }
 
