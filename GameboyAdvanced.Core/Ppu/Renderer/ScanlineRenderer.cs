@@ -462,19 +462,19 @@ public partial class Ppu
                     true => tileData,
                     false => (sprite.PaletteNumber << 4) | ((tileData >> (4 * (spriteX & 1))) & 0b1111),
                 };
+                var isBackdrop = sprite.LargePalette ? pixelPalNo == 0 : (pixelPalNo & 0b1111) == 0;
 
                 if (sprite.ObjMode == SpriteMode.ObjWindow)
                 {
-                    if (pixelPalNo == 0) continue; // Transparent pixels don't count towards obj window
-
-                    _windowState[lineX] = 2;
+                    // Transparent pixels don't count towards obj window
+                    _windowState[lineX] = isBackdrop ? -1 : 2;
                 }
                 else
                 {
                     _objBuffer[lineX].PaletteColor = pixelPalNo;
                     _objBuffer[lineX].Priority = sprite.PriorityRelativeToBg;
                     _objBuffer[lineX].PixelMode = sprite.ObjMode;
-                    _objBuffer[lineX].IsBackdrop = sprite.LargePalette ? pixelPalNo == 0 : (pixelPalNo & 0b1111) == 0;
+                    _objBuffer[lineX].IsBackdrop = isBackdrop;
                 }
             }
         }
