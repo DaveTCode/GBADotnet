@@ -582,6 +582,11 @@ public partial class Ppu
             if (background.Control.LargePalette)
             {
                 var tileAddress = (background.Control.CharBaseBlock * 0x4000) + (tile * 64) + tileX + (tileY * 8);
+                if (tileAddress >= Vram.Length)
+                {
+                    // TODO - What's the right behaviour here? Wrapping around vram, wrapping around tile number or ignore the tile? Assuming ignore for this
+                    continue;
+                }
                 scanlineBuffer[x] = Vram[tileAddress];
             }
             else
