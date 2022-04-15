@@ -129,22 +129,13 @@ public partial class Ppu
             {
                 DrawCurrentScanline();
                 IncrementAffineBackgroundRegisters();
-                Array.Fill<int>(_windowState, -1); // Clear window state after rendering scanline so it's ready to refill
+                Array.Fill(_windowState, -1); // Clear window state after rendering scanline so it's ready to refill
             }
 
             Dispstat.VCounterFlag = false;
             Dispstat.HBlankFlag = false;
             CurrentLine++;
             CurrentLineCycles = 0;
-
-            if (CurrentLine == Dispstat.VCountSetting)
-            {
-                Dispstat.VCounterFlag = true;
-                if (Dispstat.VCounterIrqEnable)
-                {
-                    _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVCounter);
-                }
-            }
 
             if (CurrentLine < Device.HEIGHT)
             {
@@ -181,6 +172,17 @@ public partial class Ppu
                 CurrentLine = 0;
                 // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
                 DrawSpritesOnLine((int)Dispcnt.BgMode >= 3);
+            }
+
+            // Need to check this after cycling currentline around to 0 or we
+            // won't catch vcount irqs on line 0. Required for mario kart
+            if (CurrentLine == Dispstat.VCountSetting)
+            {
+                Dispstat.VCounterFlag = true;
+                if (Dispstat.VCounterIrqEnable)
+                {
+                    _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVCounter);
+                }
             }
         }
     }

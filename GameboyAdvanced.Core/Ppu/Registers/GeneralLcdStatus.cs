@@ -27,12 +27,6 @@ public struct GeneralLcdStatus
          ((uint)VCountSetting << 8)
         );
 
-    internal void Update(ushort value)
-    {
-        UpdateB1((byte)value);
-        VCountSetting = (ushort)(value >> 8);
-    }
-
     internal void UpdateB1(byte value)
     {
         VBlankIrqEnable = (value & 0b1000) == 0b1000;
