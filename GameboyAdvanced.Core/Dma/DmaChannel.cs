@@ -132,14 +132,16 @@ public class DmaChannel
                 (false, DestAddressCtrl.Decrement) => -2,
                 _ => throw new Exception("Invalid destination address control")
             };
-            IntSrcAddressIncrement = (ControlReg.Is32Bit, ControlReg.SrcAddressCtrl) switch
+            IntSrcAddressIncrement = (ControlReg.Is32Bit, ControlReg.SrcAddressCtrl, IntSourceAddress >= 0x0800_0000 && IntSourceAddress < 0x0E00_0000) switch
             {
-                (_, SrcAddressCtrl.Fixed) => 0,
-                (true, SrcAddressCtrl.Increment) => 4,
-                (true, SrcAddressCtrl.Decrement) => -4,
-                (false, SrcAddressCtrl.Increment) => 2,
-                (false, SrcAddressCtrl.Decrement) => -2,
-                (_, SrcAddressCtrl.Prohibited) => 0,
+                (true, _, true) => 4, // Force increment for ROM page accesses
+                (false, _, true) => 2, // Force increment for ROM page accesses
+                (_, SrcAddressCtrl.Fixed, false) => 0,
+                (true, SrcAddressCtrl.Increment, false) => 4,
+                (true, SrcAddressCtrl.Decrement, false) => -4,
+                (false, SrcAddressCtrl.Increment, false) => 2,
+                (false, SrcAddressCtrl.Decrement, false) => -2,
+                (_, SrcAddressCtrl.Prohibited, false) => 0,
                 _ => throw new Exception("Invalid source address control")
             };
         }
