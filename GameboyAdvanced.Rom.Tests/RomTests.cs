@@ -98,7 +98,7 @@ public class RomTests : IClassFixture<BiosFixture>
     [InlineData(@"..\..\..\..\roms\test\nba\dma\latch\latch.gba", "4DF7BF7C2F11FB00DF18E477B23E207C", 25)]
     [InlineData(@"..\..\..\..\roms\test\nba\dma\start-delay\start-delay.gba", "C8FEFEBBEA0EA84B32DD8D6BC7E2305B", 26)]
     [InlineData(@"..\..\..\..\roms\test\nba\haltcnt\haltcnt.gba", "0F5B57883BB0F9BF9C3B414F35E045ED", 20)]
-    [InlineData(@"..\..\..\..\roms\test\nba\ppu\basic-timing\basic-timing.gba", "B02D6DD5816ED742229C205CBBC2B0C7", 23)]
+    [InlineData(@"..\..\..\..\roms\test\nba\ppu\basic-timing\basic-timing.gba", "D71125FB805FC16EBD5357FBBD739426", 23)]
     [InlineData(@"..\..\..\..\roms\test\nba\timer\start-stop\start-stop.gba", "5112494B85407AF7430AA6E96FC6310D", 19)]
     [InlineData(@"..\..\..\..\roms\test\nba\timer\reload\reload.gba", "98C13B548AC6CD73897BA207D1F50139", 20)]
     [InlineData(@"..\..\..\..\roms\test\retAddr.gba", "1F98A902677886658132DD28FFE784D4", 24)]
