@@ -92,12 +92,18 @@ public unsafe class Device
             if (Bus.WaitStates > 0)
             {
                 Bus.WaitStates--;
+
+                DmaCtrl.CheckForInternalCycles();
             }
             else
             {
-                if (!DmaCtrl.Step())
+                DmaCtrl.Step();
+
+                // The CPU is paused whilst DMA is using the bus _and_ it also
+                // needs access to the bus
+                if (!Bus.InUseByDma || Cpu.nMREQ)
                 {
-                    // Only step the CPU unit if the DMA is inactive
+                    if (Bus.InUseByDma) Console.WriteLine("Internal cycle continuing for CPU during DMA access");
                     Cpu.Clock();
                 }
             }

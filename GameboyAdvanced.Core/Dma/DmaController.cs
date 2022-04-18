@@ -28,10 +28,32 @@ public unsafe class DmaController
         
     }
 
-    private static delegate*<DmaController, bool> _stepAction = &ReadCycle;
-    private static int _currentTimerIx;
-    public static bool WriteCycle(DmaController ctrl)
+    /// <summary>
+    /// Only _some_ parts of DMA can continue whilst the system is blocked on 
+    /// wait states, specifically DMA channels can perform their initial latch
+    /// cycles.
+    /// </summary>
+    internal void CheckForInternalCycles()
     {
+        for (var ii = 0; ii < 4; ii++)
+        {
+            var channel = _dmaDataUnit.Channels[ii];
+            if (channel.IsRunning && channel.ControlReg.DmaEnable)
+            {
+                if (channel.ClocksToStart >= 2)
+                {
+                    channel.ClocksToStart--;
+                }
+            }
+        }
+    }
+
+    private static delegate*<DmaController, void> _stepAction = &ReadCycle;
+    private static int _currentTimerIx;
+    public static void WriteCycle(DmaController ctrl)
+    {
+        if (ctrl._bus.WaitStates > 0) return;
+
         var channel = ctrl._dmaDataUnit.Channels[_currentTimerIx];
 
         if (channel.ControlReg.Is32Bit)
@@ -54,22 +76,31 @@ public unsafe class DmaController
 
         if (channel.IntWordCount == 0)
         {
-            // One additional cycle after DMA complete
-            //_bus.WaitStates++;
+            // Not 100% sure on this, I need another cycle _somewhere_ in dma
+            // and it must at least be whilst the bus is active but it might be
+            // before or after. This wait state is a bit of a hack to force the
+            // issue but is likely impossible to notice
+            channel.ClocksToStop = 1;
             channel.StopChannel(ctrl._interruptInterconnect);
         }
 
         _stepAction = &ReadCycle;
-        return true;
     }
 
-    public static bool ReadCycle(DmaController ctrl)
+    public static void ReadCycle(DmaController ctrl)
     {
-        var result = false;
+        // Assume no DMA channels are accessing the bus, set this whilst checking channels
+        ctrl._bus.InUseByDma = false;
 
         for (var ii = 0; ii < ctrl._dmaDataUnit.Channels.Length; ii++)
         {
             var channel = ctrl._dmaDataUnit.Channels[ii];
+            if (channel.ClocksToStop == 1)
+            {
+                channel.ClocksToStop = 0;
+                ctrl._bus.InUseByDma = true;
+            }
+
             if (channel.ControlReg.DmaEnable && channel.IsRunning)
             {
                 var lowerPriorityActive = false;
@@ -82,14 +113,15 @@ public unsafe class DmaController
                     }
                 }
 
-                // DMA takes 2 cycles to start and then 1 cycle before writing starts
+                // DMA takes 3 cycles in total before the first read occurs,
+                // 1 to latch internal registers and then 2 whilst it acquires the bus.
                 if (channel.ClocksToStart > 0)
                 {
                     channel.ClocksToStart--;
 
-                    if (channel.ClocksToStart <= 1)
+                    if (channel.ClocksToStart == 0)
                     {
-                        result = true;
+                        ctrl._bus.InUseByDma = true;
                     }
 
                     if (lowerPriorityActive)
@@ -150,12 +182,11 @@ public unsafe class DmaController
                 _stepAction = &WriteCycle;
                 _currentTimerIx = ii;
 
-                // Only one DMA runs at a time in priority order from 0-3, return true here if a DMA ran
-                return true;
+                // Only one DMA runs at a time in priority order from 0-3
+                ctrl._bus.InUseByDma = true;
+                return;
             }
         }
-
-        return result;
     }
 
     /// <summary>
@@ -166,8 +197,8 @@ public unsafe class DmaController
     /// <returns>
     /// true if any DMA channel is active, false otherwise
     /// </returns>
-    internal bool Step()
+    internal void Step()
     {
-        return _stepAction(this);
+        _stepAction(this);
     }
 }

@@ -35,6 +35,7 @@ public partial class MemoryBus
     public HaltMode HaltMode = HaltMode.None;
     public byte PostFlag = 0;
     public int WaitStates = 0;
+    public bool InUseByDma;
 
     public MemoryBus(
         byte[] bios,
@@ -87,6 +88,7 @@ public partial class MemoryBus
 
         PostFlag = skipBios ? (byte)1 : (byte)0;
         WaitStates = 0;
+        InUseByDma = false;
     }
 
     internal byte ReadByte(uint address, int seq, uint r15, uint D, long currentCycles)

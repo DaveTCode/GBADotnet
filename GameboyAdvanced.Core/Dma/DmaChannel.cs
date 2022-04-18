@@ -29,6 +29,7 @@ public class DmaChannel
     public DmaControlRegister ControlReg;
 
     public int ClocksToStart;
+    public int ClocksToStop;
 
     internal DmaChannel(int id, ushort wordMask, uint srcMask, uint destMask)
     {
@@ -105,7 +106,7 @@ public class DmaChannel
                 IsRunning = true;
             }
 
-            ClocksToStart = 3; // 2I cycles after setting register before DMA unit starts processing and THEN 1 cycle before write start (and one at the end)
+            ClocksToStart = 3; // 2I cycles after setting register before DMA unit starts processing and THEN 1 cycle before read start (and one at the end)
             IntSrcSeqAccess = 0; // 1st read/write pair are non-sequential
             IntDestSeqAccess = 0; // 1st read/write pair are non-sequential
 
@@ -191,6 +192,7 @@ public class DmaChannel
         IntDestAddressIncrement = 0;
         IntSrcAddressIncrement = 0;
         ClocksToStart = 0;
+        ClocksToStop = 0;
         ControlReg.Reset();
     }
 
