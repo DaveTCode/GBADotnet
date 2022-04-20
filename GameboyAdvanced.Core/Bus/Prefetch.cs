@@ -126,12 +126,24 @@ public class Prefetcher
         return _gamePak.ReadWord(_internalAddressRegister);
     }
 
-    internal void Write(uint address, byte value, int seq, uint width)
+    internal void Write(uint address, byte value, int seq, uint width, int waitStateIx, ref int waitStates)
     {
         if (seq == 0) _internalAddressRegister = address;
         else _internalAddressRegister += width;
 
         _gamePak.Write(address, value);
+
+        // If prefetch is active then attempting to write to ROM will cause an extra wait state
+        if (_active) waitStates++;
+
+        if (width == 2)
+        {
+            waitStates += _waitControl.WaitStates[waitStateIx][seq];
+        }
+        else
+        {
+            waitStates += _waitControl.WaitStates[waitStateIx][seq] + _waitControl.WaitStates[waitStateIx][1] + 1;
+        }
 
         // Clear prefetch buffer on any write
         Reset();

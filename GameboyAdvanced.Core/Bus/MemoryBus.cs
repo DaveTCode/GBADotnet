@@ -312,16 +312,13 @@ public partial class MemoryBus
                 _ppu.WriteByte(address, value);
                 break;
             case uint _ when address is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                _prefetcher.Write(address, value, seq, 2);
-                WaitStates = _waitControl.WaitStates[0][seq];
+                _prefetcher.Write(address, value, seq, 2, 0, ref WaitStates);
                 break;
             case uint _ when address is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                _prefetcher.Write(address, value, seq, 2);
-                WaitStates += _waitControl.WaitStates[1][seq];
+                _prefetcher.Write(address, value, seq, 2, 1, ref WaitStates);
                 break;
             case uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                _prefetcher.Write(address, value, seq, 2);
-                WaitStates += _waitControl.WaitStates[2][seq];
+                _prefetcher.Write(address, value, seq, 2, 2, ref WaitStates);
                 break;
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
@@ -396,16 +393,13 @@ public partial class MemoryBus
                 _ppu.WriteHalfWord(alignedAddress, value);
                 break;
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                _prefetcher.Write(alignedAddress, (byte)value, seq, 2);
-                WaitStates += _waitControl.WaitStates[0][seq];
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 2, 0, ref WaitStates);
                 break;
             case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                _prefetcher.Write(alignedAddress, (byte)value, seq, 2);
-                WaitStates += _waitControl.WaitStates[1][seq];
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 2, 1, ref WaitStates);
                 break;
             case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                _prefetcher.Write(alignedAddress, (byte)value, seq, 2);
-                WaitStates += _waitControl.WaitStates[2][seq];
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 2, 2, ref WaitStates);
                 break;
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
@@ -493,18 +487,15 @@ public partial class MemoryBus
                 break;
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
                 // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                _prefetcher.Write(alignedAddress, (byte)value, seq, 4);
-                WaitStates += _waitControl.WaitStates[0][seq] + _waitControl.WaitStates[0][1] + 1;
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 4, 0, ref WaitStates);
                 break;
             case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
                 // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                _prefetcher.Write(alignedAddress, (byte)value, seq, 4);
-                WaitStates += _waitControl.WaitStates[1][seq] + _waitControl.WaitStates[1][1] + 1;
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 4, 1, ref WaitStates);
                 break;
             case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
                 // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                _prefetcher.Write(alignedAddress, (byte)value, seq, 4);
-                WaitStates += _waitControl.WaitStates[2][seq] + _waitControl.WaitStates[2][1] + 1;
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 4, 2, ref WaitStates);
                 break;
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
