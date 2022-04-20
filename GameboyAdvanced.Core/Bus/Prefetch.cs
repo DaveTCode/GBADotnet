@@ -15,6 +15,7 @@ namespace GameboyAdvanced.Core.Bus;
 /// </summary>
 public class Prefetcher
 {
+    public uint _internalAddressRegister;
     public bool _active;
     public uint _currentPreFetchBase;
     public long _cycleNextRequestStart;
@@ -30,6 +31,7 @@ public class Prefetcher
 
     internal void Reset()
     {
+        _internalAddressRegister = 0;
         _currentPreFetchBase = 0;
         _cycleNextRequestStart = 0;
         _active = false;
@@ -37,8 +39,10 @@ public class Prefetcher
 
     private void CheckAdjustPrefetchBuffer(uint address, int waitStateIx, int seq, long currentCycles, ref int waitStates)
     {
+        var crossesPageBoundary = GamePak.CheckAddressIsPageBoundary(address);
+
         // If prefetch is enabled, the memory request is the head of the pre fetch buffer, and the next memory request would have already started
-        if (_waitControl.EnableGamepakPrefetch && address == (_currentPreFetchBase + 2) && _cycleNextRequestStart < currentCycles && _active)
+        if (_waitControl.EnableGamepakPrefetch && address == (_currentPreFetchBase + 2) && _cycleNextRequestStart < currentCycles && _active && !crossesPageBoundary)
         {
             var waitStatesNoPrefetch = _waitControl.WaitStates[waitStateIx][1]; // Always SEQ in prefetch buffer
             var adjustedWaitStates = waitStatesNoPrefetch - (int)(currentCycles - _cycleNextRequestStart);
@@ -51,7 +55,9 @@ public class Prefetcher
         }
         else
         {
-            var waitStatesNoPrefetch = _waitControl.WaitStates[waitStateIx][seq];
+            var waitStatesNoPrefetch = crossesPageBoundary ?
+                _waitControl.WaitStates[waitStateIx][0] :
+                _waitControl.WaitStates[waitStateIx][seq];
             waitStates += waitStatesNoPrefetch;
             _cycleNextRequestStart = currentCycles + waitStatesNoPrefetch + 1; // This is the cycle on which the next request to gamepak would begin by prefetch unit
             _active = _waitControl.EnableGamepakPrefetch;
@@ -62,10 +68,12 @@ public class Prefetcher
 
     private void CheckAdjustPrefetchBufferWord(uint address, int waitStateIx, int seq, long currentCycles, ref int waitStates)
     {
+        var crossesPageBoundary = GamePak.CheckAddressIsPageBoundary(address);
+
         // If prefetch is enabled, the memory request is the head of the pre fetch buffer, and the next memory request would have already started
-        if (_waitControl.EnableGamepakPrefetch && address == (_currentPreFetchBase + 4) && _cycleNextRequestStart < currentCycles && _active)
+        if (_waitControl.EnableGamepakPrefetch && address == (_currentPreFetchBase + 4) && _cycleNextRequestStart < currentCycles && _active && !crossesPageBoundary)
         {
-            var waitStatesNoPrefetch = _waitControl.WaitStates[waitStateIx][1] * 2 + 1; // Always SEQ in prefetch buffer
+            var waitStatesNoPrefetch = (_waitControl.WaitStates[waitStateIx][1] * 2) + 1; // Always SEQ in prefetch buffer
             var adjustedWaitStates = waitStatesNoPrefetch - (int)(currentCycles - _cycleNextRequestStart);
             _cycleNextRequestStart += waitStatesNoPrefetch + 1;
 
@@ -76,7 +84,10 @@ public class Prefetcher
         }
         else
         {
-            var waitStatesNoPrefetch = _waitControl.WaitStates[waitStateIx][seq] + _waitControl.WaitStates[waitStateIx][1] + 1;
+            var waitStatesNoPrefetch = crossesPageBoundary ?
+                _waitControl.WaitStates[waitStateIx][0] :
+                _waitControl.WaitStates[waitStateIx][seq];
+            waitStatesNoPrefetch += _waitControl.WaitStates[waitStateIx][1] + 1;
             waitStates += waitStatesNoPrefetch;
             _cycleNextRequestStart = currentCycles + waitStatesNoPrefetch + 1; // This is the cycle on which the next request to gamepak would begin by prefetch unit
             _active = _waitControl.EnableGamepakPrefetch;
@@ -87,23 +98,43 @@ public class Prefetcher
 
     internal byte ReadGamePakByte(uint address, int waitStatesIx, int seq, long currentCycles, ref int waitStates)
     {
+        if (seq == 0) _internalAddressRegister = address;
+        else _internalAddressRegister += 2;
+
         CheckAdjustPrefetchBuffer(address, waitStatesIx, seq, currentCycles, ref waitStates);
 
-        return _gamePak.ReadByte(address & 0x1FF_FFFF);
+        return _gamePak.ReadByte(_internalAddressRegister);
     }
 
     internal ushort ReadGamePakHalfWord(uint address, int waitStatesIx, int seq, long currentCycles, ref int waitStates)
     {
+        if (seq == 0) _internalAddressRegister = address;
+        else _internalAddressRegister += 2;
+
         CheckAdjustPrefetchBuffer(address, waitStatesIx, seq, currentCycles, ref waitStates);
 
-        return _gamePak.ReadHalfWord(address & 0x1FF_FFFF);
+        return _gamePak.ReadHalfWord(_internalAddressRegister);
     }
 
     internal uint ReadGamePakWord(uint address, int waitStatesIx, int seq, long currentCycles, ref int waitStates)
     {
+        if (seq == 0) _internalAddressRegister = address;
+        else _internalAddressRegister += 4;
+
         CheckAdjustPrefetchBufferWord(address, waitStatesIx, seq, currentCycles, ref waitStates);
 
-        return _gamePak.ReadWord(address & 0x1FF_FFFF);
+        return _gamePak.ReadWord(_internalAddressRegister);
+    }
+
+    internal void Write(uint address, byte value, int seq, uint width)
+    {
+        if (seq == 0) _internalAddressRegister = address;
+        else _internalAddressRegister += width;
+
+        _gamePak.Write(address, value);
+
+        // Clear prefetch buffer on any write
+        Reset();
     }
 
     public override string ToString()

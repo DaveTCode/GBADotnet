@@ -123,25 +123,10 @@ public partial class MemoryBus
             case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 return _ppu.ReadByte(address);
             case uint _ when address is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((address & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
                 return _prefetcher.ReadGamePakByte(address, 0, seq, currentCycles, ref WaitStates);
             case uint _ when address is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((address & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
                 return _prefetcher.ReadGamePakByte(address, 1, seq, currentCycles, ref WaitStates);
             case uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((address & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
                 return _prefetcher.ReadGamePakByte(address, 2, seq, currentCycles, ref WaitStates);
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
@@ -187,25 +172,10 @@ public partial class MemoryBus
             case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 return _ppu.ReadHalfWord(alignedAddress);
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
                 return _prefetcher.ReadGamePakHalfWord(alignedAddress, 0, seq, currentCycles, ref WaitStates);
             case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
                 return _prefetcher.ReadGamePakHalfWord(alignedAddress, 1, seq, currentCycles, ref WaitStates);
             case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
                 return _prefetcher.ReadGamePakHalfWord(alignedAddress, 2, seq, currentCycles, ref WaitStates);
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
@@ -258,25 +228,10 @@ public partial class MemoryBus
             case uint a when a is >= 0x0700_0000 and <= 0x07FF_FFFF:
                 return (uint)(_ppu.ReadHalfWord(alignedAddress) | (_ppu.ReadHalfWord(alignedAddress + 2) << 16));
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
                 return _prefetcher.ReadGamePakWord(alignedAddress, 0, seq, currentCycles, ref WaitStates);
             case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
                 return _prefetcher.ReadGamePakWord(alignedAddress, 1, seq, currentCycles, ref WaitStates);
             case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
                 return _prefetcher.ReadGamePakWord(alignedAddress, 2, seq, currentCycles, ref WaitStates);
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
@@ -357,33 +312,15 @@ public partial class MemoryBus
                 _ppu.WriteByte(address, value);
                 break;
             case uint _ when address is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                _prefetcher.Reset();
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((address & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
-                _gamePak.Write(address, value);
+                _prefetcher.Write(address, value, seq, 2);
                 WaitStates = _waitControl.WaitStates[0][seq];
                 break;
             case uint _ when address is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                _prefetcher.Reset();
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((address & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
-                _gamePak.Write(address, value);
+                _prefetcher.Write(address, value, seq, 2);
                 WaitStates += _waitControl.WaitStates[1][seq];
                 break;
             case uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                _prefetcher.Reset();
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((address & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
-                _gamePak.Write(address, value);
+                _prefetcher.Write(address, value, seq, 2);
                 WaitStates += _waitControl.WaitStates[2][seq];
                 break;
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
@@ -459,33 +396,15 @@ public partial class MemoryBus
                 _ppu.WriteHalfWord(alignedAddress, value);
                 break;
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                _prefetcher.Reset();
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
-                _gamePak.Write(alignedAddress, (byte)value);
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 2);
                 WaitStates += _waitControl.WaitStates[0][seq];
                 break;
             case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                _prefetcher.Reset();
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
-                _gamePak.Write(alignedAddress, (byte)value);
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 2);
                 WaitStates += _waitControl.WaitStates[1][seq];
                 break;
             case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                _prefetcher.Reset();
-                // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
-                _gamePak.Write(alignedAddress, (byte)value);
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 2);
                 WaitStates += _waitControl.WaitStates[2][seq];
                 break;
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
@@ -573,33 +492,18 @@ public partial class MemoryBus
                 _ppu.WriteHalfWord(alignedAddress + 2, (ushort)(value >> 16));
                 break;
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                _prefetcher.Reset();
                 // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
-                _gamePak.Write(alignedAddress, (byte)value);
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 4);
                 WaitStates += _waitControl.WaitStates[0][seq] + _waitControl.WaitStates[0][1] + 1;
                 break;
             case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                _prefetcher.Reset();
                 // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
-                _gamePak.Write(alignedAddress, (byte)value);
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 4);
                 WaitStates += _waitControl.WaitStates[1][seq] + _waitControl.WaitStates[1][1] + 1;
                 break;
             case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                _prefetcher.Reset();
                 // "The GBA forcefully uses non-sequential timing at the beginning of each 128K-block of gamepak ROM"
-                if ((alignedAddress & 0x1_FFFF) == 0)
-                {
-                    seq = 0;
-                }
-                _gamePak.Write(alignedAddress, (byte)value);
+                _prefetcher.Write(alignedAddress, (byte)value, seq, 4);
                 WaitStates += _waitControl.WaitStates[2][seq] + _waitControl.WaitStates[2][1] + 1;
                 break;
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:

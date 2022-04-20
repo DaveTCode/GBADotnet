@@ -101,6 +101,7 @@ public class RomTests : IClassFixture<BiosFixture>
     [InlineData(@"..\..\..\..\roms\test\nba\ppu\basic-timing\basic-timing.gba", "B02D6DD5816ED742229C205CBBC2B0C7", 23)]
     [InlineData(@"..\..\..\..\roms\test\nba\timer\start-stop\start-stop.gba", "5112494B85407AF7430AA6E96FC6310D", 19)]
     [InlineData(@"..\..\..\..\roms\test\nba\timer\reload\reload.gba", "98C13B548AC6CD73897BA207D1F50139", 20)]
+    [InlineData(@"..\..\..\..\roms\test\nba\dma\burst-into-tears\burst-into-tears.gba", "9FFC54316445124C6B914BF84890D1E1", 20)]
     [InlineData(@"..\..\..\..\roms\test\retAddr.gba", "1F98A902677886658132DD28FFE784D4", 24)]
     [InlineData(@"..\..\..\..\roms\test\openbus\openbus_bios_misaligned.gba", "25B7E300274EA913101AACDEAA65A920", 22)]
     [InlineData(@"..\..\..\..\roms\test\PeterLemon\3DEngine\3DEngine.gba", "061B6A104F5CF724D25604FA294BC9E5", 22)]

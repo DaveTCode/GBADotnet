@@ -16,7 +16,8 @@ public enum RomBackupType
 public class GamePak
 {
     public readonly byte[] _header = new byte[0xC0];
-    public readonly byte[] Data;
+    public readonly byte[] Data = new byte[0x200_0000]; // Max 32MB ROM size
+    public readonly uint RomMask;
     public readonly byte[] _sram = new byte[0x1_0000];
     public readonly FlashBackup? _flashBackup;
     public readonly EEPromBackup? _eepromBackup;
@@ -42,6 +43,8 @@ public class GamePak
         if (data == null) throw new ArgumentNullException(nameof(data));
         if (data.LongLength < 0xC0) throw new ArgumentException("Rom must be >= 0xC0 in size to fit cartridge header", nameof(data));
         Array.Copy(data, 0, _header, 0, _header.Length);
+
+        RomMask = data.Length <= 0x100_0000 ? 0xFF_FFFFu : 0x1FF_FFFF;
         Data = (byte[])data.Clone();
 
         RomEntryPoint = Utils.ReadWord(_header, 0, 0xFFFF_FFFF);
@@ -154,6 +157,8 @@ public class GamePak
 
     internal byte ReadByte(uint address)
     {
+        address &= RomMask;
+
         if (_eepromBackup != null && _eepromBackup.IsEEPromAddress(address))
         {
             return _eepromBackup.Read(address);
@@ -171,8 +176,8 @@ public class GamePak
             return _eepromBackup.Read(address);
         }
 
-        return address < Data.Length
-            ? Utils.ReadHalfWord(Data, address, 0x1FF_FFFF)
+        return (address & RomMask) < Data.Length
+            ? Utils.ReadHalfWord(Data, address, RomMask)
             : (ushort)(address >> 1);
     }
 
@@ -183,13 +188,15 @@ public class GamePak
             return _eepromBackup.Read(address);
         }
 
-        return address < Data.Length
-            ? Utils.ReadWord(Data, address, 0x1FF_FFFF)
+        return (address & RomMask) < Data.Length
+            ? Utils.ReadWord(Data, address, RomMask)
             : (((address & 0xFFFF_FFFC) >> 1) & 0xFFFF) | (((((address & 0xFFFF_FFFC) + 2) >> 1) & 0xFFFF) << 16);
     }
 
+    internal static bool CheckAddressIsPageBoundary(uint address) => (address & 0x1_FFFF) == 0;
+
     public override string ToString()
     {
-        return $"{GameTitle} - {RomBackupType}";
+        return $"{GameTitle} - {RomBackupType} - {RomMask:X8}";
     }
 }

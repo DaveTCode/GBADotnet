@@ -103,7 +103,6 @@ public unsafe class Device
                 // needs access to the bus
                 if (!Bus.InUseByDma || Cpu.nMREQ)
                 {
-                    if (Bus.InUseByDma) Console.WriteLine("Internal cycle continuing for CPU during DMA access");
                     Cpu.Clock();
                 }
             }

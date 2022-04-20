@@ -65,14 +65,15 @@ public unsafe class DmaController
             ctrl._bus.WriteHalfWord(channel.IntDestinationAddress, (ushort)channel.IntCachedValue!.Value, channel.IntDestSeqAccess, 0x4000);
         }
 
-        channel.IntDestinationAddress = (uint)(channel.IntDestinationAddress + channel.IntDestAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
-        channel.IntWordCount--;
-        channel.IntCachedValue = null;
-        if (channel.IntDestinationAddress >= 0x0800_0000)
+        if (channel.IntDestinationAddress is >= 0x0800_0000 and < 0x0E00_0000)
         {
             channel.IntDestSeqAccess = 1;
             channel.IntSrcSeqAccess = 1;
         }
+
+        channel.IntDestinationAddress = (uint)(channel.IntDestinationAddress + channel.IntDestAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
+        channel.IntWordCount--;
+        channel.IntCachedValue = null;
 
         if (channel.IntWordCount == 0)
         {
@@ -82,6 +83,7 @@ public unsafe class DmaController
             // issue but is likely impossible to notice
             channel.ClocksToStop = 1;
             channel.StopChannel(ctrl._interruptInterconnect);
+            ctrl._cpu.SEQ = 0;
         }
 
         _stepAction = &ReadCycle;
@@ -172,12 +174,12 @@ public unsafe class DmaController
                     }
                 }
 
-                channel.IntSourceAddress = (uint)(channel.IntSourceAddress + channel.IntSrcAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
-                if (channel.IntSourceAddress >= 0x0800_0000)
+                if (channel.IntSourceAddress is >= 0x0800_0000 and < 0x0E00_0000)
                 {
                     channel.IntDestSeqAccess = 1;
                     channel.IntSrcSeqAccess = 1;
                 }
+                channel.IntSourceAddress = (uint)(channel.IntSourceAddress + channel.IntSrcAddressIncrement); // TODO - Suspect I should be wrapping and masking this address
 
                 _stepAction = &WriteCycle;
                 _currentTimerIx = ii;
