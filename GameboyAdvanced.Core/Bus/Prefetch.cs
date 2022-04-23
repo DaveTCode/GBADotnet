@@ -55,9 +55,7 @@ public class Prefetcher
         }
         else
         {
-            var waitStatesNoPrefetch = crossesPageBoundary ?
-                _waitControl.WaitStates[waitStateIx][0] :
-                _waitControl.WaitStates[waitStateIx][seq];
+            var waitStatesNoPrefetch = _waitControl.WaitStates[waitStateIx][seq];
             waitStates += waitStatesNoPrefetch;
             _cycleNextRequestStart = currentCycles + waitStatesNoPrefetch + 1; // This is the cycle on which the next request to gamepak would begin by prefetch unit
             _active = _waitControl.EnableGamepakPrefetch;
@@ -133,8 +131,11 @@ public class Prefetcher
 
         _gamePak.Write(address, value);
 
-        // If prefetch is active then attempting to write to ROM will cause an extra wait state
-        if (_active) waitStates++;
+        var crossesPageBoundary = GamePak.CheckAddressIsPageBoundary(address);
+        if (crossesPageBoundary)
+        {
+            seq = 0;
+        }
 
         if (width == 2)
         {
