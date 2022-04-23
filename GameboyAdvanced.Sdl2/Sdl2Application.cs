@@ -21,6 +21,7 @@ internal class Sdl2Application : IDisposable
     private IntPtr _texture;
     private bool _disposedValue;
     private readonly int _msPerFrame = (int)(1.0 / 60 * 1000);
+    private float _framesPerSecond;
 
     private readonly Dictionary<SDL.SDL_Keycode, Key> _keyMap = new()
     {
@@ -86,8 +87,10 @@ internal class Sdl2Application : IDisposable
     internal void Run()
     {
         SetupSdl2();
+        var secondStopwatch = new Stopwatch();
         var frameTimeStopwatch = new Stopwatch();
         var adjustStopwatch = new Stopwatch();
+        secondStopwatch.Start();
         frameTimeStopwatch.Start();
         adjustStopwatch.Start();
         var adjustTicks = 0L;
@@ -136,7 +139,15 @@ internal class Sdl2Application : IDisposable
             }
 
             // TODO - input latency is one frame if we clock a single frame before checking before events
-            _device.RunFrame();
+            try
+            {
+                _device.RunFrame();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return;
+            }
 
             var frameBuffer = _device.GetFrame();
 
@@ -160,6 +171,18 @@ internal class Sdl2Application : IDisposable
             }
             adjustTicks = adjustStopwatch.ElapsedTicks;
             frameTimeStopwatch.Restart();
+
+            if (secondStopwatch.ElapsedMilliseconds >= 1000)
+            {
+                SDL.SDL_SetWindowTitle(_window, $"GBA - {_device.Gamepak} - {_framesPerSecond} FPS");
+                _framesPerSecond = 0;
+                secondStopwatch.Restart();
+            }
+            else
+            {
+                _framesPerSecond += 1;
+            }
+
         }
     }
 
