@@ -114,6 +114,25 @@ public class InterruptRegisters
                     break;
             }
         }
+
+        public override string ToString()
+        {
+            var s = "";
+            if (_lcdVBlank) s += "VBL,";
+            if (_lcdHBlank) s += "HBL,";
+            if (_lcdVCounterMatch) s += "VCount,";
+            if (_timer0Overflow) s += "TM0,";
+            if (_timer1Overflow) s += "TM1,";
+            if (_timer2Overflow) s += "TM2,";
+            if (_timer3Overflow) s += "TM3,";
+            if (_serialComms) s += "Serial,";
+            if (_dma0) s += "DMA0,";
+            if (_dma1) s += "DMA1,";
+            if (_dma2) s += "DMA2,";
+            if (_dma3) s += "DMA3,";
+
+            return s.TrimEnd(',');
+        }
     }
 
     public bool _interruptMasterEnable;

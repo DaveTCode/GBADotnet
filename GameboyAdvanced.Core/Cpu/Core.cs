@@ -287,25 +287,29 @@ public unsafe class Core
             return;
         }
 
-        if (core.IrqSyncDelay == 0)
+        switch (core.IrqSyncDelay)
         {
-            core.IrqSyncDelay = -1;
-            var retAddress = core.Pipeline.CurrentInstructionAddress.Value + 4;
-            core.HandleInterrupt(0x0000_0018, retAddress, CPSRMode.Irq);
-            return;
-        }
-        else if (core.IrqSyncDelay > 1 && core.Cpsr.IrqDisable)
-        {
-            core.IrqSyncDelay = -1;
-        }
-        else if (core.IrqSyncDelay == -1 && core._interruptRegisters.CpuShouldIrq && !core.Cpsr.IrqDisable)
-        {
-            core.IrqSyncDelay = 4;
+            case -1:
+                if (core._interruptRegisters.CpuShouldIrq && !core.Cpsr.IrqDisable)
+                {
+                    // Start IRQ passing through synchronizer
+                    core.IrqSyncDelay = 4;
+                }
+                break;
+            case 0: // IRQ has passed through synchronizer and is now running
+                core.IrqSyncDelay = -1;
+                var retAddress = core.Pipeline.CurrentInstructionAddress.Value + 4;
+                core.HandleInterrupt(0x0000_0018, retAddress, CPSRMode.Irq);
+                return;
+            default:
+                // Anything more than 1 cycle remaining the IrqDisable bit can still prevent IRQ
+                if (core.Cpsr.IrqDisable)
+                {
+                    core.IrqSyncDelay = -1;
+                }
+                break;
         }
 
-#if DEBUG
-        core.Debugger.Log("{0}", core);
-#endif
         var instruction = core.Pipeline.CurrentInstruction.Value;
 
         if (core.Cpsr.ThumbMode)
