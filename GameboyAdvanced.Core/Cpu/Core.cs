@@ -229,7 +229,7 @@ public unsafe class Core
                         }
                         else
                         {
-                            D = Bus.ReadByte(A, SEQ, R[15], D, Cycles);
+                            D = Bus.ReadByte(A, SEQ, R[15], D, Cycles, !nOPC);
                         }
                         break;
                     }
@@ -241,7 +241,7 @@ public unsafe class Core
                         }
                         else
                         {
-                            D = Bus.ReadHalfWord(A, SEQ, R[15], D, Cycles);
+                            D = Bus.ReadHalfWord(A, SEQ, R[15], D, Cycles, !nOPC);
                         }
 
                         break;
@@ -253,7 +253,7 @@ public unsafe class Core
                     }
                     else
                     {
-                        D = Bus.ReadWord(A, SEQ, R[15], D, Cycles);
+                        D = Bus.ReadWord(A, SEQ, R[15], D, Cycles, !nOPC);
                     }
                     break;
                 default:

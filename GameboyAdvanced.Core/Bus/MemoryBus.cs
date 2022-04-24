@@ -91,7 +91,7 @@ public partial class MemoryBus
         InUseByDma = false;
     }
 
-    internal byte ReadByte(uint address, int seq, uint r15, uint D, long currentCycles)
+    internal byte ReadByte(uint address, int seq, uint r15, uint D, long currentCycles, bool isCodeRead)
     {
         switch (address)
         {
@@ -123,11 +123,11 @@ public partial class MemoryBus
             case uint _ when address is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 return _ppu.ReadByte(address);
             case uint _ when address is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                return _prefetcher.ReadGamePakByte(address, 0, seq, currentCycles, ref WaitStates);
+                return _prefetcher.ReadGamePakByte(address, 0, seq, currentCycles, ref WaitStates, isCodeRead);
             case uint _ when address is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                return _prefetcher.ReadGamePakByte(address, 1, seq, currentCycles, ref WaitStates);
+                return _prefetcher.ReadGamePakByte(address, 1, seq, currentCycles, ref WaitStates, isCodeRead);
             case uint _ when address is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                return _prefetcher.ReadGamePakByte(address, 2, seq, currentCycles, ref WaitStates);
+                return _prefetcher.ReadGamePakByte(address, 2, seq, currentCycles, ref WaitStates, isCodeRead);
             case uint _ when address is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
                 WaitStates += _waitControl.SRAMWaitStates;
@@ -138,7 +138,7 @@ public partial class MemoryBus
         };
     }
 
-    internal ushort ReadHalfWord(uint unalignedAddress, int seq, uint r15, uint D, long currentCycles)
+    internal ushort ReadHalfWord(uint unalignedAddress, int seq, uint r15, uint D, long currentCycles, bool isCodeRead)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFE;
 
@@ -172,11 +172,11 @@ public partial class MemoryBus
             case uint _ when alignedAddress is >= 0x0500_0000 and <= 0x07FF_FFFF:
                 return _ppu.ReadHalfWord(alignedAddress);
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                return _prefetcher.ReadGamePakHalfWord(alignedAddress, 0, seq, currentCycles, ref WaitStates);
+                return _prefetcher.ReadGamePakHalfWord(alignedAddress, 0, seq, currentCycles, ref WaitStates, isCodeRead);
             case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                return _prefetcher.ReadGamePakHalfWord(alignedAddress, 1, seq, currentCycles, ref WaitStates);
+                return _prefetcher.ReadGamePakHalfWord(alignedAddress, 1, seq, currentCycles, ref WaitStates, isCodeRead);
             case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                return _prefetcher.ReadGamePakHalfWord(alignedAddress, 2, seq, currentCycles, ref WaitStates);
+                return _prefetcher.ReadGamePakHalfWord(alignedAddress, 2, seq, currentCycles, ref WaitStates, isCodeRead);
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
                 WaitStates += _waitControl.SRAMWaitStates;
@@ -192,7 +192,7 @@ public partial class MemoryBus
         };
     }
 
-    internal uint ReadWord(uint unalignedAddress, int seq, uint r15, uint D, long currentCycles)
+    internal uint ReadWord(uint unalignedAddress, int seq, uint r15, uint D, long currentCycles, bool isCodeRead)
     {
         var alignedAddress = unalignedAddress & 0xFFFF_FFFC;
 
@@ -228,11 +228,11 @@ public partial class MemoryBus
             case uint a when a is >= 0x0700_0000 and <= 0x07FF_FFFF:
                 return (uint)(_ppu.ReadHalfWord(alignedAddress) | (_ppu.ReadHalfWord(alignedAddress + 2) << 16));
             case uint _ when alignedAddress is >= 0x0800_0000 and <= 0x09FF_FFFF:
-                return _prefetcher.ReadGamePakWord(alignedAddress, 0, seq, currentCycles, ref WaitStates);
+                return _prefetcher.ReadGamePakWord(alignedAddress, 0, seq, currentCycles, ref WaitStates, isCodeRead);
             case uint _ when alignedAddress is >= 0x0A00_0000 and <= 0x0BFF_FFFF:
-                return _prefetcher.ReadGamePakWord(alignedAddress, 1, seq, currentCycles, ref WaitStates);
+                return _prefetcher.ReadGamePakWord(alignedAddress, 1, seq, currentCycles, ref WaitStates, isCodeRead);
             case uint _ when alignedAddress is >= 0x0C00_0000 and <= 0x0DFF_FFFF:
-                return _prefetcher.ReadGamePakWord(alignedAddress, 2, seq, currentCycles, ref WaitStates);
+                return _prefetcher.ReadGamePakWord(alignedAddress, 2, seq, currentCycles, ref WaitStates, isCodeRead);
             case uint _ when alignedAddress is >= 0x0E00_0000 and <= 0x0FFF_FFFF:
                 _prefetcher.Reset();
                 WaitStates += _waitControl.SRAMWaitStates;

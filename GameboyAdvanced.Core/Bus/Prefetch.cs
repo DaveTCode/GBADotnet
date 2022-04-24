@@ -37,12 +37,17 @@ public class Prefetcher
         _active = false;
     }
 
-    private void CheckAdjustPrefetchBuffer(uint address, int waitStateIx, int seq, long currentCycles, ref int waitStates)
+    private void CheckAdjustPrefetchBuffer(uint address, int waitStateIx, int seq, long currentCycles, ref int waitStates, bool isCodeRead)
     {
         var crossesPageBoundary = GamePak.CheckAddressIsPageBoundary(address);
 
         // If prefetch is enabled, the memory request is the head of the pre fetch buffer, and the next memory request would have already started
-        if (_waitControl.EnableGamepakPrefetch && address == (_currentPreFetchBase + 2) && _cycleNextRequestStart < currentCycles && _active && !crossesPageBoundary)
+        if (isCodeRead && 
+            _waitControl.EnableGamepakPrefetch && 
+            address == (_currentPreFetchBase + 2) && 
+            _cycleNextRequestStart < currentCycles && 
+            _active && 
+            !crossesPageBoundary)
         {
             var waitStatesNoPrefetch = _waitControl.WaitStates[waitStateIx][1]; // Always SEQ in prefetch buffer
             var adjustedWaitStates = waitStatesNoPrefetch - (int)(currentCycles - _cycleNextRequestStart);
@@ -64,12 +69,17 @@ public class Prefetcher
         _currentPreFetchBase = address;
     }
 
-    private void CheckAdjustPrefetchBufferWord(uint address, int waitStateIx, int seq, long currentCycles, ref int waitStates)
+    private void CheckAdjustPrefetchBufferWord(uint address, int waitStateIx, int seq, long currentCycles, ref int waitStates, bool isCodeRead)
     {
         var crossesPageBoundary = GamePak.CheckAddressIsPageBoundary(address);
 
         // If prefetch is enabled, the memory request is the head of the pre fetch buffer, and the next memory request would have already started
-        if (_waitControl.EnableGamepakPrefetch && address == (_currentPreFetchBase + 4) && _cycleNextRequestStart < currentCycles && _active && !crossesPageBoundary)
+        if (isCodeRead &&
+            _waitControl.EnableGamepakPrefetch && 
+            address == (_currentPreFetchBase + 4) && 
+            _cycleNextRequestStart < currentCycles && 
+            _active && 
+            !crossesPageBoundary)
         {
             var waitStatesNoPrefetch = (_waitControl.WaitStates[waitStateIx][1] * 2) + 1; // Always SEQ in prefetch buffer
             var adjustedWaitStates = waitStatesNoPrefetch - (int)(currentCycles - _cycleNextRequestStart);
@@ -94,32 +104,32 @@ public class Prefetcher
         _currentPreFetchBase = address;
     }
 
-    internal byte ReadGamePakByte(uint address, int waitStatesIx, int seq, long currentCycles, ref int waitStates)
+    internal byte ReadGamePakByte(uint address, int waitStatesIx, int seq, long currentCycles, ref int waitStates, bool isCodeRead)
     {
         if (seq == 0) _internalAddressRegister = address;
         else _internalAddressRegister += 2;
 
-        CheckAdjustPrefetchBuffer(address, waitStatesIx, seq, currentCycles, ref waitStates);
+        CheckAdjustPrefetchBuffer(address, waitStatesIx, seq, currentCycles, ref waitStates, isCodeRead);
 
         return _gamePak.ReadByte(_internalAddressRegister);
     }
 
-    internal ushort ReadGamePakHalfWord(uint address, int waitStatesIx, int seq, long currentCycles, ref int waitStates)
+    internal ushort ReadGamePakHalfWord(uint address, int waitStatesIx, int seq, long currentCycles, ref int waitStates, bool isCodeRead)
     {
         if (seq == 0) _internalAddressRegister = address;
         else _internalAddressRegister += 2;
 
-        CheckAdjustPrefetchBuffer(address, waitStatesIx, seq, currentCycles, ref waitStates);
+        CheckAdjustPrefetchBuffer(address, waitStatesIx, seq, currentCycles, ref waitStates, isCodeRead);
 
         return _gamePak.ReadHalfWord(_internalAddressRegister);
     }
 
-    internal uint ReadGamePakWord(uint address, int waitStatesIx, int seq, long currentCycles, ref int waitStates)
+    internal uint ReadGamePakWord(uint address, int waitStatesIx, int seq, long currentCycles, ref int waitStates, bool isCodeRead)
     {
         if (seq == 0) _internalAddressRegister = address;
         else _internalAddressRegister += 4;
 
-        CheckAdjustPrefetchBufferWord(address, waitStatesIx, seq, currentCycles, ref waitStates);
+        CheckAdjustPrefetchBufferWord(address, waitStatesIx, seq, currentCycles, ref waitStates, isCodeRead);
 
         return _gamePak.ReadWord(_internalAddressRegister);
     }

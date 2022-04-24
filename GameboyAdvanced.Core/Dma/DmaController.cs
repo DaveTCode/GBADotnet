@@ -10,16 +10,14 @@ public unsafe class DmaController
     private readonly BaseDebugger _debugger;
     private readonly DmaDataUnit _dmaDataUnit;
     private readonly InterruptInterconnect _interruptInterconnect;
-    private readonly Ppu.Ppu _ppu;
     private readonly Core _cpu;
 
-    internal DmaController(MemoryBus bus, BaseDebugger debugger, DmaDataUnit dmaDataUnit, InterruptInterconnect interruptInterconnect, Ppu.Ppu ppu, Core cpu)
+    internal DmaController(MemoryBus bus, BaseDebugger debugger, DmaDataUnit dmaDataUnit, InterruptInterconnect interruptInterconnect, Core cpu)
     {
         _bus = bus ?? throw new ArgumentNullException(nameof(bus));
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
         _dmaDataUnit = dmaDataUnit ?? throw new ArgumentNullException(nameof(dmaDataUnit));
         _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
-        _ppu = ppu ?? throw new ArgumentNullException(nameof(ppu));
         _cpu = cpu ?? throw new ArgumentNullException(nameof(cpu));
     }
 
@@ -148,7 +146,8 @@ public unsafe class DmaController
                             channel.IntSrcSeqAccess,
                             ctrl._cpu.R[15],
                             channel.InternalLatch,
-                            ctrl._cpu.Cycles);
+                            ctrl._cpu.Cycles,
+                            false);
                     }
                     else
                     {
@@ -157,7 +156,8 @@ public unsafe class DmaController
                             channel.IntSrcSeqAccess,
                             ctrl._cpu.R[15],
                             channel.InternalLatch,
-                            ctrl._cpu.Cycles);
+                            ctrl._cpu.Cycles,
+                            false);
                         channel.InternalLatch |= (channel.InternalLatch << 16);
                     }
                     channel.IntCachedValue = channel.InternalLatch;

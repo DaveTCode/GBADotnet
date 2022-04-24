@@ -72,7 +72,7 @@ public unsafe class Device
         SerialController = new SerialController(debugger, InterruptInterconnect);
         Bus = new MemoryBus(bios, Gamepad, Gamepak, Ppu, Apu, DmaData, TimerController, InterruptRegisters, SerialController, debugger, skipBios);
         Cpu = new Core(Bus, skipBios, debugger, InterruptRegisters);
-        DmaCtrl = new DmaController(Bus, debugger, DmaData, InterruptInterconnect, Ppu, Cpu);
+        DmaCtrl = new DmaController(Bus, debugger, DmaData, InterruptInterconnect, Cpu);
         Debugger = debugger;
     }
 
@@ -143,17 +143,17 @@ public unsafe class Device
 
     public uint InspectWord(uint address)
     {
-        return Bus.ReadWord(address, 0, 0, 0, 0);
+        return Bus.ReadWord(address, 0, 0, 0, 0, false);
     }
 
     public ushort InspectHalfWord(uint address)
     {
-        return Bus.ReadHalfWord(address, 0, 0, 0, 0);
+        return Bus.ReadHalfWord(address, 0, 0, 0, 0, false);
     }
 
     public byte InspectByte(uint address)
     {
-        return Bus.ReadByte(address, 0, 0, 0, 0);
+        return Bus.ReadByte(address, 0, 0, 0, 0, false);
     }
 
     public string LoadedRomName() => Gamepak.GameTitle;

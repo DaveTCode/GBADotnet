@@ -62,7 +62,7 @@ public class StoreLoadMultipleTests
 
         for (var r = 1u; r < 8; r++)
         {
-            Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, 0));
+            Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, 0, false));
         }
     }
 
@@ -105,7 +105,7 @@ public class StoreLoadMultipleTests
 
         for (var r = 1u; r < 8; r++)
         {
-            Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, 0));
+            Assert.Equal(r, cpu.Bus.ReadWord(0x0300_1000u + (4u * (r - 1)), 0, 0, 0, 0, false));
         }
     }
 
