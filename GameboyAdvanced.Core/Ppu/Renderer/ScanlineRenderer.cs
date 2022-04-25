@@ -46,7 +46,7 @@ public partial class Ppu
         }
     }
 
-    private int[] _windowState = new int[Device.WIDTH];
+    private readonly int[] _windowState = new int[Device.WIDTH];
     private readonly int[][] _scanlineBgBuffer = new int[4][];
     private readonly SpritePixelProperties[] _objBuffer = new SpritePixelProperties[Device.WIDTH];
     private readonly BgPixelProperties[] _bgBuffer = new BgPixelProperties[Device.WIDTH];
