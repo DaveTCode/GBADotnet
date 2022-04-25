@@ -127,7 +127,7 @@ public class GamePak
         RomBackupType.SRAM => _sram[address & 0x0EFF_FFFF & 0x7FFF],
         RomBackupType.FLASH64 => _flashBackup!.Read(address),
         RomBackupType.FLASH128 => _flashBackup!.Read(address),
-        RomBackupType.EEPROM => _eepromBackup!.Read(address),
+        RomBackupType.EEPROM => _sram[address & 0x0EFF_FFFF & 0x7FFF], //_eepromBackup!.Read(address),
         _ => throw new Exception($"Invalid backup storage type {RomBackupType}")
     };
 
@@ -143,6 +143,7 @@ public class GamePak
                 _flashBackup!.Write(address, value);
                 break;
             case RomBackupType.EEPROM:
+                _sram[address & 0x0EFF_FFFF & 0x7FFF] = value;
                 break;
         }
     }
