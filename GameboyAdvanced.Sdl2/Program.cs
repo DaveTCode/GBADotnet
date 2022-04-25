@@ -1,9 +1,7 @@
 ﻿using CommandLine;
 using GameboyAdvanced.Core;
-using Serilog;
-using Serilog.Core;
+using GameboyAdvanced.Core.Debug;
 using GameboyAdvanced.Core.Rom;
-using Serilog.Events;
 
 namespace GameboyAdvanced.Sdl2;
 
@@ -38,12 +36,6 @@ internal class Program
 
     internal static void Main(string[] args)
     {
-        var consoleLevelLoggingSwitch = new LoggingLevelSwitch(LogEventLevel.Warning);
-        var logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}", levelSwitch: consoleLevelLoggingSwitch)
-            .CreateLogger();
-
         _ = Parser.Default.ParseArguments<Options>(args)
             .WithParsed(o =>
             {
@@ -51,9 +43,9 @@ internal class Program
                 var rom = File.ReadAllBytes(o.Rom);
 
                 var gamepak = new GamePak(rom, o.BackupType);
-                var device = new Device(bios, gamepak, new Debugger(logger), !o.RunBios);
+                var device = new Device(bios, gamepak, new TestDebugger(), !o.RunBios);
 
-                var application = new Sdl2Application(o.Rom, device, o.PixelSize, consoleLevelLoggingSwitch);
+                var application = new Sdl2Application(o.Rom, device, o.PixelSize);
                 application.Run();
             })
             .WithNotParsed(o =>

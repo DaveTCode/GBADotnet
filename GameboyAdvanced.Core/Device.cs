@@ -34,6 +34,9 @@ public unsafe class Device
     public readonly InterruptInterconnect InterruptInterconnect;
     public readonly SerialController SerialController;
 
+    public byte InstructionBufferPtr;
+    public readonly uint[] InstructionBuffer = new uint[0x100];
+
     /// <summary>
     /// Constructs a device which can be used to exectue a rom by running 
     /// functions like "RunFrame"/"RunCycle".
@@ -103,7 +106,13 @@ public unsafe class Device
                 // needs access to the bus
                 if (!Bus.InUseByDma || Cpu.nMREQ)
                 {
+                    var instructionPointer = Cpu.Pipeline.CurrentInstructionAddress;
                     Cpu.Clock();
+                    if (Cpu.Pipeline.CurrentInstructionAddress.HasValue && Cpu.Pipeline.CurrentInstructionAddress.Value != InstructionBuffer[InstructionBufferPtr])
+                    {
+                        InstructionBufferPtr++;
+                        InstructionBuffer[InstructionBufferPtr] = Cpu.Pipeline.CurrentInstructionAddress.Value;
+                    }
                 }
             }
         }

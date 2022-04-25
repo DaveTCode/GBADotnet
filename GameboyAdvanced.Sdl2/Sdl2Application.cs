@@ -3,10 +3,8 @@ using GameboyAdvanced.Core.Input;
 using GameboyAdvanced.Core.Ppu;
 using SDL2;
 using Serilog.Core;
-using Serilog.Events;
 using System.Diagnostics;
 using System.Security.Cryptography;
-using System.Text.Json;
 
 namespace GameboyAdvanced.Sdl2;
 
@@ -15,7 +13,6 @@ internal class Sdl2Application : IDisposable
     private readonly string _originalFilePath;
     private readonly Device _device;
     private readonly int _pixelSize;
-    private readonly LoggingLevelSwitch _consoleLevelLoggingSwitch;
     private IntPtr _window;
     private IntPtr _renderer;
     private IntPtr _texture;
@@ -37,12 +34,11 @@ internal class Sdl2Application : IDisposable
         { SDL.SDL_Keycode.SDLK_w, Key.Start },
     };
 
-    internal Sdl2Application(string originalFilePath, Device device, int pixelSize, LoggingLevelSwitch consoleLevelLoggingSwitch)
+    internal Sdl2Application(string originalFilePath, Device device, int pixelSize)
     {
         _originalFilePath = originalFilePath;
         _device = device;
         _pixelSize = pixelSize;
-        _consoleLevelLoggingSwitch = consoleLevelLoggingSwitch;
     }
 
     private void SetupSdl2()
@@ -111,11 +107,7 @@ internal class Sdl2Application : IDisposable
                             _device.PressKey(dKey);
                         }
 
-                        if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_SPACE)
-                        {
-                            _consoleLevelLoggingSwitch.MinimumLevel = LogEventLevel.Debug;
-                        }
-                        else if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_F2)
+                        if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_F2)
                         {
                             var frame = _device.GetFrame();
                             using MD5 md5 = MD5.Create();
@@ -123,16 +115,18 @@ internal class Sdl2Application : IDisposable
 
                             Console.WriteLine($"[InlineData(@\"{_originalFilePath}\",\"{Convert.ToHexString(hashBytes)}\",{_device.Cpu.Cycles / Ppu.FrameCycles})]");
                         }
+                        else if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_F3)
+                        {
+                            for (var ii = 0; ii <= 0xFF; ii++)
+                            {
+                                Console.WriteLine($"{ii:D3}: {_device.InstructionBuffer[(byte)(_device.InstructionBufferPtr + ii)]:X8}");
+                            }
+                        }
                         break;
                     case SDL.SDL_EventType.SDL_KEYUP:
                         if (_keyMap.TryGetValue(e.key.keysym.sym, out var uKey))
                         {
                             _device.ReleaseKey(uKey);
-                        }
-
-                        if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_SPACE)
-                        {
-                            _consoleLevelLoggingSwitch.MinimumLevel = LogEventLevel.Warning;
                         }
                         break;
                 }
@@ -163,7 +157,6 @@ internal class Sdl2Application : IDisposable
             SDL.SDL_RenderPresent(_renderer);
 
             var msToSleep = _msPerFrame - ((frameTimeStopwatch.ElapsedTicks + adjustTicks) / (double)Stopwatch.Frequency * 1000);
-            //Console.WriteLine(msToSleep);
             adjustStopwatch.Restart();
             if (msToSleep > 0)
             {
@@ -172,9 +165,9 @@ internal class Sdl2Application : IDisposable
             adjustTicks = adjustStopwatch.ElapsedTicks;
             frameTimeStopwatch.Restart();
 
-            if (secondStopwatch.ElapsedMilliseconds >= 1000)
+            if (secondStopwatch.ElapsedMilliseconds >= 10000)
             {
-                SDL.SDL_SetWindowTitle(_window, $"GBA - {_device.Gamepak} - {_framesPerSecond} FPS");
+                SDL.SDL_SetWindowTitle(_window, $"GBA - {_device.Gamepak} - {_framesPerSecond / 10f} FPS");
                 _framesPerSecond = 0;
                 secondStopwatch.Restart();
             }
