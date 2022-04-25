@@ -23,6 +23,7 @@ internal static unsafe class LdrStrUtils
     }
     internal static uint LDRHW(uint addressBus, uint dataBus)
     {
+        dataBus &= 0xFFFF;
         var rotate = 8 * (int)(addressBus & 0b1);
         return (dataBus >> rotate) | (dataBus << (32 - rotate));
     }

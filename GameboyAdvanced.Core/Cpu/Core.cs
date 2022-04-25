@@ -242,6 +242,14 @@ public unsafe class Core
                         else
                         {
                             D = Bus.ReadHalfWord(A, SEQ, R[15], D, Cycles, !nOPC);
+
+                            // TODO - This is a nasty hack for openbus behaviour which I don't properly understand
+                            // The question is to be addressed by https://github.com/DaveTCode/GBADotnet/issues/8
+                            // and refers to what the data line is set to by 16 bit reads from different memory areas
+                            if (!nOPC)
+                            {
+                                D |= (D << 16);
+                            }
                         }
 
                         break;
