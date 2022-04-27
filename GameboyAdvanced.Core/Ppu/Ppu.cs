@@ -122,16 +122,27 @@ public partial class Ppu
             {
                 _interruptInterconnect.RaiseInterrupt(Interrupt.LCDHBlank);
             }
-        }
-        else if (CurrentLineCycles == CyclesPerLine - 1)
-        {
+
             if (CurrentLine < Device.HEIGHT)
             {
                 DrawCurrentScanline();
-                IncrementAffineBackgroundRegisters();
                 Array.Fill(_windowState, -1); // Clear window state after rendering scanline so it's ready to refill
+                
+                if (Dispcnt.BgMode != BgMode.Video0) // Mode 0 has no affine backgrounds
+                {
+                    for (var ii = 2; ii < 4; ii++)
+                    {
+                        if (Dispcnt.ScreenDisplayBg[ii])
+                        {
+                            Backgrounds[ii].RefPointXLatched += Backgrounds[ii].Dmx;
+                            Backgrounds[ii].RefPointYLatched += Backgrounds[ii].Dmy;
+                        }
+                    }
+                }
             }
-
+        }
+        else if (CurrentLineCycles == CyclesPerLine - 1)
+        {
             Dispstat.VCounterFlag = false;
             Dispstat.HBlankFlag = false;
             CurrentLine++;
@@ -151,6 +162,16 @@ public partial class Ppu
                 {
                     _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVBlank);
                 }
+
+                // Latch affine registers
+                for (var ii = 2; ii < 4; ii++)
+                {
+                    if (Dispcnt.ScreenDisplayBg[ii])
+                    {
+                        Backgrounds[ii].RefPointXLatched = Backgrounds[ii].RefPointX;
+                        Backgrounds[ii].RefPointYLatched = Backgrounds[ii].RefPointY;
+                    }
+                }
             }
             else if (CurrentLine == VBlankLines + Device.HEIGHT - 1)
             {
@@ -158,17 +179,6 @@ public partial class Ppu
             }
             else if (CurrentLine == VBlankLines + Device.HEIGHT)
             {
-                if (Dispcnt.BgMode != BgMode.Video0) // Mode 0 has no affine backgrounds
-                {
-                    for (var ii = 2; ii < 4; ii++)
-                    {
-                        if (Dispcnt.ScreenDisplayBg[ii])
-                        {
-                            Backgrounds[ii].RefPointXLatched = Backgrounds[ii].RefPointX;
-                            Backgrounds[ii].RefPointYLatched = Backgrounds[ii].RefPointY;
-                        }
-                    }
-                }
                 CurrentLine = 0;
                 // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
                 DrawSpritesOnLine((int)Dispcnt.BgMode >= 3);
@@ -182,21 +192,6 @@ public partial class Ppu
                 if (Dispstat.VCounterIrqEnable)
                 {
                     _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVCounter);
-                }
-            }
-        }
-    }
-
-    private void IncrementAffineBackgroundRegisters()
-    {
-        if (Dispcnt.BgMode != BgMode.Video0) // Mode 0 has no affine backgrounds
-        {
-            for (var ii = 2; ii < 4; ii++)
-            {
-                if (Dispcnt.ScreenDisplayBg[ii])
-                {
-                    Backgrounds[ii].RefPointXLatched += Backgrounds[ii].Dmx;
-                    Backgrounds[ii].RefPointYLatched += Backgrounds[ii].Dmy;
                 }
             }
         }
@@ -460,7 +455,7 @@ public partial class Ppu
         WriteRegisterByte(address + 1, (byte)(value >> 8));
     }
 
-    internal byte ReadRegisterByte(uint address, uint openbus) => 
+    internal byte ReadRegisterByte(uint address, uint openbus) =>
         (byte)(ReadRegisterHalfWord(address & 0xFFFF_FFFE, openbus) >> (int)(8 * (address & 1)));
 
     internal ushort ReadRegisterHalfWord(uint address, uint openbus) => address switch
