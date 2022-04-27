@@ -90,21 +90,21 @@ public unsafe class Device
 #endif
         TimerController.Step();
 
-        if (Bus.HaltMode == HaltMode.None)
+        if (Bus.WaitStates > 0)
         {
-            if (Bus.WaitStates > 0)
-            {
-                Bus.WaitStates--;
+            Bus.WaitStates--;
 
-                DmaCtrl.CheckForInternalCycles();
-            }
-            else
-            {
-                DmaCtrl.Step();
+            DmaCtrl.CheckForInternalCycles();
+        }
+        else
+        {
+            DmaCtrl.Step();
 
-                // The CPU is paused whilst DMA is using the bus _and_ it also
-                // needs access to the bus
-                if (!Bus.InUseByDma || Cpu.nMREQ)
+            // The CPU is paused whilst DMA is using the bus _and_ it also
+            // needs access to the bus
+            if (!Bus.InUseByDma || Cpu.nMREQ)
+            {
+                if (Bus.HaltMode == HaltMode.None)
                 {
                     var instructionPointer = Cpu.Pipeline.CurrentInstructionAddress;
                     Cpu.Clock();
@@ -114,12 +114,12 @@ public unsafe class Device
                         InstructionBuffer[InstructionBufferPtr] = Cpu.Pipeline.CurrentInstructionAddress.Value;
                     }
                 }
+                else if (InterruptRegisters.ShouldBreakHalt)
+                {
+                    Bus.HaltMode = HaltMode.None;
+                    Bus.WaitStates = 1;
+                }
             }
-        }
-        else if (InterruptRegisters.ShouldBreakHalt)
-        {
-            Bus.HaltMode = HaltMode.None;
-            Bus.WaitStates = 1;
         }
 
         Ppu.Step();
