@@ -55,7 +55,6 @@ public partial class Ppu
         new byte[4], new byte[4]
     };
 
-
     internal void DrawCurrentScanline()
     {
         // Forced blanking draws backdrop color across the whole scanline
