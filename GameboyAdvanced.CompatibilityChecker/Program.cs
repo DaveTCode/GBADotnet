@@ -5,6 +5,7 @@ using GameboyAdvanced.Core.Rom;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Diagnostics;
 using System.Text;
 
 namespace GameboyAdvanced.Sdl2;
@@ -51,11 +52,14 @@ internal class Program
                     .Append("<td>Bootable</td>")
                     .Append("<td>Save Type</td>")
                     .Append("<td>Image</td>")
+                    .Append("<td>FPS</td>")
                     .AppendLine("    </tr>")
                     .AppendLine("  </thead>")
                     .AppendLine("  <tbody>");
 
                 _ = Directory.CreateDirectory(Path.Join(o.OutputDirectory, "images"));
+
+                var timer = new Stopwatch();
 
                 foreach (var romFile in Directory.EnumerateFiles(o.RomDirectory, "*.gba"))
                 {
@@ -63,14 +67,18 @@ internal class Program
                     var rom = File.ReadAllBytes(romFile);
                     var gamepak = new GamePak(rom);
                     var device = new Device(bios, gamepak, new TestDebugger(), true);
+                    double fps = 0;
 
                     var bootable = ":heavy_check_mark:";
                     try
                     {
+                        timer.Restart();
                         for (var ii = 0; ii < 500; ii++)
                         {
                             device.RunFrame();
                         }
+                        timer.Stop();
+                        fps = 500.0 / (timer.ElapsedMilliseconds / 1000.0);
                     }
                     catch (Exception ex)
                     {
@@ -94,6 +102,7 @@ internal class Program
                         .Append($"<td>{bootable}</td>")
                         .Append($"<td>{device.Gamepak.RomBackupType}</td>")
                         .Append($"<td>{imgLink}</td>")
+                        .Append($"<td>{fps:F2}")
                         .AppendLine("</tr>");
                 }
 
