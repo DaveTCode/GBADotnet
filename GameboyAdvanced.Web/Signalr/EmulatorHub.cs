@@ -32,6 +32,16 @@ public class EmulatorHub : Hub<IEmulatorClient>
         _backgroundEmulatorThread.SetState(BackgroundEmulatorState.Running);
     }
 
+    public async Task GetState()
+    {
+        await Clients.All.SendDevice(_backgroundEmulatorThread.GetDevice());
+    }
+
+    public async Task LoadState(Device device)
+    {
+
+    }
+
     public async Task KeyUp(Key key)
     {
         await _backgroundEmulatorThread.KeyUp(key);

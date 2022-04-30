@@ -21,6 +21,7 @@ public unsafe class Device
 
     public readonly BaseDebugger Debugger;
 
+    public readonly Scheduler Scheduler;
     public readonly MemoryBus Bus;
     public readonly Core Cpu;
     public readonly DmaDataUnit DmaData;
@@ -64,19 +65,22 @@ public unsafe class Device
     /// </param>
     public Device(byte[] bios, GamePak rom, BaseDebugger debugger, bool skipBios)
     {
+        Scheduler = new Scheduler(this);
         Gamepak = rom;
         DmaData = new DmaDataUnit();
         InterruptRegisters = new InterruptRegisters();
         InterruptInterconnect = new InterruptInterconnect(debugger, InterruptRegisters);
         Gamepad = new Gamepad(debugger, InterruptInterconnect);
         TimerController = new TimerController(debugger, InterruptInterconnect);
-        Ppu = new Ppu.Ppu(debugger, InterruptInterconnect, DmaData);
+        Ppu = new Ppu.Ppu(debugger);
         Apu = new Apu.Apu(debugger);
         SerialController = new SerialController(debugger, InterruptInterconnect);
         Bus = new MemoryBus(bios, Gamepad, Gamepak, Ppu, Apu, DmaData, TimerController, InterruptRegisters, SerialController, debugger, skipBios);
         Cpu = new Core(Bus, skipBios, debugger, InterruptRegisters);
         DmaCtrl = new DmaController(Bus, debugger, DmaData, InterruptInterconnect, Cpu);
         Debugger = debugger;
+
+        ScheduleInitialEvents();
     }
 
     public void RunCycle(bool skipBreakpoints=false)
@@ -88,6 +92,8 @@ public unsafe class Device
             throw new BreakpointException();
         }
 #endif
+        Scheduler.Step();
+
         TimerController.Step();
 
         if (Bus.WaitStates > 0)
@@ -121,8 +127,11 @@ public unsafe class Device
                 }
             }
         }
+    }
 
-        Ppu.Step();
+    private void ScheduleInitialEvents()
+    {
+        Scheduler.ScheduleEvent(&GameboyAdvanced.Core.Ppu.Ppu.HBlankStartEvent, GameboyAdvanced.Core.Ppu.Ppu.HBlankFlagCycles);
     }
 
     public void Reset(bool skipBios)
@@ -134,6 +143,9 @@ public unsafe class Device
         DmaData.Reset();
         TimerController.Reset();
         Gamepad.Reset();
+        Scheduler.Reset();
+
+        ScheduleInitialEvents();
     }
 
     public void RunFrame()

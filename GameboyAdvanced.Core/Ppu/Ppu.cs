@@ -11,11 +11,11 @@ namespace GameboyAdvanced.Core.Ppu;
 /// This class both encapsulates the state of the PPU and provides 
 /// functionality for rendering the current state into a bitmap
 /// </summary>
-public partial class Ppu
+public unsafe partial class Ppu
 {
     private const int CyclesPerDot = 4;
     private const int CyclesPerVisibleLine = CyclesPerDot * Device.WIDTH; // 960
-    private const int HBlankFlagCycles = 1006; // Note this is more than the number of cycles in the visible line
+    internal const int HBlankFlagCycles = 1006; // Note this is more than the number of cycles in the visible line
     private const int HBlankDots = 68;
     private const int CyclesPerHBlank = CyclesPerDot * HBlankDots; // 272
     private const int CyclesPerLine = CyclesPerVisibleLine + CyclesPerHBlank; // 1232
@@ -25,8 +25,6 @@ public partial class Ppu
     public const int FrameCycles = VisibleLineCycles + VBlankCycles; // 280,896
 
     private readonly BaseDebugger _debugger;
-    private readonly InterruptInterconnect _interruptInterconnect;
-    private readonly DmaDataUnit _dmaData;
 
     // TODO - Might be more efficient to store as ushorts given access is over 16 bit bus?
     public readonly byte[] Vram = new byte[0x18000]; // 96KB
@@ -44,11 +42,9 @@ public partial class Ppu
 
     public int CurrentLineCycles;
 
-    internal Ppu(BaseDebugger debugger, InterruptInterconnect interruptInterconnect, DmaDataUnit dmaData)
+    internal Ppu(BaseDebugger debugger)
     {
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
-        _interruptInterconnect = interruptInterconnect ?? throw new ArgumentNullException(nameof(interruptInterconnect));
-        _dmaData = dmaData ?? throw new ArgumentNullException(nameof(dmaData));
 
         for (var ii = 0; ii < 4; ii++)
         {
@@ -64,6 +60,8 @@ public partial class Ppu
         {
             _bgBuffer[ii] = new BgPixelProperties();
         }
+
+        Reset();
     }
 
     internal void Reset()
@@ -103,98 +101,98 @@ public partial class Ppu
     }
 
     /// <summary>
-    /// Step the PPU by a single master clock cycle.
-    /// 
-    /// Rendering currently happens at the start of hblank on a per scanline 
-    /// basis so this function is mostly responsible for keeping track of
-    /// hblank, vcount, vblank and raising interrupts on the right cycle.
+    /// Scheduled event which occurs on cycle 1006 of every scanline (both 
+    /// within vblank and without)
     /// </summary>
-    internal void Step()
+    internal static void HBlankStartEvent(Device device)
     {
-        CurrentLineCycles++;
+        var ppu = device.Ppu;
+        device.DmaData.StartHdma(ppu.CurrentLine);
 
-        if (CurrentLineCycles == HBlankFlagCycles)
+        ppu.Dispstat.HBlankFlag = true;
+        if (ppu.Dispstat.HBlankIrqEnable)
         {
-            _dmaData.StartHdma(CurrentLine);
-
-            Dispstat.HBlankFlag = true;
-            if (Dispstat.HBlankIrqEnable)
-            {
-                _interruptInterconnect.RaiseInterrupt(Interrupt.LCDHBlank);
-            }
-
-            if (CurrentLine < Device.HEIGHT)
-            {
-                DrawCurrentScanline();
-                Array.Fill(_windowState, -1); // Clear window state after rendering scanline so it's ready to refill
-                
-                if (Dispcnt.BgMode != BgMode.Video0) // Mode 0 has no affine backgrounds
-                {
-                    for (var ii = 2; ii < 4; ii++)
-                    {
-                        if (Dispcnt.ScreenDisplayBg[ii])
-                        {
-                            Backgrounds[ii].RefPointXLatched += Backgrounds[ii].Dmx;
-                            Backgrounds[ii].RefPointYLatched += Backgrounds[ii].Dmy;
-                        }
-                    }
-                }
-            }
+            device.InterruptInterconnect.RaiseInterrupt(Interrupt.LCDHBlank);
         }
-        else if (CurrentLineCycles == CyclesPerLine - 1)
+
+        if (ppu.CurrentLine < Device.HEIGHT)
         {
-            Dispstat.VCounterFlag = false;
-            Dispstat.HBlankFlag = false;
-            CurrentLine++;
-            CurrentLineCycles = 0;
+            ppu.DrawCurrentScanline();
+            Array.Fill(ppu._windowState, -1); // Clear window state after rendering scanline so it's ready to refill
 
-            if (CurrentLine < Device.HEIGHT)
+            if (ppu.Dispcnt.BgMode != BgMode.Video0) // Mode 0 has no affine backgrounds
             {
-                // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
-                DrawSpritesOnLine((int)Dispcnt.BgMode >= 3);
-            }
-            else if (CurrentLine == Device.HEIGHT)
-            {
-                _dmaData.StartVdma();
-
-                Dispstat.VBlankFlag = true;
-                if (Dispstat.VBlankIrqEnable)
-                {
-                    _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVBlank);
-                }
-
-                // Latch affine registers
                 for (var ii = 2; ii < 4; ii++)
                 {
-                    if (Dispcnt.ScreenDisplayBg[ii])
+                    if (ppu.Dispcnt.ScreenDisplayBg[ii])
                     {
-                        Backgrounds[ii].RefPointXLatched = Backgrounds[ii].RefPointX;
-                        Backgrounds[ii].RefPointYLatched = Backgrounds[ii].RefPointY;
+                        ppu.Backgrounds[ii].RefPointXLatched += ppu.Backgrounds[ii].Dmx;
+                        ppu.Backgrounds[ii].RefPointYLatched += ppu.Backgrounds[ii].Dmy;
                     }
                 }
             }
-            else if (CurrentLine == VBlankLines + Device.HEIGHT - 1)
+        }
+
+        device.Scheduler.ScheduleEvent(&HBlankEndEvent, CyclesPerLine - 1 - HBlankFlagCycles);
+    }
+
+    internal static void HBlankEndEvent(Device device)
+    {
+        var ppu = device.Ppu;
+
+        ppu.Dispstat.VCounterFlag = false;
+        ppu.Dispstat.HBlankFlag = false;
+        ppu.CurrentLine++;
+        ppu.CurrentLineCycles = 0;
+
+        if (ppu.CurrentLine < Device.HEIGHT)
+        {
+            // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
+            ppu.DrawSpritesOnLine((int)ppu.Dispcnt.BgMode >= 3);
+        }
+        else if (ppu.CurrentLine == Device.HEIGHT)
+        {
+            device.DmaData.StartVdma();
+
+            ppu.Dispstat.VBlankFlag = true;
+            if (ppu.Dispstat.VBlankIrqEnable)
             {
-                Dispstat.VBlankFlag = false;
-            }
-            else if (CurrentLine == VBlankLines + Device.HEIGHT)
-            {
-                CurrentLine = 0;
-                // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
-                DrawSpritesOnLine((int)Dispcnt.BgMode >= 3);
+                device.InterruptInterconnect.RaiseInterrupt(Interrupt.LCDVBlank);
             }
 
-            // Need to check this after cycling currentline around to 0 or we
-            // won't catch vcount irqs on line 0. Required for mario kart
-            if (CurrentLine == Dispstat.VCountSetting)
+            // Latch affine registers
+            for (var ii = 2; ii < 4; ii++)
             {
-                Dispstat.VCounterFlag = true;
-                if (Dispstat.VCounterIrqEnable)
+                if (ppu.Dispcnt.ScreenDisplayBg[ii])
                 {
-                    _interruptInterconnect.RaiseInterrupt(Interrupt.LCDVCounter);
+                    ppu.Backgrounds[ii].RefPointXLatched = ppu.Backgrounds[ii].RefPointX;
+                    ppu.Backgrounds[ii].RefPointYLatched = ppu.Backgrounds[ii].RefPointY;
                 }
             }
         }
+        else if (ppu.CurrentLine == VBlankLines + Device.HEIGHT - 1)
+        {
+            ppu.Dispstat.VBlankFlag = false;
+        }
+        else if (ppu.CurrentLine == VBlankLines + Device.HEIGHT)
+        {
+            ppu.CurrentLine = 0;
+            // Sprites are latched the line before they're displayed, this therefore latches the _next_ lines sprites
+            ppu.DrawSpritesOnLine((int)ppu.Dispcnt.BgMode >= 3);
+        }
+
+        // Need to check this after cycling currentline around to 0 or we
+        // won't catch vcount irqs on line 0. Required for mario kart
+        if (ppu.CurrentLine == ppu.Dispstat.VCountSetting)
+        {
+            ppu.Dispstat.VCounterFlag = true;
+            if (ppu.Dispstat.VCounterIrqEnable)
+            {
+                device.InterruptInterconnect.RaiseInterrupt(Interrupt.LCDVCounter);
+            }
+        }
+
+        device.Scheduler.ScheduleEvent(&HBlankStartEvent, HBlankFlagCycles);
     }
 
     internal void WriteRegisterByte(uint address, byte value)

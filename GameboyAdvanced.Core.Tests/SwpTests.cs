@@ -20,7 +20,7 @@ public class SwpTests
     private readonly static TestDebugger _testDebugger = new();
     private readonly static InterruptInterconnect _interruptInterconnect = new(_testDebugger, _interruptRegisters);
     private readonly static Gamepad _testGamepad = new(_testDebugger, _interruptInterconnect);
-    private readonly static Ppu.Ppu _testPpu = new(_testDebugger, _interruptInterconnect, _testDmaDataUnit);
+    private readonly static Ppu.Ppu _testPpu = new(_testDebugger);
     private readonly static Apu.Apu _testApu = new(_testDebugger);
     private readonly static TimerController _testTimerController = new(_testDebugger, _interruptInterconnect);
     private readonly static SerialController _serialController = new(_testDebugger, _interruptInterconnect);

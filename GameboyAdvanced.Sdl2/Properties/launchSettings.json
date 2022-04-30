@@ -1,9 +1,8 @@
 {
   "profiles": {
-
-    "Yggdra Union - We_ll Never Fight Alone (USA)": {
+    "Zelda - the Minish Cap": {
       "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Yggdra Union - We_ll Never Fight Alone (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Zelda - the Minish Cap.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Aging Cartridge": {
       "commandName": "Project",
@@ -725,13 +724,13 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Wario Ware Inc..gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Yggdra Union - We_ll Never Fight Alone (USA)": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Yggdra Union - We_ll Never Fight Alone (USA).gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!]": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Yu-Gi-Oh! - The Eternal Duelist Soul (U) [!].gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
-    },
-    "Zelda - the Minish Cap": {
-      "commandName": "Project",
-      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Zelda - the Minish Cap.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     }
   }
 }
