@@ -133,7 +133,7 @@ public unsafe partial class Ppu
             }
         }
 
-        device.Scheduler.ScheduleEvent(&HBlankEndEvent, CyclesPerLine - 1 - HBlankFlagCycles);
+        device.Scheduler.ScheduleEvent(EventType.HBlankEnd, &HBlankEndEvent, CyclesPerLine - 1 - HBlankFlagCycles);
     }
 
     internal static void HBlankEndEvent(Device device)
@@ -192,7 +192,7 @@ public unsafe partial class Ppu
             }
         }
 
-        device.Scheduler.ScheduleEvent(&HBlankStartEvent, HBlankFlagCycles);
+        device.Scheduler.ScheduleEvent(EventType.HBlankStart, &HBlankStartEvent, HBlankFlagCycles);
     }
 
     internal void WriteRegisterByte(uint address, byte value)

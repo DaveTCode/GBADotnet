@@ -1,9 +1,29 @@
-﻿namespace GameboyAdvanced.Core;
+﻿using System.Text;
+
+namespace GameboyAdvanced.Core;
 
 public unsafe struct EventNode
 {
+    public EventType Type;
     public long Cycles;
     public delegate*<Device, void> Callback;
+
+    public override string ToString() => $"{Type} - {Cycles}";
+}
+
+public enum EventType
+{
+    Timer0Overflow,
+    Timer0Latch,
+    Timer1Overflow,
+    Timer1Latch,
+    Timer2Overflow,
+    Timer2Latch,
+    Timer3Overflow,
+    Timer3Latch,
+    HBlankStart,
+    HBlankEnd,
+    Generic
 }
 
 public unsafe class Scheduler
@@ -33,22 +53,54 @@ public unsafe class Scheduler
     }
 
     /// <summary>
+    /// O(n) where n is number of events way to cancel an event.
+    /// 
+    /// Used for example to cancel an existing timer overflow event when the 
+    /// prescaler value changes causing overflow to happen at a different time.
+    /// 
+    /// Requires that a single event type can only exist once, not enforced 
+    /// anywhere.
+    /// </summary>
+    internal void CancelEvent(EventType type)
+    {
+        for (var ii = _nextEventPtr; ii <= _lastEventPtr; ii++)
+        {
+            if (_events[ii].Type == type)
+            {
+                for (var jj = ii; jj < _lastEventPtr; jj++)
+                {
+                    _events[jj].Cycles = _events[jj + 1].Cycles;
+                    _events[jj].Type = _events[jj + 1].Type;
+                    _events[jj].Callback = _events[jj + 1].Callback;
+                }
+                _lastEventPtr--;
+            }
+        }
+    }
+
+    /// <summary>
     /// Given an event which is supposed to happen N cycles from the current 
     /// cycle, this function will insert it into the correct place within the
     /// event array.
+    /// 
+    /// This will ensure uniqueness of event as there should be no more than 
+    /// one of each event type.
     /// </summary>
-    internal void ScheduleEvent(delegate*<Device, void> evt, long cyclesFromNow)
+    internal void ScheduleEvent(EventType type, delegate*<Device, void> evt, long cyclesFromNow)
     {
+        CancelEvent(type);
+
         var absoluteCycles = _device.Cpu.Cycles + cyclesFromNow;
 
         // If we run out of space in the array then move events back to the
         // beginning on the array to rebalance
         if (_lastEventPtr == MaxEvents - 1)
         {
-            for (var ii = _nextEventPtr; ii < _lastEventPtr; ii++)
+            for (var ii = _nextEventPtr; ii <= _lastEventPtr; ii++)
             {
-                _events[0].Callback = _events[ii].Callback;
-                _events[0].Cycles = _events[ii].Cycles;
+                _events[ii - _nextEventPtr].Type = _events[ii].Type;
+                _events[ii - _nextEventPtr].Callback = _events[ii].Callback;
+                _events[ii - _nextEventPtr].Cycles = _events[ii].Cycles;
             }
             _lastEventPtr -= _nextEventPtr;
             _nextEventPtr = 0;
@@ -60,11 +112,13 @@ public unsafe class Scheduler
         {
             if (absoluteCycles <= _events[ii].Cycles)
             {
+                _events[ii + 1].Type = _events[ii].Type;
                 _events[ii + 1].Cycles = _events[ii].Cycles;
                 _events[ii + 1].Callback = _events[ii].Callback;
 
                 if (ii == _nextEventPtr)
                 {
+                    _events[ii].Type = type;
                     _events[ii].Cycles = absoluteCycles;
                     _events[ii].Callback = evt;
                     return;
@@ -72,6 +126,7 @@ public unsafe class Scheduler
             }
             else
             {
+                _events[ii + 1].Type = type;
                 _events[ii + 1].Cycles = absoluteCycles;
                 _events[ii + 1].Callback = evt;
                 return;
@@ -79,6 +134,7 @@ public unsafe class Scheduler
         }
 
         // Fall back code for if there are no events to check through
+        _events[_nextEventPtr].Type = type;
         _events[_nextEventPtr].Cycles = absoluteCycles;
         _events[_nextEventPtr].Callback = evt;
     }
@@ -93,13 +149,24 @@ public unsafe class Scheduler
         {
             if (_events[ii].Cycles == _device.Cpu.Cycles)
             {
-                _events[ii].Callback(_device);
                 _nextEventPtr++;
+                _events[ii].Callback(_device);
             }
             else
             {
                 break;
             }
         }
+    }
+
+    public override string ToString()
+    {
+        var result = new StringBuilder();
+        _ = result.AppendLine($"Scheduler from {_nextEventPtr}->{_lastEventPtr}");
+        for (var ii = _nextEventPtr; ii <= _lastEventPtr; ii++)
+        {
+            _ = result.AppendLine(_events[ii].ToString());
+        }
+        return result.ToString();
     }
 }

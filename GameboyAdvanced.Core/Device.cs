@@ -71,7 +71,7 @@ public unsafe class Device
         InterruptRegisters = new InterruptRegisters();
         InterruptInterconnect = new InterruptInterconnect(debugger, InterruptRegisters);
         Gamepad = new Gamepad(debugger, InterruptInterconnect);
-        TimerController = new TimerController(debugger, InterruptInterconnect);
+        TimerController = new TimerController(this, debugger);
         Ppu = new Ppu.Ppu(debugger);
         Apu = new Apu.Apu(debugger);
         SerialController = new SerialController(debugger, InterruptInterconnect);
@@ -93,8 +93,6 @@ public unsafe class Device
         }
 #endif
         Scheduler.Step();
-
-        TimerController.Step();
 
         if (Bus.WaitStates > 0)
         {
@@ -131,7 +129,7 @@ public unsafe class Device
 
     private void ScheduleInitialEvents()
     {
-        Scheduler.ScheduleEvent(&GameboyAdvanced.Core.Ppu.Ppu.HBlankStartEvent, GameboyAdvanced.Core.Ppu.Ppu.HBlankFlagCycles);
+        Scheduler.ScheduleEvent(EventType.HBlankStart, &GameboyAdvanced.Core.Ppu.Ppu.HBlankStartEvent, GameboyAdvanced.Core.Ppu.Ppu.HBlankFlagCycles);
     }
 
     public void Reset(bool skipBios)

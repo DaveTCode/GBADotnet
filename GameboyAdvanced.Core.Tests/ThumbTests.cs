@@ -22,7 +22,8 @@ public class ThumbTests
     private readonly static Gamepad _testGamepad = new(_testDebugger, _interruptInterconnect);
     private readonly static Ppu.Ppu _testPpu = new(_testDebugger);
     private readonly static Apu.Apu _testApu = new(_testDebugger);
-    private readonly static TimerController _testTimerController = new(_testDebugger, _interruptInterconnect);
+    private readonly static Device _testDevice = new(_bios, _testGamePak, new TestDebugger(), true);
+    private readonly static TimerController _testTimerController = new(_testDevice, _testDebugger);
     private readonly static SerialController _serialController = new(_testDebugger, _interruptInterconnect);
 
     [Theory]
