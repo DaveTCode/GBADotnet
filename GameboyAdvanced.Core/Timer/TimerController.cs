@@ -12,7 +12,6 @@ public unsafe class TimerController
     private readonly Device _device;
     private readonly BaseDebugger _debugger;
     public readonly TimerRegister[] _timers;
-    public readonly int[] _timerSteps = new int[4];
 
     internal TimerController(Device device, BaseDebugger debugger)
     {

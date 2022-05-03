@@ -15,12 +15,16 @@ public enum EventType
 {
     Timer0Overflow,
     Timer0Latch,
+    Timer0LatchReload,
     Timer1Overflow,
     Timer1Latch,
+    Timer1LatchReload,
     Timer2Overflow,
     Timer2Latch,
+    Timer2LatchReload,
     Timer3Overflow,
     Timer3Latch,
+    Timer3LatchReload,
     HBlankStart,
     HBlankEnd,
     Generic

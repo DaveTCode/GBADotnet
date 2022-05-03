@@ -48,15 +48,13 @@ public unsafe class SchedulerTests
     {
         var device = new Device(_bios, _testGamePak, new TestDebugger(), true);
 
-        var scheduler = new Scheduler(device);
-
-        scheduler.ScheduleEvent(EventType.Generic, &TestEventR4_1, 2);
+        device.Scheduler.ScheduleEvent(EventType.Generic, &TestEventR4_1, 2);
         Assert.Equal(0u, device.Cpu.R[4]);
         device.Cpu.Cycles++;
-        scheduler.Step();
+        device.Scheduler.Step();
         Assert.Equal(0u, device.Cpu.R[4]);
         device.Cpu.Cycles++;
-        scheduler.Step();
+        device.Scheduler.Step();
         Assert.Equal(1u, device.Cpu.R[4]);
     }
 
@@ -65,16 +63,14 @@ public unsafe class SchedulerTests
     {
         var device = new Device(_bios, _testGamePak, new TestDebugger(), true);
 
-        var scheduler = new Scheduler(device);
-
-        scheduler.ScheduleEvent(EventType.Generic, &TestEventR4_1, 2);
-        scheduler.ScheduleEvent(EventType.Generic, &TestEventR4_2, 1);
+        device.Scheduler.ScheduleEvent(EventType.Timer0Latch, &TestEventR4_1, 2);
+        device.Scheduler.ScheduleEvent(EventType.Timer1Latch, &TestEventR4_2, 1);
         Assert.Equal(0u, device.Cpu.R[4]);
         device.Cpu.Cycles++;
-        scheduler.Step();
+        device.Scheduler.Step();
         Assert.Equal(2u, device.Cpu.R[4]);
         device.Cpu.Cycles++;
-        scheduler.Step();
+        device.Scheduler.Step();
         Assert.Equal(1u, device.Cpu.R[4]);
     }
 
@@ -83,14 +79,12 @@ public unsafe class SchedulerTests
     {
         var device = new Device(_bios, _testGamePak, new TestDebugger(), true);
 
-        var scheduler = new Scheduler(device);
-
-        scheduler.ScheduleEvent(EventType.Generic, &TestEventR4_2, 1);
-        scheduler.ScheduleEvent(EventType.Generic, &TestEventR3_1, 1);
+        device.Scheduler.ScheduleEvent(EventType.Timer0Latch, &TestEventR4_2, 1);
+        device.Scheduler.ScheduleEvent(EventType.Timer1Latch, &TestEventR3_1, 1);
         Assert.Equal(0u, device.Cpu.R[3]);
         Assert.Equal(0u, device.Cpu.R[4]);
         device.Cpu.Cycles++;
-        scheduler.Step();
+        device.Scheduler.Step();
         Assert.Equal(1u, device.Cpu.R[3]);
         Assert.Equal(2u, device.Cpu.R[4]);
     }
@@ -100,14 +94,12 @@ public unsafe class SchedulerTests
     {
         var device = new Device(_bios, _testGamePak, new TestDebugger(), true);
 
-        var scheduler = new Scheduler(device);
-
         for (var ii = 0; ii < 100; ii++)
         {
-            scheduler.ScheduleEvent(EventType.Generic, &TestEventR4_2, 1);
-            scheduler.ScheduleEvent(EventType.Generic, &TestEventR3_1, 1);
+            device.Scheduler.ScheduleEvent(EventType.Timer0Latch, &TestEventR4_2, 1);
+            device.Scheduler.ScheduleEvent(EventType.Timer1Latch, &TestEventR3_1, 1);
             device.Cpu.Cycles++;
-            scheduler.Step();
+            device.Scheduler.Step();
             Assert.Equal(1u, device.Cpu.R[3]);
             Assert.Equal(2u, device.Cpu.R[4]);
         }

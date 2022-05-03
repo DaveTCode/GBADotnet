@@ -20,6 +20,14 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\openbus\\openbuster.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Peter Lemon - Timers": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\Timers\\Timers.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "TONC - Timer": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\tmr_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Zayd - Prefetch Abuse": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\zayd\\prefetch-abuse-idleafter.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
@@ -55,6 +63,22 @@
     "NBA - IRQ - IRQ Delay": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\cpu\\irqdelay\\irqdelay.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - Halt - Halt Control": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\haltcnt\\haltcnt.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - PPU - Basic Timing": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\ppu\\basic-timing\\basic-timing.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - Timer - Start Stop": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\timer\\start-stop\\start-stop.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "NBA - Timer - Reload": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\timer\\reload\\reload.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
     "Yeti 3D": {
       "commandName": "Project",
