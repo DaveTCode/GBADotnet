@@ -145,16 +145,20 @@ public unsafe class Scheduler
     /// </summary>
     internal void Step()
     {
-        for (var ii = _nextEventPtr; ii <= _lastEventPtr; ii++)
+        while (true)
         {
-            if (_events[ii].Cycles == _device.Cpu.Cycles)
+            var eventPtr = _nextEventPtr;
+
+            if (eventPtr > _lastEventPtr) return; // No events left
+
+            if (_events[eventPtr].Cycles == _device.Cpu.Cycles)
             {
                 _nextEventPtr++;
-                _events[ii].Callback(_device);
+                _events[eventPtr].Callback(_device);
             }
             else
             {
-                break;
+                return; // Next event is not yet
             }
         }
     }

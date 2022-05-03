@@ -36,6 +36,13 @@ public unsafe class SchedulerTests
         device.Cpu.R[3] = 1;
     }
 
+    internal static void TestRecurseEventR4_Inc(Device device)
+    {
+        device.Cpu.R[4]++;
+
+        device.Scheduler.ScheduleEvent(EventType.Generic, &TestRecurseEventR4_Inc, 1);
+    }
+
     [Fact]
     public void TestAddEventToScheduler()
     {
@@ -155,5 +162,22 @@ public unsafe class SchedulerTests
         device.Cpu.Cycles++;
         scheduler.Step();
         Assert.Equal(0u, device.Cpu.R[4]);
+    }
+
+
+
+    [Fact]
+    public void TestRecursivelyScheduleEvent()
+    {
+        var device = new Device(_bios, _testGamePak, new TestDebugger(), true);
+
+        device.Scheduler.ScheduleEvent(EventType.Generic, &TestRecurseEventR4_Inc, 1);
+
+        for (var ii = 0u; ii < 1000u; ii++)
+        {
+            Assert.Equal(ii, device.Cpu.R[4]);
+            device.Cpu.Cycles++;
+            device.Scheduler.Step();
+        }
     }
 }
