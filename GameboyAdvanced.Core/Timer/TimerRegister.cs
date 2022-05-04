@@ -121,21 +121,28 @@ public unsafe class TimerRegister
     internal static void LatchTimer2ReloadEvent(Device device) => LatchTimerReloadEvent(device, 2);
     internal static void LatchTimer3ReloadEvent(Device device) => LatchTimerReloadEvent(device, 3);
 
+    private readonly static EventType[] IrqSetEventTypes = new EventType[]
+    {
+        EventType.Timer0Irq,
+        EventType.Timer1Irq,
+        EventType.Timer2Irq,
+        EventType.Timer3Irq
+    };
+    private readonly static delegate*<Device, void>[] IrqSetEvents = new delegate*<Device, void>[]
+    {
+        &Timer0IrqSet,
+        &Timer1IrqSet,
+        &Timer2IrqSet,
+        &Timer3IrqSet,
+    };
+    internal static void Timer0IrqSet(Device device) => device.InterruptInterconnect.RaiseInterrupt(Interrupt.Timer0Overflow);
+    internal static void Timer1IrqSet(Device device) => device.InterruptInterconnect.RaiseInterrupt(Interrupt.Timer1Overflow);
+    internal static void Timer2IrqSet(Device device) => device.InterruptInterconnect.RaiseInterrupt(Interrupt.Timer2Overflow);
+    internal static void Timer3IrqSet(Device device) => device.InterruptInterconnect.RaiseInterrupt(Interrupt.Timer3Overflow);
+
     private static void TimerOverflowEvent(Device device, int ix)
     {
         var timer = device.TimerController._timers[ix];
-
-        if (timer.IrqEnabledLatch)
-        {
-            device.InterruptInterconnect.RaiseInterrupt(ix switch
-            {
-                0 => Interrupt.Timer0Overflow,
-                1 => Interrupt.Timer1Overflow,
-                2 => Interrupt.Timer2Overflow,
-                3 => Interrupt.Timer3Overflow,
-                _ => throw new Exception("Invalid timer ix"),
-            });
-        }
 
         // Handle count up timers by checking if the next timer is both
         // counting up _and_ started
@@ -160,6 +167,11 @@ public unsafe class TimerRegister
             timer.CounterAtLastLatch = timer.ReloadLatch;
             timer.CyclesAtLastLatch = device.Cpu.Cycles + 1; // TODO - Why +1?
             device.Scheduler.ScheduleEvent(OverflowEventTypes[ix], OverflowEvents[ix], cyclesToOverflow);
+        }
+
+        if (timer.IrqEnabledLatch)
+        {
+            device.Scheduler.ScheduleEvent(IrqSetEventTypes[ix], IrqSetEvents[ix], 1);
         }
     }
 

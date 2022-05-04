@@ -13,15 +13,19 @@ public unsafe struct EventNode
 
 public enum EventType
 {
+    Timer0Irq,
     Timer0Overflow,
     Timer0Latch,
     Timer0LatchReload,
+    Timer1Irq,
     Timer1Overflow,
     Timer1Latch,
     Timer1LatchReload,
+    Timer2Irq,
     Timer2Overflow,
     Timer2Latch,
     Timer2LatchReload,
+    Timer3Irq,
     Timer3Overflow,
     Timer3Latch,
     Timer3LatchReload,
