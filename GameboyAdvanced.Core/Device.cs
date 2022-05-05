@@ -68,7 +68,7 @@ public unsafe class Device
         Scheduler = new Scheduler(this);
         Gamepak = rom;
         DmaData = new DmaDataUnit();
-        InterruptRegisters = new InterruptRegisters();
+        InterruptRegisters = new InterruptRegisters(this);
         InterruptInterconnect = new InterruptInterconnect(debugger, InterruptRegisters);
         Gamepad = new Gamepad(debugger, InterruptInterconnect);
         TimerController = new TimerController(this, debugger);

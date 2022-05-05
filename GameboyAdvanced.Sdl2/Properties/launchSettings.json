@@ -28,6 +28,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\tmr_demo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "TONC - TXT SE2": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\tonc\\txt_se2.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Zayd - Prefetch Abuse": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\zayd\\prefetch-abuse-idleafter.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"

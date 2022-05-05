@@ -13,6 +13,8 @@ public unsafe struct EventNode
 
 public enum EventType
 {
+    BreakHalt,
+    CpuIrq,
     Timer0Irq,
     Timer0Overflow,
     Timer0Latch,
@@ -96,8 +98,6 @@ public unsafe class Scheduler
     /// </summary>
     internal void ScheduleEvent(EventType type, delegate*<Device, void> evt, long cyclesFromNow)
     {
-        CancelEvent(type);
-
         var absoluteCycles = _device.Cpu.Cycles + cyclesFromNow;
 
         // If we run out of space in the array then move events back to the
@@ -145,6 +145,18 @@ public unsafe class Scheduler
         _events[_nextEventPtr].Type = type;
         _events[_nextEventPtr].Cycles = absoluteCycles;
         _events[_nextEventPtr].Callback = evt;
+    }
+
+    internal bool EventScheduled(EventType type)
+    {
+        for (var ii = _nextEventPtr; ii <= _lastEventPtr; ii++)
+        {
+            if (_events[ii].Type == type)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>

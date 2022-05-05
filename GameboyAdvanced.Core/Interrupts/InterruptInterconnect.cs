@@ -39,6 +39,4 @@ public class InterruptInterconnect
     }
 
     internal void RaiseInterrupt(Interrupt interrupt) => _registers.RaiseInterrupt(interrupt);
-
-    internal bool CpuShouldIrq() => _registers.CpuShouldIrq;
 }

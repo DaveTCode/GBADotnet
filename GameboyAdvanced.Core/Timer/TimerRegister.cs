@@ -166,6 +166,7 @@ public unsafe class TimerRegister
         {
             timer.CounterAtLastLatch = timer.ReloadLatch;
             timer.CyclesAtLastLatch = device.Cpu.Cycles + 1; // TODO - Why +1?
+            device.Scheduler.CancelEvent(OverflowEventTypes[ix]);
             device.Scheduler.ScheduleEvent(OverflowEventTypes[ix], OverflowEvents[ix], cyclesToOverflow);
         }
 
@@ -232,6 +233,7 @@ public unsafe class TimerRegister
             // Any latch causes us to recalculate the cycles until the timer
             // overflows, this call reschedules the event for the new number
             // of cycles
+            _device.Scheduler.CancelEvent(OverflowEventTypes[Index]);
             _device.Scheduler.ScheduleEvent(OverflowEventTypes[Index], OverflowEvents[Index], cyclesToOverflow);
         }
         else

@@ -134,10 +134,11 @@ public unsafe class Core
     public bool nRW;
 
     /// <summary>
-    /// IRQ signals come in through a syncroniser which takes either 3 or 4 
-    /// cycles before the IRQ is triggered.
+    /// IRQs are handled by the scheduler subsystem. When that system has allowed
+    /// an IRQ to pass through the syncronizer then this bool is set to true 
+    /// telling the cpu that on it's next instruction it should IRQ instead
     /// </summary>
-    public int IrqSyncDelay;
+    public bool IrqReadyToFire;
 
     /// <summary>
     /// Contains the current state of the 3 stage pipeline
@@ -182,7 +183,7 @@ public unsafe class Core
         Pipeline.FetchedOpcodeAddress = null;
         Pipeline.CurrentInstruction = null;
         Pipeline.CurrentInstructionAddress = null;
-        IrqSyncDelay = -1;
+        IrqReadyToFire = false;
 
         Array.Clear(R, 0, R.Length);
 
@@ -274,6 +275,16 @@ public unsafe class Core
         }
     }
 
+    /// <summary>
+    /// IRQs happen 4 cycles after they're fired as the IRQ signal goes through 
+    /// a syncronizer, this event is put onto the scheduler when an IRQ is 
+    /// fired.
+    /// </summary>
+    /// <param name="device"></param>
+    internal static void IrqEvent(Device device)
+    {
+        device.Cpu.IrqReadyToFire = true;
+    }
 
     /// <summary>
     /// The first cycle of every instruction is the same, check the condition
@@ -295,27 +306,12 @@ public unsafe class Core
             return;
         }
 
-        switch (core.IrqSyncDelay)
+        if (core.IrqReadyToFire && !core.Cpsr.IrqDisable)
         {
-            case -1:
-                if (core._interruptRegisters.CpuShouldIrq && !core.Cpsr.IrqDisable)
-                {
-                    // Start IRQ passing through synchronizer
-                    core.IrqSyncDelay = 4;
-                }
-                break;
-            case 0: // IRQ has passed through synchronizer and is now running
-                core.IrqSyncDelay = -1;
-                var retAddress = core.Pipeline.CurrentInstructionAddress.Value + 4;
-                core.HandleInterrupt(0x0000_0018, retAddress, CPSRMode.Irq);
-                return;
-            default:
-                // Anything more than 1 cycle remaining the IrqDisable bit can still prevent IRQ
-                if (core.Cpsr.IrqDisable)
-                {
-                    core.IrqSyncDelay = -1;
-                }
-                break;
+            var retAddress = core.Pipeline.CurrentInstructionAddress.Value + 4;
+            core.HandleInterrupt(0x0000_0018, retAddress, CPSRMode.Irq);
+            core.IrqReadyToFire = false;
+            return;
         }
 
         var instruction = core.Pipeline.CurrentInstruction.Value;
@@ -372,11 +368,6 @@ public unsafe class Core
     /// </remarks>
     internal void Clock()
     {
-        if (IrqSyncDelay > 0)
-        {
-            IrqSyncDelay--;
-        }
-
         StepMemoryUnit();
 
         // SEQ defaults to true after a memory request and each operation is

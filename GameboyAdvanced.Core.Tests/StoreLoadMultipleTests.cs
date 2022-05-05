@@ -15,14 +15,14 @@ public class StoreLoadMultipleTests
 {
     private readonly static byte[] _bios = new byte[0x4000];
     private readonly static GamePak _testGamePak = new(new byte[0xFF_FFFF]);
+    private readonly static Device _testDevice = new(_bios, _testGamePak, new TestDebugger(), true);
     private readonly static DmaDataUnit _testDmaDataUnit = new();
-    private readonly static InterruptRegisters _interruptRegisters = new();
+    private readonly static InterruptRegisters _interruptRegisters = new(_testDevice);
     private readonly static TestDebugger _testDebugger = new();
     private readonly static InterruptInterconnect _interruptInterconnect = new(_testDebugger, _interruptRegisters);
     private readonly static Gamepad _testGamepad = new(_testDebugger, _interruptInterconnect);
     private readonly static Ppu.Ppu _testPpu = new(_testDebugger);
     private readonly static Apu.Apu _testApu = new(_testDebugger);
-    private readonly static Device _testDevice = new(_bios, _testGamePak, new TestDebugger(), true);
     private readonly static TimerController _testTimerController = new(_testDevice, _testDebugger);
     private readonly static SerialController _serialController = new(_testDebugger, _interruptInterconnect);
 

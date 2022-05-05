@@ -58,10 +58,12 @@ public unsafe class TimerController
         {
             case TM0CNT_L:
                 _timers[0].Reload = (ushort)((_timers[0].Reload & 0xFF00) | value);
+                _device.Scheduler.CancelEvent(EventType.Timer0Latch);
                 _device.Scheduler.ScheduleEvent(EventType.Timer0Latch, &TimerRegister.LatchTimer0ValuesEvent, 1);
                 break;
             case TM0CNT_L + 1:
                 _timers[0].Reload = (ushort)((_timers[0].Reload & 0x00FF) | (value << 8));
+                _device.Scheduler.CancelEvent(EventType.Timer0Latch);
                 _device.Scheduler.ScheduleEvent(EventType.Timer0Latch, &TimerRegister.LatchTimer0ValuesEvent, 1);
                 break;
             case TM0CNT_H:
@@ -69,10 +71,12 @@ public unsafe class TimerController
                 break;
             case TM1CNT_L:
                 _timers[1].Reload = (ushort)((_timers[1].Reload & 0xFF00) | value);
+                _device.Scheduler.CancelEvent(EventType.Timer1Latch);
                 _device.Scheduler.ScheduleEvent(EventType.Timer1Latch, &TimerRegister.LatchTimer1ValuesEvent, 1);
                 break;
             case TM1CNT_L + 1:
                 _timers[1].Reload = (ushort)((_timers[1].Reload & 0x00FF) | (value << 8));
+                _device.Scheduler.CancelEvent(EventType.Timer1Latch);
                 _device.Scheduler.ScheduleEvent(EventType.Timer1Latch, &TimerRegister.LatchTimer1ValuesEvent, 1);
                 break;
             case TM1CNT_H:
@@ -80,10 +84,12 @@ public unsafe class TimerController
                 break;
             case TM2CNT_L:
                 _timers[2].Reload = (ushort)((_timers[2].Reload & 0xFF00) | value);
+                _device.Scheduler.CancelEvent(EventType.Timer2Latch);
                 _device.Scheduler.ScheduleEvent(EventType.Timer2Latch, &TimerRegister.LatchTimer2ValuesEvent, 1);
                 break;
             case TM2CNT_L + 1:
                 _timers[2].Reload = (ushort)((_timers[2].Reload & 0x00FF) | (value << 8));
+                _device.Scheduler.CancelEvent(EventType.Timer2Latch);
                 _device.Scheduler.ScheduleEvent(EventType.Timer2Latch, &TimerRegister.LatchTimer2ValuesEvent, 1);
                 break;
             case TM2CNT_H:
@@ -91,10 +97,12 @@ public unsafe class TimerController
                 break;
             case TM3CNT_L:
                 _timers[3].Reload = (ushort)((_timers[3].Reload & 0xFF00) | value);
+                _device.Scheduler.CancelEvent(EventType.Timer3Latch);
                 _device.Scheduler.ScheduleEvent(EventType.Timer3Latch, &TimerRegister.LatchTimer3ValuesEvent, 1);
                 break;
             case TM3CNT_L + 1:
                 _timers[3].Reload = (ushort)((_timers[3].Reload & 0x00FF) | (value << 8));
+                _device.Scheduler.CancelEvent(EventType.Timer3Latch);
                 _device.Scheduler.ScheduleEvent(EventType.Timer3Latch, &TimerRegister.LatchTimer3ValuesEvent, 1);
                 break;
             case TM3CNT_H:

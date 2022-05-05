@@ -9,7 +9,7 @@ namespace GameboyAdvanced.Core.Interrupts;
 /// GBA component but is handled as one because the implementation are specific
 /// to the GBA.
 /// </summary>
-public class InterruptRegisters
+public unsafe class InterruptRegisters
 {
     public struct InterruptRegister
     {
@@ -135,15 +135,19 @@ public class InterruptRegisters
         }
     }
 
+    private readonly Device _device;
     public bool _interruptMasterEnable;
     public InterruptRegister _interruptEnable;
     public InterruptRegister _interruptRequest;
-    public bool CpuShouldIrq;
-    public bool ShouldBreakHalt;
+    public bool ShouldBreakHalt; // TODO - Move this off to scheduler
+
+    internal InterruptRegisters(Device device)
+    {
+        _device = device ?? throw new ArgumentNullException(nameof(device));
+    }
 
     internal void Reset()
     {
-        CpuShouldIrq = false;
         _interruptMasterEnable = false;
         _interruptEnable.Set(0);
         _interruptRequest.SetB1(0xFF);
@@ -160,8 +164,12 @@ public class InterruptRegisters
 
     private void UpdateCpuShouldIrq()
     {
-        CpuShouldIrq = _interruptMasterEnable && (_interruptEnable.Get() & _interruptRequest.Get()) != 0;
         ShouldBreakHalt = (_interruptEnable.Get() & _interruptRequest.Get()) != 0;
+
+        if (_interruptMasterEnable && (_interruptEnable.Get() & _interruptRequest.Get()) != 0 && !_device.Scheduler.EventScheduled(EventType.CpuIrq))
+        {
+            _device.Scheduler.ScheduleEvent(EventType.CpuIrq, &Core.IrqEvent, 4);
+        }
     }
 
     internal byte ReadByte(uint address) => (byte)(ReadHalfWord(address & 0xFFFF_FFFE) >> (int)(8 * (address & 1)));
