@@ -221,20 +221,22 @@ public unsafe class TimerRegister
         IrqEnabledLatch = IrqEnabled;
         PrescalerSelectionLatch = PrescalerSelection;
 
-        if (Start && !OldStart && !CountUpTimingLatch)
+        if (Start && !OldStart)
         {
-            var cyclesToOverflow = PrescalerSelectionLatch.Cycles() * (0x1_0000 - Reload);
-
             CounterAtLastLatch = Reload;
             // Add 1 here as the timer doesn't start for 2 cycles after writing
             // (1 for this latch and one for start delay)
             CyclesAtLastLatch = _device.Cpu.Cycles + 1;
 
-            // Any latch causes us to recalculate the cycles until the timer
-            // overflows, this call reschedules the event for the new number
-            // of cycles
-            _device.Scheduler.CancelEvent(OverflowEventTypes[Index]);
-            _device.Scheduler.ScheduleEvent(OverflowEventTypes[Index], OverflowEvents[Index], cyclesToOverflow);
+            if (!CountUpTimingLatch)
+            {
+                // Any latch causes us to recalculate the cycles until the timer
+                // overflows, this call reschedules the event for the new number
+                // of cycles
+                var cyclesToOverflow = PrescalerSelectionLatch.Cycles() * (0x1_0000 - Reload);
+                _device.Scheduler.CancelEvent(OverflowEventTypes[Index]);
+                _device.Scheduler.ScheduleEvent(OverflowEventTypes[Index], OverflowEvents[Index], cyclesToOverflow);
+            }
         }
         else
         {
