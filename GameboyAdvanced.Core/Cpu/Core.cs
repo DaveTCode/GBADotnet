@@ -280,7 +280,6 @@ public unsafe class Core
     /// a syncronizer, this event is put onto the scheduler when an IRQ is 
     /// fired.
     /// </summary>
-    /// <param name="device"></param>
     internal static void IrqEvent(Device device)
     {
         device.Cpu.IrqReadyToFire = true;

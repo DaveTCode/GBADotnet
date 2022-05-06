@@ -24,13 +24,17 @@ internal class Program
         [Option("backupType", Default = null, HelpText = "The emulator will attempt to guess the backup type but if that fails you can specify it directly with this")]
         public RomBackupType? BackupType { get; }
 
-        public Options(string rom, string bios, bool runBios, int pixelSize, RomBackupType? backupType)
+        [Option("unlockFps", Default = false, HelpText = "Set to true to allow > 60fps")]
+        public bool UnlockFps { get; }
+
+        public Options(string rom, string bios, bool runBios, int pixelSize, RomBackupType? backupType, bool unlockFps)
         {
             Rom = rom ?? throw new ArgumentNullException(nameof(rom));
             Bios = bios ?? throw new ArgumentNullException(nameof(bios));
             RunBios = runBios;
             PixelSize = pixelSize;
             BackupType = backupType;
+            UnlockFps = unlockFps;
         }
     }
 
@@ -45,7 +49,7 @@ internal class Program
                 var gamepak = new GamePak(rom, o.BackupType);
                 var device = new Device(bios, gamepak, new TestDebugger(), !o.RunBios);
 
-                var application = new Sdl2Application(o.Rom, device, o.PixelSize);
+                var application = new Sdl2Application(o.Rom, device, o.PixelSize, o.UnlockFps);
                 application.Run();
             })
             .WithNotParsed(o =>

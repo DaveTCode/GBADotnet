@@ -13,6 +13,7 @@ internal class Sdl2Application : IDisposable
     private readonly string _originalFilePath;
     private readonly Device _device;
     private readonly int _pixelSize;
+    private readonly bool _unlockFps;
     private IntPtr _window;
     private IntPtr _renderer;
     private IntPtr _texture;
@@ -34,11 +35,12 @@ internal class Sdl2Application : IDisposable
         { SDL.SDL_Keycode.SDLK_w, Key.Start },
     };
 
-    internal Sdl2Application(string originalFilePath, Device device, int pixelSize)
+    internal Sdl2Application(string originalFilePath, Device device, int pixelSize, bool unlockFps)
     {
         _originalFilePath = originalFilePath;
         _device = device;
         _pixelSize = pixelSize;
+        _unlockFps = unlockFps;
     }
 
     private void SetupSdl2()
@@ -160,7 +162,14 @@ internal class Sdl2Application : IDisposable
             adjustStopwatch.Restart();
             if (msToSleep > 0)
             {
-                SDL.SDL_Delay((uint)msToSleep);
+                if (_unlockFps)
+                {
+                    SDL.SDL_Delay((uint)1);
+                }
+                else
+                {
+                    SDL.SDL_Delay((uint)msToSleep);
+                }
             }
             adjustTicks = adjustStopwatch.ElapsedTicks;
             frameTimeStopwatch.Restart();
