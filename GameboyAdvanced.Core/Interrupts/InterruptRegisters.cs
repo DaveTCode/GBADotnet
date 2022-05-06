@@ -170,6 +170,10 @@ public unsafe class InterruptRegisters
         {
             _device.Scheduler.ScheduleEvent(EventType.CpuIrq, &Core.IrqEvent, 4);
         }
+        else
+        {
+            _device.Scheduler.CancelEvent(EventType.CpuIrq, 3);
+        }
     }
 
     internal byte ReadByte(uint address) => (byte)(ReadHalfWord(address & 0xFFFF_FFFE) >> (int)(8 * (address & 1)));

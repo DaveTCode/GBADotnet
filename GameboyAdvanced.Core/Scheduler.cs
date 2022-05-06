@@ -71,11 +71,11 @@ public unsafe class Scheduler
     /// Requires that a single event type can only exist once, not enforced 
     /// anywhere.
     /// </summary>
-    internal void CancelEvent(EventType type)
+    internal void CancelEvent(EventType type, int minCyclesAway = 0)
     {
         for (var ii = _nextEventPtr; ii <= _lastEventPtr; ii++)
         {
-            if (_events[ii].Type == type)
+            if (_events[ii].Type == type && _events[ii].Cycles - _device.Cpu.Cycles > minCyclesAway)
             {
                 for (var jj = ii; jj < _lastEventPtr; jj++)
                 {
