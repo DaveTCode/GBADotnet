@@ -166,7 +166,7 @@ public unsafe class InterruptRegisters
     {
         ShouldBreakHalt = (_interruptEnable.Get() & _interruptRequest.Get()) != 0;
 
-        if (_interruptMasterEnable && (_interruptEnable.Get() & _interruptRequest.Get()) != 0 && !_device.Scheduler.EventScheduled(EventType.CpuIrq))
+        if (_interruptMasterEnable && ShouldBreakHalt && !_device.Scheduler.EventScheduled(EventType.CpuIrq))
         {
             _device.Scheduler.ScheduleEvent(EventType.CpuIrq, &Core.IrqEvent, 4);
         }

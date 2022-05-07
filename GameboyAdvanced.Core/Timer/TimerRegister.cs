@@ -155,6 +155,7 @@ public unsafe class TimerRegister
 
                 if (device.TimerController._timers[ix + 1].CounterAtLastLatch == 0)
                 {
+                    device.TimerController._timers[ix + 1].CounterAtLastLatch = device.TimerController._timers[ix + 1].ReloadLatch;
                     TimerOverflowEvent(device, ix + 1);
                 }
             }
@@ -217,7 +218,7 @@ public unsafe class TimerRegister
     /// </summary>
     internal void LatchValues()
     {
-        CountUpTimingLatch = CountUpTiming;
+        CountUpTimingLatch = CountUpTiming && Index != 0;
         IrqEnabledLatch = IrqEnabled;
         PrescalerSelectionLatch = PrescalerSelection;
 
@@ -228,13 +229,13 @@ public unsafe class TimerRegister
             // (1 for this latch and one for start delay)
             CyclesAtLastLatch = _device.Cpu.Cycles + 1;
 
+            _device.Scheduler.CancelEvent(OverflowEventTypes[Index]);
             if (!CountUpTimingLatch)
             {
                 // Any latch causes us to recalculate the cycles until the timer
                 // overflows, this call reschedules the event for the new number
                 // of cycles
                 var cyclesToOverflow = PrescalerSelectionLatch.Cycles() * (0x1_0000 - Reload);
-                _device.Scheduler.CancelEvent(OverflowEventTypes[Index]);
                 _device.Scheduler.ScheduleEvent(OverflowEventTypes[Index], OverflowEvents[Index], cyclesToOverflow);
             }
         }
