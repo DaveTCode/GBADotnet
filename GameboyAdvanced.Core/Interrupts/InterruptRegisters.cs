@@ -139,7 +139,8 @@ public unsafe class InterruptRegisters
     public bool _interruptMasterEnable;
     public InterruptRegister _interruptEnable;
     public InterruptRegister _interruptRequest;
-    public bool ShouldBreakHalt; // TODO - Move this off to scheduler
+    public bool CpuShouldIrq;
+    public bool ShouldBreakHalt;
 
     internal InterruptRegisters(Device device)
     {
@@ -148,6 +149,8 @@ public unsafe class InterruptRegisters
 
     internal void Reset()
     {
+        CpuShouldIrq = false;
+        ShouldBreakHalt = false;
         _interruptMasterEnable = false;
         _interruptEnable.Set(0);
         _interruptRequest.SetB1(0xFF);
@@ -164,16 +167,8 @@ public unsafe class InterruptRegisters
 
     private void UpdateCpuShouldIrq()
     {
+        CpuShouldIrq = _interruptMasterEnable && (_interruptEnable.Get() & _interruptRequest.Get()) != 0;
         ShouldBreakHalt = (_interruptEnable.Get() & _interruptRequest.Get()) != 0;
-
-        if (_interruptMasterEnable && ShouldBreakHalt && !_device.Scheduler.EventScheduled(EventType.CpuIrq))
-        {
-            _device.Scheduler.ScheduleEvent(EventType.CpuIrq, &Core.IrqEvent, 4);
-        }
-        else
-        {
-            _device.Scheduler.CancelEvent(EventType.CpuIrq, 3);
-        }
     }
 
     internal byte ReadByte(uint address) => (byte)(ReadHalfWord(address & 0xFFFF_FFFE) >> (int)(8 * (address & 1)));

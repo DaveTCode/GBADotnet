@@ -144,17 +144,22 @@ public unsafe class TimerRegister
     {
         var timer = device.TimerController._timers[ix];
 
+        // If the timer was disabled before this scheduled event then pretend that overflow never happened
+        if (!timer.StartLatch) return;
+
         // Handle count up timers by checking if the next timer is both
         // counting up _and_ started
         if (ix < 3)
         {
             if (device.TimerController._timers[ix + 1].CountUpTimingLatch && device.TimerController._timers[ix + 1].StartLatch)
             {
+                Console.WriteLine($"Connected timer count {device.TimerController._timers[ix + 1]}");
                 device.TimerController._timers[ix + 1].CounterAtLastLatch++;
-                device.TimerController._timers[ix + 1].CyclesAtLastLatch = device.Cpu.Cycles;
+                device.TimerController._timers[ix + 1].CyclesAtLastLatch = device.Cpu.Cycles + 1;
 
                 if (device.TimerController._timers[ix + 1].CounterAtLastLatch == 0)
                 {
+                    Console.WriteLine($"Connected timer overflow {device.TimerController._timers[ix + 1]}");
                     device.TimerController._timers[ix + 1].CounterAtLastLatch = device.TimerController._timers[ix + 1].ReloadLatch;
                     TimerOverflowEvent(device, ix + 1);
                 }
