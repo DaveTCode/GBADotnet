@@ -225,7 +225,7 @@ public unsafe class Core
                     {
                         if (nRW)
                         {
-                            Bus.WriteByte(A, (byte)D, SEQ, R[15], Cycles);
+                            Bus.WriteByte(A, (byte)D, SEQ, R[15]);
                         }
                         else
                         {
