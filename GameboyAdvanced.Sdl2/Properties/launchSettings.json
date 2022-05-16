@@ -84,6 +84,14 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\nba\\timer\\reload\\reload.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "Peter Lemon - Sound - PCM - Mono": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\Sound\\PCM\\Mono\\SoundPCMMono.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
+    "Peter Lemon - Sound - PCM - Stereo": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\PeterLemon\\Sound\\PCM\\Stereo\\SoundPCMStereo.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Yeti 3D": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\yeti3d.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
