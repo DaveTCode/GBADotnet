@@ -49,14 +49,17 @@ public class DmaDataUnit
                         break;
                     case StartTiming.Special:
                         // Handle Video Capture Mode DMA
-                        if (line is >= 2 and < (Device.HEIGHT + 2) && ii == 3)
+                        if (ii == 3)
                         {
-                            Channels[ii].IsRunning = true;
-                        }
-                        else if (line == Device.HEIGHT + 2)
-                        {
-                            Channels[ii].IntCachedValue = null;
-                            Channels[ii].ControlReg.DmaEnable = false;
+                            if (line is >= 2 and < (Device.HEIGHT + 2) && ii == 3)
+                            {
+                                Channels[ii].IsRunning = true;
+                            }
+                            else if (line == Device.HEIGHT + 2)
+                            {
+                                Channels[ii].IntCachedValue = null;
+                                Channels[ii].ControlReg.DmaEnable = false;
+                            }
                         }
                         break;
                 }
