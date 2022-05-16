@@ -31,7 +31,8 @@ public enum EventType
     Timer3LatchReload,
     HBlankStart,
     HBlankEnd,
-    Generic
+    Generic,
+    ApuSample
 }
 
 public unsafe class Scheduler

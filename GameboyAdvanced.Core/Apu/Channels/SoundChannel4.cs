@@ -19,11 +19,6 @@ public class SoundChannel4 : GBSoundChannel
         Reset();
     }
 
-    internal override void Step()
-    {
-        // TODO
-    }
-
     internal override void Reset()
     {
         _envelope.Reset();

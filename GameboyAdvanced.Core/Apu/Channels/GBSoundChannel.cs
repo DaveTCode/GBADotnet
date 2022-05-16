@@ -9,8 +9,6 @@ public abstract class BaseChannel
         Index = index;
     }
 
-    internal abstract void Step();
-
     internal abstract void Reset();
 }
 

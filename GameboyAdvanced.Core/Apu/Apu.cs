@@ -4,14 +4,25 @@ using static GameboyAdvanced.Core.IORegs;
 
 namespace GameboyAdvanced.Core.Apu;
 
-public class Apu
+public unsafe class Apu
 {
+    // 16777216 (master clock speed) / 65536 (desired sample rate) - GBA internally uses 65536 resampling but that's unnecessarily fast
+    internal const int CyclesPerSample = 256;
+
+    /// <summary>
+    /// The internal sample buffer is where we store combined samples before 
+    /// sending them to the external audio system. Increasing this will add 
+    /// lag to audio but improve performance as fewer syscalls are needed.
+    /// 
+    /// Note that two shorts are added to the buffer at a time (left, right)
+    /// </summary>
+    private readonly byte[] InternalSampleBuffer = new byte[256 * sizeof(short)]; 
+    private int InternalSampleBufferPtr = 0;
+
+    private readonly Device _device;
     public readonly BaseDebugger _debugger;
 
-    public readonly DmaChannel[] _dmaChannels = new DmaChannel[2]
-    {
-        new DmaChannel(1), new DmaChannel(2),
-    };
+    public readonly DmaChannel[] _dmaChannels;
     public readonly GBSoundChannel[] _channels = new GBSoundChannel[4]
     {
         new SoundChannel1(), 
@@ -24,9 +35,14 @@ public class Apu
     public int _biasLevel;
     public int _samplingCycle;
 
-    public Apu(BaseDebugger debugger)
+    public Apu(Device device, BaseDebugger debugger)
     {
+        _device = device;
         _debugger = debugger ?? throw new ArgumentNullException(nameof(debugger));
+        _dmaChannels = new DmaChannel[2]
+        {
+            new DmaChannel(1, device), new DmaChannel(2, device),
+        };
         _soundControlRegister = new SoundControlRegister(_dmaChannels);
         Reset();
     }
@@ -40,12 +56,70 @@ public class Apu
         }
         _psgFifoMasterEnable = false;
         WriteHalfWord(SOUNDBIAS, 0x200);
+        Array.Clear(InternalSampleBuffer);
+        InternalSampleBufferPtr = 0;
+    }
+
+    /// <summary>
+    /// The sample event is the scheduler based event where samples are taken 
+    /// from the various internal audio subsystems and placed on into a buffer
+    /// to then be sent on to the external audio system.
+    /// </summary>
+    internal static void SampleEvent(Device device)
+    {
+        var apu = device.Apu;
+
+        short left = 0;
+        short right = 0;
+
+        if (apu._psgFifoMasterEnable)
+        {
+            // TODO - Handle GB audio channels
+
+            // Add DMA based channels to the overall sample - these generate their
+            // samples asynchronously through scheduler events based on the timer
+            for (var ii = 0; ii < 2; ii ++)
+            {
+                var channel = apu._dmaChannels[ii];
+                if (channel.EnableLeft) left += channel.CurrentValue;
+                if (channel.EnableRight) right += channel.CurrentValue;
+            }
+        }
+
+        left *= 64;
+        right *= 64;
+        apu.InternalSampleBuffer[apu.InternalSampleBufferPtr] = (byte)left;
+        apu.InternalSampleBuffer[apu.InternalSampleBufferPtr + 1] = (byte)(left >> 8);
+        apu.InternalSampleBuffer[apu.InternalSampleBufferPtr + 2] = (byte)right;
+        apu.InternalSampleBuffer[apu.InternalSampleBufferPtr + 3] = (byte)(right >> 8);
+
+        apu.InternalSampleBufferPtr += 4;
+        if (apu.InternalSampleBufferPtr == apu.InternalSampleBuffer.Length)
+        {
+            apu.InternalSampleBufferPtr = 0;
+
+            device.SendAudioSamples(apu.InternalSampleBuffer);
+        }
+
+        device.Scheduler.ScheduleEvent(EventType.ApuSample, &SampleEvent, CyclesPerSample);
     }
     
     private ushort SoundCntX()
     {
         // TODO - Return whether sounds are currently playing as well
         return (ushort)(_psgFifoMasterEnable ? (1 << 7) : 0);
+    }
+
+    internal void OverflowTimer(bool isTimer1)
+    {
+        for (var ii = 0; ii < 2; ii++)
+        {
+            var channel = _dmaChannels[ii];
+            if ((channel.SelectTimer1 && isTimer1) || (!channel.SelectTimer1 && !isTimer1))
+            {
+                channel.StepFifo();
+            }
+        }
     }
 
     internal byte ReadByte(uint address, uint openbus) => 
@@ -124,7 +198,7 @@ public class Apu
                 _soundControlRegister.SetSoundCntH(value, address & 1);
                 break;
             case SOUNDCNT_X: // Control Sound on/off
-                if ((address & 1) == 1)
+                if ((address & 1) == 0)
                 {
                     _psgFifoMasterEnable = ((value >> 7) & 0b1) == 0b1;
                 }
@@ -143,17 +217,13 @@ public class Apu
             case var _ when address is >= WAVE_RAM and < WAVE_RAM + 16: // Channel 3 wave pattern RAM
                 (_channels[2] as SoundChannel3)!.WriteWaveRamByte(address, value);
                 break;
-            case FIFO_A: // Channel A FIFO low half word, Data 0-1
-                // TODO
+            case FIFO_A:
+            case FIFO_A + 2:
+                _dmaChannels[0].InsertSampleByte(value);
                 break;
-            case FIFO_A + 2: // Channel A FIFO high half word, Data 2-3
-                // TODO
-                break;
-            case FIFO_B: // Channel B FIFO low half word, Data 0-1
-                // TODO
-                break;
-            case FIFO_B + 2: // Channel B FIFO high half word, Data 2-3
-                // TODO
+            case FIFO_B:
+            case FIFO_B + 2:
+                _dmaChannels[1].InsertSampleByte(value);
                 break;
         }
     }

@@ -16,11 +16,6 @@ public class SoundChannel2 : ToneChannel
         base.Reset();
     }
 
-    internal override void Step()
-    {
-        //TODO
-    }
-
     internal override ushort ReadControlH() => ReadFrequencyControl();
 
     internal override void WriteControlH(byte value, uint byteIndex) => WriteFrequencyControl(value, byteIndex);

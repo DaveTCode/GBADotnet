@@ -38,11 +38,6 @@ public class SoundChannel3 : GBSoundChannel
         _restartScheduled = false;
     }
 
-    internal override void Step()
-    {
-        // TODO
-    }
-
     internal override ushort ReadControlH() =>
         (ushort)((_volume << 13) | (_force75PctVolume ? (1 << 15) : 0));
 

@@ -4,6 +4,10 @@
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\real\\Zelda - the Minish Cap.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
     },
+    "BELogic - Direct Sound Rom": {
+      "commandName": "Project",
+      "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\belogic_sound_tests\\directsoundrom.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"
+    },
     "Aging Cartridge": {
       "commandName": "Project",
       "commandLineArgs": "--rom \"..\\..\\..\\..\\roms\\test\\AGS.gba\" --bios ..\\..\\..\\..\\roms\\real\\gba_bios.bin"

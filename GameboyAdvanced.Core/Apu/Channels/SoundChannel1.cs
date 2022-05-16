@@ -46,9 +46,4 @@ public class SoundChannel1 : ToneChannel
         _sweepUnit.Reset();
         base.Reset();
     }
-
-    internal override void Step()
-    {
-        // TODO
-    }
 }

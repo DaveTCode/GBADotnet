@@ -38,6 +38,8 @@ public unsafe class Device
     public byte InstructionBufferPtr;
     public readonly uint[] InstructionBuffer = new uint[0x100];
 
+    private Action<byte[]>? _audioCallback;
+
     /// <summary>
     /// Constructs a device which can be used to exectue a rom by running 
     /// functions like "RunFrame"/"RunCycle".
@@ -73,7 +75,7 @@ public unsafe class Device
         Gamepad = new Gamepad(debugger, InterruptInterconnect);
         TimerController = new TimerController(this, debugger);
         Ppu = new Ppu.Ppu(debugger);
-        Apu = new Apu.Apu(debugger);
+        Apu = new Apu.Apu(this, debugger);
         SerialController = new SerialController(debugger, InterruptInterconnect);
         Bus = new MemoryBus(bios, Gamepad, Gamepak, Ppu, Apu, DmaData, TimerController, InterruptRegisters, SerialController, debugger, skipBios);
         Cpu = new Core(Bus, skipBios, debugger, InterruptRegisters);
@@ -127,13 +129,25 @@ public unsafe class Device
         }
     }
 
+    public void ConfigureAudioCallback(Action<byte[]> callback)
+    {
+        _audioCallback = callback;
+    }
+
+    internal void SendAudioSamples(byte[] samples)
+    {
+        _audioCallback?.Invoke(samples);
+    }
+
     private void ScheduleInitialEvents()
     {
         Scheduler.ScheduleEvent(EventType.HBlankStart, &GameboyAdvanced.Core.Ppu.Ppu.HBlankStartEvent, GameboyAdvanced.Core.Ppu.Ppu.HBlankFlagCycles);
+        Scheduler.ScheduleEvent(EventType.ApuSample, &GameboyAdvanced.Core.Apu.Apu.SampleEvent, GameboyAdvanced.Core.Apu.Apu.CyclesPerSample);
     }
 
     public void Reset(bool skipBios)
     {
+        Apu.Reset();
         Cpu.Reset(skipBios);
         Bus.Reset(skipBios);
         Ppu.Reset();

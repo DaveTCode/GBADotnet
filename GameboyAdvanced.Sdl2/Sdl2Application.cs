@@ -1,14 +1,14 @@
 ﻿using GameboyAdvanced.Core;
 using GameboyAdvanced.Core.Input;
 using GameboyAdvanced.Core.Ppu;
+using NAudio.Wave;
 using SDL2;
-using Serilog.Core;
 using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace GameboyAdvanced.Sdl2;
 
-internal class Sdl2Application : IDisposable
+internal unsafe class Sdl2Application : IDisposable
 {
     private readonly string _originalFilePath;
     private readonly Device _device;
@@ -20,6 +20,13 @@ internal class Sdl2Application : IDisposable
     private bool _disposedValue;
     private readonly int _msPerFrame = (int)(1.0 / 60 * 1000);
     private float _framesPerSecond;
+
+    private const int AudioFrequency = 65536;
+    private const int AudioSamples = 2048;
+    private const int Channels = 2;
+
+    private readonly BufferedWaveProvider _waveProvider;
+    private readonly IWavePlayer _wavePlayer;
 
     private readonly Dictionary<SDL.SDL_Keycode, Key> _keyMap = new()
     {
@@ -41,6 +48,8 @@ internal class Sdl2Application : IDisposable
         _device = device;
         _pixelSize = pixelSize;
         _unlockFps = unlockFps;
+        _waveProvider = new BufferedWaveProvider(new WaveFormat(AudioFrequency, 16, Channels));
+        _wavePlayer = new WaveOutEvent();
     }
 
     private void SetupSdl2()
@@ -82,9 +91,25 @@ internal class Sdl2Application : IDisposable
             Device.HEIGHT);
     }
 
+    private void SetupNAudio()
+    {
+        _wavePlayer.Init(_waveProvider);
+        _wavePlayer.Play();
+
+        // Tell the device to send a sample to the audio callback function once every 128 cycles
+        // 128 here is master clock frequency / audio spec frequency
+        _device.ConfigureAudioCallback(AudioCallback);
+    }
+
+    internal void AudioCallback(byte[] samples)
+    {
+        _waveProvider.AddSamples(samples, 0, samples.Length);
+    }
+
     internal void Run()
     {
         SetupSdl2();
+        SetupNAudio();
         var secondStopwatch = new Stopwatch();
         var frameTimeStopwatch = new Stopwatch();
         var adjustStopwatch = new Stopwatch();
@@ -195,6 +220,8 @@ internal class Sdl2Application : IDisposable
             if (_texture != IntPtr.Zero) SDL.SDL_DestroyTexture(_texture);
             if (_renderer != IntPtr.Zero) SDL.SDL_DestroyRenderer(_renderer);
             if (_window != IntPtr.Zero) SDL.SDL_DestroyWindow(_window);
+            SDL.SDL_AudioQuit();
+            SDL.SDL_VideoQuit();
             SDL.SDL_Quit();
             _disposedValue = true;
         }

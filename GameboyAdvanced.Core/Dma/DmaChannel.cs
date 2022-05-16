@@ -122,15 +122,16 @@ public class DmaChannel
             {
                 IntWordCount = (WordCount == 0) ? MaxWordCounts[Id] : WordCount; // 0 is a special case that means copy MAX bytes
             }
-            IntDestAddressIncrement = (ControlReg.Is32Bit, ControlReg.DestAddressCtrl) switch
+            IntDestAddressIncrement = (ControlReg.Is32Bit, ControlReg.DestAddressCtrl, ControlReg.StartTiming) switch
             {
-                (_, DestAddressCtrl.Fixed) => 0,
-                (true, DestAddressCtrl.Increment) => 4,
-                (true, DestAddressCtrl.IncrementReload) => 4,
-                (true, DestAddressCtrl.Decrement) => -4,
-                (false, DestAddressCtrl.Increment) => 2,
-                (false, DestAddressCtrl.IncrementReload) => 2,
-                (false, DestAddressCtrl.Decrement) => -2,
+                (_, _, StartTiming.Special) => 0,
+                (_, DestAddressCtrl.Fixed, _) => 0,
+                (true, DestAddressCtrl.Increment, _) => 4,
+                (true, DestAddressCtrl.IncrementReload, _) => 4,
+                (true, DestAddressCtrl.Decrement, _) => -4,
+                (false, DestAddressCtrl.Increment, _) => 2,
+                (false, DestAddressCtrl.IncrementReload, _) => 2,
+                (false, DestAddressCtrl.Decrement, _) => -2,
                 _ => throw new Exception("Invalid destination address control")
             };
             IntSrcAddressIncrement = (ControlReg.Is32Bit, ControlReg.SrcAddressCtrl) switch
@@ -153,7 +154,14 @@ public class DmaChannel
 
         if (ControlReg.Repeat && ControlReg.StartTiming != StartTiming.Immediate)
         {
-            IntWordCount = WordCount == 0 ? MaxWordCounts[Id] : WordCount;
+            if (Id is 1 or 2 && ControlReg.StartTiming == StartTiming.Special)
+            {
+                IntWordCount = 4;
+            }
+            else
+            {
+                IntWordCount = (WordCount == 0) ? MaxWordCounts[Id] : WordCount; // 0 is a special case that means copy MAX bytes
+            }
 
             if (ControlReg.DestAddressCtrl == DestAddressCtrl.IncrementReload)
             {
@@ -194,5 +202,5 @@ public class DmaChannel
         ControlReg.Reset();
     }
 
-    public override string ToString() => $"DMA{Id} {SourceAddress:X8}->{DestinationAddress:X8} ({WordCount})";
+    public override string ToString() => $"DMA{Id} {SourceAddress:X8}->{DestinationAddress:X8} ({WordCount}) - {ControlReg}";
 }
